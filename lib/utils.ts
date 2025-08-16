@@ -98,14 +98,33 @@ export function sanitizeText(text: string) {
 }
 
 export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
-  return messages.map((message) => ({
-    id: message.id,
-    role: message.role as 'user' | 'assistant' | 'system',
-    parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
-    metadata: {
-      createdAt: formatISO(message.createdAt),
-    },
-  }));
+  return messages.map((message) => {
+    // Extract agent metadata from attachments if present
+    let agentId: string | undefined;
+    let agentName: string | undefined;
+    let agentSlug: string | undefined;
+    try {
+      const atts = (message.attachments as any[]) || [];
+      const meta = atts.find((a) => a && a.type === 'agentMetadata');
+      if (meta) {
+        agentId = meta.agentId;
+        agentName = meta.agentName;
+        agentSlug = meta.agentSlug;
+      }
+    } catch {}
+
+    return {
+      id: message.id,
+      role: message.role as 'user' | 'assistant' | 'system',
+      parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
+      metadata: {
+        createdAt: formatISO(message.createdAt),
+        agentId,
+        agentName,
+        agentSlug,
+      },
+    };
+  });
 }
 
 export function getTextFromMessage(message: ChatMessage): string {

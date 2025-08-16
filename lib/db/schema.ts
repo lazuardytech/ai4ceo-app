@@ -198,6 +198,7 @@ export const agentKnowledge = pgTable(
     title: varchar('title', { length: 128 }).notNull(),
     content: text('content').notNull(),
     tags: text('tags'), // optional comma-separated tags
+    vector: json('vector'),
     createdAt: timestamp('createdAt').notNull().defaultNow(),
   },
   (table) => ({
@@ -206,6 +207,23 @@ export const agentKnowledge = pgTable(
 );
 
 export type AgentKnowledge = InferSelectModel<typeof agentKnowledge>;
+
+export const chatAgent = pgTable(
+  'ChatAgent',
+  {
+    chatId: uuid('chatId')
+      .notNull()
+      .references(() => chat.id),
+    agentId: uuid('agentId')
+      .notNull()
+      .references(() => agent.id),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.chatId, table.agentId] }),
+  }),
+);
+
+export type ChatAgent = InferSelectModel<typeof chatAgent>;
 
 export const subscription = pgTable('Subscription', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),

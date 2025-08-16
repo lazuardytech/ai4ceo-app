@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from 'swr';
-import { useOptimistic, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,22 +22,25 @@ function persistSelection(ids: string[]) {
 type Expert = { id: string; slug: string; name: string; description?: string | null };
 
 export function ExpertSelector({
+  chatId,
   selectedAgentIds,
   onChange,
   className,
 }: {
+  chatId: string;
   selectedAgentIds: string[];
   onChange: (ids: string[]) => void;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
-  const [optimisticSelected, setOptimisticSelected] = useOptimistic(
-    selectedAgentIds,
-  );
+  const [localSelected, setLocalSelected] = useState<string[]>(selectedAgentIds);
+  useEffect(() => {
+    setLocalSelected(selectedAgentIds);
+  }, [selectedAgentIds.join(',')]);
 
   const { data } = useSWR<Expert[]>('/api/experts', fetcher);
   const experts = data ?? [];
 
-  const selectedCount = optimisticSelected.length;
+  const selectedCount = localSelected.length;
   const label = selectedCount > 0 ? `${selectedCount} Experts` : 'General Expert';
 
   return (
@@ -56,20 +59,26 @@ export function ExpertSelector({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[320px]">
         {experts.map((e) => {
-          const checked = optimisticSelected.includes(e.id);
+          const checked = localSelected.includes(e.id);
           return (
             <DropdownMenuCheckboxItem
               key={e.id}
               checked={checked}
               onCheckedChange={(next) => {
-                const set = new Set(optimisticSelected);
+                const set = new Set(localSelected);
                 if (next) set.add(e.id);
                 else set.delete(e.id);
                 const nextArr = Array.from(set);
-                setOptimisticSelected(nextArr);
+                setLocalSelected(nextArr);
                 // Persist selection cookie and bubble up
                 persistSelection(nextArr);
                 onChange(nextArr);
+                // Save to server for this chat
+                try {
+                  fetch(`/api/chat/experts?chatId=${encodeURIComponent(chatId)}`,
+                    { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ agentIds: nextArr }) },
+                  );
+                } catch {}
               }}
             >
               <div className="flex flex-col items-start">

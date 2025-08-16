@@ -36,12 +36,14 @@ import {
   voucherUsage,
   agent,
   agentKnowledge,
+  chatAgent,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
+import { computeHashedEmbedding, cosine } from '@/lib/ai/vector';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -219,6 +221,26 @@ export async function getChatById({ id }: { id: string }) {
     return selectedChat;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
+  }
+}
+
+export async function getAgentIdsByChatId({ chatId }: { chatId: string }) {
+  try {
+    const rows = await db.select().from(chatAgent).where(eq(chatAgent.chatId, chatId));
+    return rows.map((r) => r.agentId);
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get chat agents');
+  }
+}
+
+export async function setChatAgents({ chatId, agentIds }: { chatId: string; agentIds: string[] }) {
+  try {
+    await db.delete(chatAgent).where(eq(chatAgent.chatId, chatId));
+    if (agentIds.length > 0) {
+      await db.insert(chatAgent).values(agentIds.map((id) => ({ chatId, agentId: id })));
+    }
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to set chat agents');
   }
 }
 
@@ -928,9 +950,10 @@ export async function addAgentKnowledge({
   tags?: string | null;
 }) {
   try {
+    const vector = computeHashedEmbedding(`${title}\n${content}`);
     const [row] = await db
       .insert(agentKnowledge)
-      .values({ agentId, title, content, tags: tags ?? null })
+      .values({ agentId, title, content, tags: tags ?? null, vector })
       .returning();
     return row;
   } catch (error) {
@@ -1036,32 +1059,25 @@ export async function retrieveAgentContext({
   limit?: number;
 }) {
   try {
-    const terms = query
-      .toLowerCase()
-      .split(/\W+/)
-      .filter((t) => t.length > 2)
-      .slice(0, 5);
-    const where = terms.length
-      ? and(
-          eq(agentKnowledge.agentId, agentId),
-          or(
-            ...terms.map((t) =>
-              or(
-                ilike(agentKnowledge.title, `%${t}%`),
-                ilike(agentKnowledge.content, `%${t}%`),
-                ilike(agentKnowledge.tags, `%${t}%`),
-              ),
-            ),
-          ),
-        )
-      : (eq(agentKnowledge.agentId, agentId) as any);
-
-    return await db
+    const queryVec = computeHashedEmbedding(query || '');
+    // Pull a reasonable window to score; then rank.
+    const rows = await db
       .select()
       .from(agentKnowledge)
-      .where(where as any)
+      .where(eq(agentKnowledge.agentId, agentId))
       .orderBy(desc(agentKnowledge.createdAt))
-      .limit(limit);
+      .limit(500);
+
+    const ranked = rows
+      .map((r: any) => ({
+        row: r,
+        score: Array.isArray(r.vector) ? cosine(queryVec, r.vector as number[]) : 0,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map((r) => r.row);
+
+    return ranked;
   } catch (error) {
     // soft-fail: no context
     return [];

@@ -26,7 +26,7 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
-import { getLanguageModelForId } from '@/lib/ai/providers';
+import { resolveModelCandidatesForId } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
@@ -40,7 +40,7 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { buildExpertSystemPrompt } from '@/lib/ai/experts';
-import { getAgentById, retrieveAgentContext } from '@/lib/db/queries';
+import { getAgentById, retrieveAgentContext, getAgentIdsByChatId, setChatAgents } from '@/lib/db/queries';
 
 export const maxDuration = 60;
 
@@ -120,6 +120,12 @@ export async function POST(request: Request) {
         title,
         visibility: selectedVisibilityType,
       });
+      // Persist any selected experts provided by the client on first message
+      if (requestBody.selectedAgentIds && requestBody.selectedAgentIds.length > 0) {
+        try {
+          await setChatAgents({ chatId: id, agentIds: requestBody.selectedAgentIds });
+        } catch {}
+      }
     } else {
       if (chat.userId !== session.user.id) {
         return new ChatSDKError('forbidden:chat').toResponse();
@@ -167,12 +173,83 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Resolve expert selection once upfront (avoid await inside writer)
+    let agentIdsLocal = requestBody.selectedAgentIds ?? [];
+    if (agentIdsLocal.length === 0) {
+      try {
+        agentIdsLocal = await getAgentIdsByChatId({ chatId: id });
+      } catch {}
+    }
+
+    // Preload selected agents and prior assistant snippets for continuity
+    let selectedAgents: Array<{ id: string; name: string; slug: string }> = [];
+    if (agentIdsLocal && agentIdsLocal.length > 0) {
+      const list: Array<{ id: string; name: string; slug: string }> = [];
+      for (const aid of agentIdsLocal) {
+        const a = await getAgentById({ id: aid });
+        if (a) list.push({ id: a.id, name: a.name, slug: a.slug });
+      }
+      selectedAgents = list;
+    }
+
+    function extractText(parts: any[]): string {
+      try {
+        return parts
+          .filter((p: any) => p?.type === 'text' && typeof p.text === 'string')
+          .map((p: any) => p.text)
+          .join('\n');
+      } catch {
+        return '';
+      }
+    }
+
+    const priorByAgent: Record<string, string[]> = {};
+    if (selectedAgents.length > 0) {
+      for (const a of selectedAgents) {
+        priorByAgent[a.id] = [];
+      }
+      // Walk previous messages and gather last 3 assistant replies per agent
+      for (let i = messagesFromDb.length - 1; i >= 0; i--) {
+        const m: any = messagesFromDb[i];
+        if (m.role === 'assistant' && Array.isArray(m.attachments)) {
+          const meta = (m.attachments as any[]).find(
+            (att) => att && att.type === 'agentMetadata' && att.agentId,
+          );
+          if (meta && priorByAgent[meta.agentId]) {
+            priorByAgent[meta.agentId].push(extractText(m.parts || []));
+            // Limit to last 3
+            if (priorByAgent[meta.agentId].length >= 3) {
+              // continue scanning others
+            }
+          }
+        }
+      }
+    }
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        // Helper to emit a friendly assistant error message into the stream
+        const writeError = (title: string, detail: string) => {
+          try {
+            dataStream.write({
+              type: 'data-appendMessage',
+              data: JSON.stringify({
+                id: generateUUID(),
+                role: 'assistant',
+                parts: [{ type: 'text', text: `${title}\n\n${detail}` }],
+                attachments: [],
+                createdAt: new Date(),
+                chatId: id,
+              }),
+              transient: true,
+            });
+          } catch {}
+        };
+
         // If experts are selected, run each expert sequentially, otherwise general response
-        if (requestBody.selectedAgentIds && requestBody.selectedAgentIds.length > 0) {
+        if (agentIdsLocal && agentIdsLocal.length > 0) {
           (async () => {
-            for (const agentId of requestBody.selectedAgentIds!) {
+            for (const agentId of agentIdsLocal) {
               const agent = await getAgentById({ id: agentId });
               if (!agent) continue;
               let userText = '';
@@ -193,23 +270,85 @@ export async function POST(request: Request) {
                   artifactsOverride: settings?.artifactsPromptOverride,
                 }),
                 context: kb,
+                previousAssistant: priorByAgent[agentId] ?? [],
               });
 
+              const candidates = resolveModelCandidatesForId(
+                selectedChatModel,
+                (settings?.modelOverridesOpenRouter as any) ?? (settings?.modelOverrides as any) ?? null,
+                requestBody.selectedProviderPreference ?? 'balance',
+                (settings?.modelOverridesGroq as any) ?? null,
+              );
+              let streamed = false;
+              for (let i = 0; i < candidates.length; i++) {
+                const c = candidates[i];
+                try {
+                  const result = streamText({
+                    model: c.model,
+                    system: expertSystem,
+                    messages: convertToModelMessages([message]),
+                    stopWhen: stepCountIs(5),
+                    experimental_activeTools:
+                      selectedChatModel === 'chat-model-reasoning'
+                        ? []
+                        : ['getWeather', 'createDocument', 'updateDocument', 'requestSuggestions'],
+                    experimental_transform: smoothStream({ chunking: 'word' }),
+                    tools: {
+                      getWeather,
+                      createDocument: createDocument({ session, dataStream }),
+                      updateDocument: updateDocument({ session, dataStream }),
+                      requestSuggestions: requestSuggestions({ session, dataStream }),
+                    },
+                    experimental_telemetry: {
+                      isEnabled: isProductionEnvironment,
+                      functionId: `stream-text-${agent.slug}-${c.provider}`,
+                    },
+                  });
+                  result.consumeStream();
+                  dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
+                  streamed = true;
+                  break;
+                } catch (err: any) {
+                  if (i === candidates.length - 1) {
+                    writeError(
+                      `[${agent.name}] Provider error`,
+                      `All providers failed for this expert. Please try again.\n\nDetails: ${String(
+                        err?.message || err,
+                      )}`,
+                    );
+                  }
+                }
+              }
+            }
+          })();
+          return;
+        }
+        const baseSystem = buildSystemPrompt({
+          selectedChatModel,
+          requestHints,
+          regularOverride: settings?.regularPromptOverride,
+          artifactsOverride: settings?.artifactsPromptOverride,
+        });
+        const candidates = resolveModelCandidatesForId(
+          selectedChatModel,
+          (settings?.modelOverridesOpenRouter as any) ?? (settings?.modelOverrides as any) ?? (settings?.defaultProviderPreference ? null : null),
+          requestBody.selectedProviderPreference ?? (settings?.defaultProviderPreference as any) ?? 'balance',
+          (settings?.modelOverridesGroq as any) ?? null,
+        );
+        (async () => {
+          let streamed = false;
+          for (let i = 0; i < candidates.length; i++) {
+            const c = candidates[i];
+            try {
               const result = streamText({
-                model: getLanguageModelForId(
-                  selectedChatModel,
-                  settings?.modelOverrides,
-                ),
-                system: expertSystem,
-                messages: convertToModelMessages([message]),
+                model: c.model,
+                system: baseSystem,
+                messages: convertToModelMessages(uiMessages),
                 stopWhen: stepCountIs(5),
                 experimental_activeTools:
-                  selectedChatModel === 'chat-model-reasoning' ? [] : [
-                    'getWeather',
-                    'createDocument',
-                    'updateDocument',
-                    'requestSuggestions',
-                  ],
+                  selectedChatModel === 'chat-model-reasoning'
+                    ? []
+                    : ['getWeather', 'createDocument', 'updateDocument', 'requestSuggestions'],
                 experimental_transform: smoothStream({ chunking: 'word' }),
                 tools: {
                   getWeather,
@@ -219,78 +358,58 @@ export async function POST(request: Request) {
                 },
                 experimental_telemetry: {
                   isEnabled: isProductionEnvironment,
-                  functionId: `stream-text-${agent.slug}`,
+                  functionId: `stream-text-${c.provider}`,
                 },
               });
               result.consumeStream();
-              dataStream.merge(
-                result.toUIMessageStream({
-                  sendReasoning: true,
-                }),
-              );
+              dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
+              streamed = true;
+              break;
+            } catch (err: any) {
+              if (i === candidates.length - 1) {
+                writeError(
+                  'Provider error',
+                  `All providers failed. Please try again.\n\nDetails: ${String(
+                    err?.message || err,
+                  )}`,
+                );
+              }
             }
-          })();
-          return;
-        }
-
-        const result = streamText({
-          model: getLanguageModelForId(
-            selectedChatModel,
-            settings?.modelOverrides,
-          ),
-          system: buildSystemPrompt({
-            selectedChatModel,
-            requestHints,
-            regularOverride: settings?.regularPromptOverride,
-            artifactsOverride: settings?.artifactsPromptOverride,
-          }),
-          messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
-        });
-
-        result.consumeStream();
-
-        dataStream.merge(
-          result.toUIMessageStream({
-            sendReasoning: true,
-          }),
-        );
+          }
+        })();
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {
-        await saveMessages({
-          messages: messages.map((message) => ({
-            id: message.id,
-            role: message.role,
-            parts: message.parts,
+        // Add agent metadata to assistant messages where possible, and persist attachments
+        const toSave = messages.map((m) => {
+          let attachments: any[] = Array.isArray((m as any).attachments)
+            ? ((m as any).attachments as any[])
+            : [];
+          if (m.role === 'assistant' && selectedAgents.length > 0) {
+            const text = extractText((m as any).parts || []);
+            const match = selectedAgents.find((a) => text.startsWith(`[${a.name}]`));
+            if (match) {
+              attachments = [
+                ...attachments,
+                {
+                  type: 'agentMetadata',
+                  agentId: match.id,
+                  agentName: match.name,
+                  agentSlug: match.slug,
+                },
+              ];
+            }
+          }
+          return {
+            id: m.id,
+            role: m.role,
+            parts: m.parts,
             createdAt: new Date(),
-            attachments: [],
+            attachments,
             chatId: id,
-          })),
+          } as any;
         });
+        await saveMessages({ messages: toSave });
       },
       onError: () => {
         return 'Oops, an error occurred!';

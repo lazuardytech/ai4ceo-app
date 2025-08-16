@@ -48,6 +48,18 @@ const PurePreviewMessage = ({
     (part) => part.type === 'file',
   );
 
+  function getAgentLabel(): string | null {
+    if (message.metadata?.agentName) return message.metadata.agentName;
+    // Fallback: parse first text chunk like "[Tech Expert] ..."
+    const firstText = message.parts.find((p: any) => p.type === 'text');
+    const txt = (firstText as any)?.text as string | undefined;
+    if (txt && txt.startsWith('[')) {
+      const end = txt.indexOf(']');
+      if (end > 1 && end < 80) return txt.slice(1, end);
+    }
+    return null;
+  }
+
   useDataStream();
 
   return (
@@ -81,6 +93,13 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
+            {message.role === 'assistant' && getAgentLabel() && (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border">
+                  {getAgentLabel()}
+                </span>
+              </div>
+            )}
             {attachmentsFromMessage.length > 0 && (
               <div
                 data-testid={`message-attachments`}

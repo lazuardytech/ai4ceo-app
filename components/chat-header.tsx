@@ -70,6 +70,7 @@ function PureChatHeader({
 
       {!isReadonly && (
         <ExpertSelector
+          chatId={chatId}
           selectedAgentIds={selectedAgentIds}
           onChange={onChangeSelectedAgentIds}
           className="order-1 md:order-2"

@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
-import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
+import { getAgentIdsByChatId, getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { convertToUIMessages } from '@/lib/utils';
@@ -41,12 +41,17 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model-small');
-  const expertCookie = cookieStore.get('selected-experts');
-  let initialSelectedAgentIds: string[] = [];
-  try {
-    initialSelectedAgentIds = expertCookie?.value ? JSON.parse(expertCookie.value) : [];
-  } catch {
-    initialSelectedAgentIds = [];
+  // Prefer DB-backed selection; cookie remains a fallback for first-time use
+  let initialSelectedAgentIds: string[] = await getAgentIdsByChatId({ chatId: id });
+  if (!Array.isArray(initialSelectedAgentIds) || initialSelectedAgentIds.length === 0) {
+    const expertCookie = cookieStore.get('selected-experts');
+    try {
+      initialSelectedAgentIds = expertCookie?.value
+        ? JSON.parse(decodeURIComponent(expertCookie.value))
+        : [];
+    } catch {
+      initialSelectedAgentIds = [];
+    }
   }
 
   if (!chatModelFromCookie) {

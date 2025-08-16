@@ -28,6 +28,10 @@ export const postRequestBodySchema = z.object({
   ]),
   selectedVisibilityType: z.enum(['public', 'private']),
   selectedAgentIds: z.array(z.string().uuid()).optional().default([]),
+  selectedProviderPreference: z
+    .enum(['balance', 'groq', 'openrouter'])
+    .optional()
+    .default('balance'),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;
