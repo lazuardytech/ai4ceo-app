@@ -10,6 +10,8 @@ import {
   gte,
   inArray,
   lt,
+  ilike,
+  or,
   type SQL,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -583,6 +585,170 @@ export async function listSubscriptions({ limit = 100 }: { limit?: number }) {
       .limit(limit);
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to list subscriptions');
+  }
+}
+
+export async function listUsersPaged({
+  q,
+  limit = 20,
+  offset = 0,
+}: {
+  q?: string | null;
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    const where = q?.trim()
+      ? ilike(user.email, `%${q.trim()}%`)
+      : undefined;
+
+    const [{ count: total }] = await db
+      .select({ count: count(user.id) })
+      .from(user)
+      .where(where as any);
+
+    const items = await db
+      .select()
+      .from(user)
+      .where(where as any)
+      .orderBy(desc(user.id))
+      .limit(limit)
+      .offset(offset);
+
+    return { items, total };
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to list users');
+  }
+}
+
+export async function listSubscriptionsPaged({
+  q,
+  limit = 20,
+  offset = 0,
+}: {
+  q?: string | null;
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    // join with users to include email and allow search
+    const base = db
+      .select({
+        id: subscription.id,
+        userId: subscription.userId,
+        planId: subscription.planId,
+        status: subscription.status,
+        currentPeriodEnd: subscription.currentPeriodEnd,
+        updatedAt: subscription.updatedAt,
+        userEmail: user.email,
+      })
+      .from(subscription)
+      .innerJoin(user, eq(subscription.userId, user.id));
+
+    const where = q?.trim()
+      ? or(
+        ilike(user.email, `%${q.trim()}%`),
+        ilike(subscription.planId, `%${q.trim()}%`),
+      )
+      : undefined;
+
+    const [{ count: total }] = await db
+      .select({ count: count(subscription.id) })
+      .from(subscription)
+      .innerJoin(user, eq(subscription.userId, user.id))
+      .where(where as any);
+
+    const items = await base
+      .where(where as any)
+      .orderBy(desc(subscription.updatedAt))
+      .limit(limit)
+      .offset(offset);
+
+    return { items, total };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to list subscriptions',
+    );
+  }
+}
+
+export async function addTokenUsage({
+  userId,
+  chatId,
+  inputTokens,
+  outputTokens,
+}: {
+  userId: string;
+  chatId: string;
+  inputTokens: number;
+  outputTokens: number;
+}) {
+  try {
+    const totalTokens = inputTokens + outputTokens;
+    await db.insert(tokenUsage).values({
+      userId,
+      chatId,
+      inputTokens,
+      outputTokens,
+      totalTokens,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to add token usage');
+  }
+}
+
+export async function getTokenUsageByUserSince({
+  userId,
+  since,
+}: {
+  userId: string;
+  since: Date;
+}) {
+  try {
+    const [{ sum }] = await db
+      .select({ sum: sql<number>`SUM(${tokenUsage.totalTokens})` })
+      .from(tokenUsage)
+      .where(and(eq(tokenUsage.userId, userId), gte(tokenUsage.createdAt, since)));
+    return Number(sum ?? 0);
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get token usage');
+  }
+}
+
+export async function getTokenUsageSummary({
+  since,
+  limit = 50,
+  offset = 0,
+}: {
+  since: Date;
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    const rows = await db
+      .select({ userId: tokenUsage.userId, totalTokens: tokenUsage.totalTokens })
+      .from(tokenUsage)
+      .where(gte(tokenUsage.createdAt, since));
+
+    const map = new Map<string, number>();
+    for (const r of rows) {
+      const key = (r as any).userId as string;
+      const val = Number((r as any).totalTokens ?? 0);
+      map.set(key, (map.get(key) ?? 0) + val);
+    }
+
+    const aggregated = Array.from(map.entries()).map(([userId, total]) => ({
+      userId,
+      total,
+    }));
+
+    aggregated.sort((a, b) => b.total - a.total);
+    return aggregated.slice(offset, offset + limit);
+  } catch (error) {
+    // If the table does not exist yet or any query error occurs, return empty analytics
+    return [];
   }
 }
 

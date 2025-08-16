@@ -17,6 +17,7 @@ export default async function AdminSettingsPage() {
       <div className="rounded-xl border p-4 text-sm">
         <pre className="whitespace-pre-wrap break-words">{JSON.stringify(settings, null, 2)}</pre>
       </div>
+      {/* Token rate limits removed */}
       <div className="rounded-xl border p-4 text-sm">
         <h2 className="font-medium mb-2">Set a setting</h2>
         <form method="post" action="/admin/api/settings">

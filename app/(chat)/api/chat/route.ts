@@ -16,6 +16,8 @@ import {
   getMessagesByChatId,
   saveChat,
   saveMessages,
+  getActiveSubscriptionByUserId,
+  getSettings
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -36,7 +38,6 @@ import { after } from 'next/server';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
-import { getActiveSubscriptionByUserId, getSettings } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
 
 export const maxDuration = 60;
@@ -173,11 +174,11 @@ export async function POST(request: Request) {
             selectedChatModel === 'chat-model-reasoning'
               ? []
               : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
+                'getWeather',
+                'createDocument',
+                'updateDocument',
+                'requestSuggestions',
+              ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
             getWeather,
@@ -235,6 +236,8 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+    console.error('POST /api/chat error:', error);
+    return new Response('Internal Server Error', { status: 500 });
   }
 }
 

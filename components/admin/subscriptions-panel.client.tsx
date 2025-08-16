@@ -1,0 +1,108 @@
+'use client';
+
+import useSWR from 'swr';
+import { useMemo, useState } from 'react';
+import { fetcher } from '@/lib/utils';
+
+interface SubRow {
+  id: string;
+  userId: string;
+  planId: string;
+  status: string;
+  currentPeriodEnd: string | null;
+  updatedAt: string;
+  userEmail: string | null;
+}
+
+export function AdminSubscriptionsPanel() {
+  const [q, setQ] = useState('');
+  const [limit, setLimit] = useState(20);
+  const [offset, setOffset] = useState(0);
+
+  const key = useMemo(
+    () => `/admin/api/subscriptions/list?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`,
+    [q, limit, offset],
+  );
+  const { data, isLoading } = useSWR<{ items: SubRow[]; total: number }>(key, fetcher);
+
+  const total = data?.total ?? 0;
+  const canPrev = offset > 0;
+  const canNext = offset + limit < total;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          className="border rounded px-2 py-1 text-sm"
+          placeholder="Search email / plan..."
+          value={q}
+          onChange={(e) => {
+            setOffset(0);
+            setQ(e.target.value);
+          }}
+        />
+        <select
+          className="border rounded px-2 py-1 text-sm"
+          value={limit}
+          onChange={(e) => {
+            setOffset(0);
+            setLimit(Number(e.target.value));
+          }}
+        >
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
+          <option value={100}>100</option>
+        </select>
+        <div className="text-xs text-muted-foreground ml-auto">
+          {isLoading ? 'Loading…' : `${Math.min(offset + 1, total)}–${Math.min(offset + (data?.items.length || 0), total)} of ${total}`}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-left sticky top-0">
+            <tr>
+              <th className="p-2">ID</th>
+              <th className="p-2">User</th>
+              <th className="p-2">Email</th>
+              <th className="p-2">Plan</th>
+              <th className="p-2">Status</th>
+              <th className="p-2">Current Period End</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data?.items.map((s, i) => (
+              <tr key={s.id} className={"border-t "+(i%2?"bg-muted/20":"") }>
+                <td className="p-2 align-top">{s.id}</td>
+                <td className="p-2 align-top">{s.userId}</td>
+                <td className="p-2 align-top">{s.userEmail}</td>
+                <td className="p-2 align-top">{s.planId}</td>
+                <td className="p-2 align-top">{s.status}</td>
+                <td className="p-2 align-top">{s.currentPeriodEnd ? new Date(s.currentPeriodEnd).toLocaleString() : '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex items-center gap-2 justify-end">
+        <button
+          className="border rounded px-3 py-1 text-sm disabled:opacity-50"
+          onClick={() => setOffset(Math.max(0, offset - limit))}
+          disabled={!canPrev}
+        >
+          Previous
+        </button>
+        <button
+          className="border rounded px-3 py-1 text-sm disabled:opacity-50"
+          onClick={() => setOffset(offset + limit)}
+          disabled={!canNext}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
