@@ -67,6 +67,15 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           >
             Billing
           </Link>
+          {user?.role === 'superadmin' && (
+            <Link
+              href="/admin"
+              onClick={() => setOpenMobile(false)}
+              className="flex items-center rounded-md px-2 py-2 text-sm hover:bg-muted"
+            >
+              Admin
+            </Link>
+          )}
         </SidebarMenu>
         <SidebarHistory user={user} />
       </SidebarContent>

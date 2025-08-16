@@ -66,6 +66,28 @@ export const systemPrompt = ({
   }
 };
 
+export const buildSystemPrompt = ({
+  selectedChatModel,
+  requestHints,
+  regularOverride,
+  artifactsOverride,
+}: {
+  selectedChatModel: string;
+  requestHints: RequestHints;
+  regularOverride?: string | null;
+  artifactsOverride?: string | null;
+}) => {
+  const requestPrompt = getRequestPromptFromHints(requestHints);
+  const regular = (regularOverride ?? '').trim().length > 0 ? (regularOverride as string) : regularPrompt;
+  const artifacts = (artifactsOverride ?? '').trim().length > 0 ? (artifactsOverride as string) : artifactsPrompt;
+
+  if (selectedChatModel === 'chat-model-reasoning') {
+    return `${regular}\n\n${requestPrompt}`;
+  } else {
+    return `${regular}\n\n${requestPrompt}\n\n${artifacts}`;
+  }
+};
+
 export const codePrompt = `
 You are a Python code generator that creates self-contained, executable code snippets. When writing code:
 

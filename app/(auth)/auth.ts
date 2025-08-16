@@ -13,6 +13,7 @@ declare module 'next-auth' {
     user: {
       id: string;
       type: UserType;
+      role: 'user' | 'admin' | 'superadmin';
     } & DefaultSession['user'];
   }
 
@@ -20,6 +21,7 @@ declare module 'next-auth' {
     id?: string;
     email?: string | null;
     type: UserType;
+    role?: 'user' | 'admin' | 'superadmin';
   }
 }
 
@@ -27,6 +29,7 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     id: string;
     type: UserType;
+    role: 'user' | 'admin' | 'superadmin';
   }
 }
 
@@ -59,7 +62,7 @@ export const {
 
         if (!passwordsMatch) return null;
 
-        return { ...user, type: 'regular' };
+        return { ...user, type: 'regular', role: (user as any).role ?? 'user' };
       },
     }),
     Credentials({
@@ -67,7 +70,7 @@ export const {
       credentials: {},
       async authorize() {
         const [guestUser] = await createGuestUser();
-        return { ...guestUser, type: 'guest' };
+        return { ...guestUser, type: 'guest', role: 'user' };
       },
     }),
   ],
@@ -76,6 +79,7 @@ export const {
       if (user) {
         token.id = user.id as string;
         token.type = user.type;
+        token.role = (user as any).role ?? 'user';
       }
 
       return token;
@@ -84,6 +88,7 @@ export const {
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;
+        session.user.role = (token as any).role ?? 'user';
       }
 
       return session;

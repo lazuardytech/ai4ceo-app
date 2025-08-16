@@ -21,6 +21,7 @@ import { isTestEnvironment } from '../constants';
 export const myProvider = isTestEnvironment
   ? customProvider({
     languageModels: {
+      'chat-model': chatModel,
       'chat-model-small': chatModel,
       'chat-model-large': chatModel,
       'chat-model-reasoning': reasoningModel,
@@ -38,6 +39,7 @@ export const myProvider = isTestEnvironment
 
       'title-model': openrouter.chat('meta-llama/llama-3.2-3b-instruct:free'),
       'artifact-model': openrouter.chat('moonshotai/kimi-k2:free'),
+      'chat-model': openrouter.chat('moonshotai/kimi-k2:free'),
       'chat-model-small': openrouter.chat('moonshotai/kimi-k2:free'),
       'chat-model-large': openrouter.chat('moonshotai/kimi-k2:free'),
       'chat-model-reasoning': wrapLanguageModel({
@@ -59,3 +61,33 @@ export const myProvider = isTestEnvironment
     //   'small-model': xai.imageModel('grok-2-image'),
     // },
   });
+
+export function getLanguageModelForId(
+  id: string,
+  overrides?: Record<string, string> | null,
+) {
+  if (isTestEnvironment) {
+    if (id === 'chat-model-reasoning') return reasoningModel;
+    if (id === 'title-model') return titleModel;
+    if (id === 'artifact-model') return artifactModel;
+    return chatModel;
+  }
+
+  const map: Record<string, string> = {
+    'chat-model': 'moonshotai/kimi-k2:free',
+    'chat-model-reasoning': 'deepseek/deepseek-r1:free',
+    'title-model': 'meta-llama/llama-3.2-3b-instruct:free',
+    'artifact-model': 'moonshotai/kimi-k2:free',
+  };
+
+  const modelId = (overrides && overrides[id]) || map[id] || map['chat-model'];
+
+  if (id === 'chat-model-reasoning') {
+    return wrapLanguageModel({
+      model: openrouter.chat(modelId),
+      middleware: extractReasoningMiddleware({ tagName: 'think' }),
+    });
+  }
+
+  return openrouter.chat(modelId);
+}

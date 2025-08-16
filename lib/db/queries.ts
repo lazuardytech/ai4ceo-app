@@ -19,6 +19,7 @@ import {
   user,
   chat,
   type User,
+  setting,
   document,
   type Suggestion,
   suggestion,
@@ -59,7 +60,9 @@ export async function createUser(email: string, password: string) {
   const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    return await db
+      .insert(user)
+      .values({ email, password: hashedPassword, role: 'user' });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create user');
   }
@@ -70,10 +73,13 @@ export async function createGuestUser() {
   const password = generateHashedPassword(generateUUID());
 
   try {
-    return await db.insert(user).values({ email, password }).returning({
-      id: user.id,
-      email: user.email,
-    });
+    return await db
+      .insert(user)
+      .values({ email, password, role: 'user' })
+      .returning({
+        id: user.id,
+        email: user.email,
+      });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -536,6 +542,74 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
       'bad_request:database',
       'Failed to get stream ids by chat id',
     );
+  }
+}
+
+// Admin: Users
+export async function listUsers({ limit = 50 }: { limit?: number }) {
+  try {
+    return await db.select().from(user).orderBy(desc(user.id)).limit(limit);
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to list users');
+  }
+}
+
+export async function updateUserRole({
+  userId,
+  role,
+}: {
+  userId: string;
+  role: 'user' | 'admin' | 'superadmin';
+}) {
+  try {
+    const [u] = await db
+      .update(user)
+      .set({ role })
+      .where(eq(user.id, userId))
+      .returning();
+    return u;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to update user role');
+  }
+}
+
+// Admin: Subscriptions
+export async function listSubscriptions({ limit = 100 }: { limit?: number }) {
+  try {
+    return await db
+      .select()
+      .from(subscription)
+      .orderBy(desc(subscription.updatedAt))
+      .limit(limit);
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to list subscriptions');
+  }
+}
+
+// Settings
+export async function getSettings() {
+  try {
+    const rows = await db.select().from(setting);
+    const map: Record<string, any> = {};
+    for (const r of rows) map[(r as any).key] = (r as any).value;
+    return map;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get settings');
+  }
+}
+
+export async function setSetting({ key, value }: { key: string; value: any }) {
+  try {
+    const now = new Date();
+    // drizzle-orm/postgres-js lacks upsert helper; emulate with raw SQL if needed
+    // Using on conflict do update via drizzle API
+    // @ts-ignore drizzle upsert API signature
+    await db
+      .insert(setting)
+      .values({ key, value, updatedAt: now })
+      .onConflictDoUpdate({ target: setting.key, set: { value, updatedAt: now } });
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to set setting');
   }
 }
 

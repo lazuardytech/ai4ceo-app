@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import type { Session } from 'next-auth';
+import useSWR from 'swr';
+import { fetcher } from '@/lib/utils';
 
 export function ModelSelector({
   session,
@@ -44,6 +46,14 @@ export function ModelSelector({
     [optimisticModelId, availableChatModels],
   );
 
+  const { data: billingStatus } = useSWR<{ hasActiveSubscription: boolean; reasoningRequiresSubscription: boolean }>(
+    '/api/billing/status',
+    fetcher,
+  );
+
+  const requiresSub = billingStatus?.reasoningRequiresSubscription ?? true;
+  const hasActive = billingStatus?.hasActiveSubscription ?? false;
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
@@ -65,18 +75,22 @@ export function ModelSelector({
       <DropdownMenuContent align="start" className="min-w-[300px]">
         {availableChatModels.map((chatModel) => {
           const { id } = chatModel;
+          const isReasoning = id === 'chat-model-reasoning';
+          const disabled = isReasoning && requiresSub && !hasActive;
 
           return (
             <DropdownMenuItem
               data-testid={`model-selector-item-${id}`}
               key={id}
+              disabled={disabled}
               onSelect={() => {
-                setOpen(false);
-
-                startTransition(() => {
-                  setOptimisticModelId(id);
-                  saveChatModelAsCookie(id);
-                });
+                if (!disabled) {
+                  setOpen(false);
+                  startTransition(() => {
+                    setOptimisticModelId(id);
+                    saveChatModelAsCookie(id);
+                  });
+                }
               }}
               data-active={id === optimisticModelId}
               asChild
@@ -88,7 +102,7 @@ export function ModelSelector({
                 <div className="flex flex-col gap-1 items-start">
                   <div>{chatModel.name}</div>
                   <div className="text-xs text-muted-foreground">
-                    {chatModel.description}
+                    {disabled ? 'Requires active subscription' : chatModel.description}
                   </div>
                 </div>
 

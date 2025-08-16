@@ -7,7 +7,7 @@ import {
   streamText,
 } from 'ai';
 import { auth, type UserType } from '@/app/(auth)/auth';
-import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
+import { type RequestHints, buildSystemPrompt } from '@/lib/ai/prompts';
 import {
   createStreamId,
   deleteChatById,
@@ -24,7 +24,7 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
-import { myProvider } from '@/lib/ai/providers';
+import { getLanguageModelForId, myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
@@ -36,7 +36,7 @@ import { after } from 'next/server';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
-import { getActiveSubscriptionByUserId } from '@/lib/db/queries';
+import { getActiveSubscriptionByUserId, getSettings } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
 
 export const maxDuration = 60;
@@ -122,12 +122,11 @@ export async function POST(request: Request) {
       }
     }
 
-    // Gate premium-only model (reasoning) by active subscription
-    if (selectedChatModel === 'chat-model-reasoning') {
+    const settings = await getSettings();
+    const reasoningRequiresSubscription = settings?.reasoningRequiresSubscription ?? true;
+    if (selectedChatModel === 'chat-model-reasoning' && reasoningRequiresSubscription) {
       const active = await getActiveSubscriptionByUserId({ userId: session.user.id });
-      if (!active) {
-        return new ChatSDKError('forbidden:auth').toResponse();
-      }
+      if (!active) return new ChatSDKError('forbidden:auth').toResponse();
     }
 
     const messagesFromDb = await getMessagesByChatId({ id });
@@ -161,8 +160,13 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          model: getLanguageModelForId(selectedChatModel, settings?.modelOverrides),
+          system: buildSystemPrompt({
+            selectedChatModel,
+            requestHints,
+            regularOverride: settings?.regularPromptOverride,
+            artifactsOverride: settings?.artifactsPromptOverride,
+          }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:

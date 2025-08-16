@@ -1,0 +1,39 @@
+import { auth } from '@/app/(auth)/auth';
+import { AdminNav } from '@/components/admin-nav';
+
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await auth();
+
+  if (!session?.user || session.user.role !== 'superadmin') {
+    return (
+      <div className="p-6 text-sm text-red-500">Unauthorized: Superadmin only.</div>
+    );
+  }
+
+  const items = [
+    { label: 'Overview', href: '/admin' },
+    { label: 'Users', href: '/admin/users' },
+    { label: 'Subscriptions', href: '/admin/subscriptions' },
+    { label: 'Models', href: '/admin/models' },
+    { label: 'Prompts', href: '/admin/prompts' },
+    { label: 'Settings', href: '/admin/settings' },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4 p-4">
+      <aside className="md:sticky md:top-4 h-fit">
+        <div className="mb-3">
+          <h1 className="text-lg font-semibold">Admin</h1>
+          <p className="text-xs text-muted-foreground">Superadmin dashboard</p>
+        </div>
+        <AdminNav items={items} />
+      </aside>
+      <main className="min-w-0">{children}</main>
+    </div>
+  );
+}
+

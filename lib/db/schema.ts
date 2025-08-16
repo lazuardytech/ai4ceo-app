@@ -15,6 +15,9 @@ export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
+  role: varchar('role', { enum: ['user', 'admin', 'superadmin'] })
+    .notNull()
+    .default('user'),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -191,3 +194,14 @@ export const subscription = pgTable(
 );
 
 export type Subscription = InferSelectModel<typeof subscription>;
+
+export const setting = pgTable(
+  'Setting',
+  {
+    key: varchar('key', { length: 128 }).primaryKey().notNull(),
+    value: json('value').notNull(),
+    updatedAt: timestamp('updatedAt').notNull(),
+  },
+);
+
+export type Setting = InferSelectModel<typeof setting>;

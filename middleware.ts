@@ -23,6 +23,20 @@ export async function middleware(request: NextRequest) {
     secureCookie: !isDevelopmentEnvironment,
   });
 
+  // Admin route protection: allow only superadmin
+  if (pathname.startsWith('/admin')) {
+    if (!token) {
+      const redirectUrl = encodeURIComponent(request.url);
+      return NextResponse.redirect(
+        new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
+      );
+    }
+    // @ts-ignore role injected into JWT in auth
+    if (token.role !== 'superadmin') {
+      return new NextResponse('Forbidden', { status: 403 });
+    }
+  }
+
   if (!token) {
     const redirectUrl = encodeURIComponent(request.url);
 
