@@ -17,7 +17,7 @@ import {
   saveChat,
   saveMessages,
   getActiveSubscriptionByUserId,
-  getSettings
+  getSettings,
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -26,7 +26,7 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
-import { getLanguageModelForId, myProvider } from '@/lib/ai/providers';
+import { getLanguageModelForId } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
@@ -124,9 +124,15 @@ export async function POST(request: Request) {
     }
 
     const settings = await getSettings();
-    const reasoningRequiresSubscription = settings?.reasoningRequiresSubscription ?? true;
-    if (selectedChatModel === 'chat-model-reasoning' && reasoningRequiresSubscription) {
-      const active = await getActiveSubscriptionByUserId({ userId: session.user.id });
+    const reasoningRequiresSubscription =
+      settings?.reasoningRequiresSubscription ?? true;
+    if (
+      selectedChatModel === 'chat-model-reasoning' &&
+      reasoningRequiresSubscription
+    ) {
+      const active = await getActiveSubscriptionByUserId({
+        userId: session.user.id,
+      });
       if (!active) return new ChatSDKError('forbidden:auth').toResponse();
     }
 
@@ -161,7 +167,10 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
-          model: getLanguageModelForId(selectedChatModel, settings?.modelOverrides),
+          model: getLanguageModelForId(
+            selectedChatModel,
+            settings?.modelOverrides,
+          ),
           system: buildSystemPrompt({
             selectedChatModel,
             requestHints,
@@ -174,11 +183,11 @@ export async function POST(request: Request) {
             selectedChatModel === 'chat-model-reasoning'
               ? []
               : [
-                'getWeather',
-                'createDocument',
-                'updateDocument',
-                'requestSuggestions',
-              ],
+                  'getWeather',
+                  'createDocument',
+                  'updateDocument',
+                  'requestSuggestions',
+                ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
             getWeather,

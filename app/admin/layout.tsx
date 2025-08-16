@@ -10,7 +10,9 @@ export default async function AdminLayout({
 
   if (!session?.user || session.user.role !== 'superadmin') {
     return (
-      <div className="p-6 text-sm text-red-500">Unauthorized: Superadmin only.</div>
+      <div className="p-6 text-sm text-red-500">
+        Unauthorized: Superadmin only.
+      </div>
     );
   }
 
@@ -18,6 +20,7 @@ export default async function AdminLayout({
     { label: 'Overview', href: '/admin' },
     { label: 'Users', href: '/admin/users' },
     { label: 'Subscriptions', href: '/admin/subscriptions' },
+    { label: 'Vouchers', href: '/admin/vouchers' },
     { label: 'Models', href: '/admin/models' },
     { label: 'Prompts', href: '/admin/prompts' },
     { label: 'Settings', href: '/admin/settings' },

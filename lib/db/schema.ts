@@ -172,36 +172,66 @@ export const stream = pgTable(
 
 export type Stream = InferSelectModel<typeof stream>;
 
-export const subscription = pgTable(
-  'Subscription',
-  {
-    id: uuid('id').primaryKey().notNull().defaultRandom(),
-    userId: uuid('userId')
-      .notNull()
-      .references(() => user.id),
-    planId: varchar('planId', { length: 64 }).notNull(),
-    status: varchar('status', {
-      enum: ['pending', 'active', 'canceled', 'expired', 'failed'],
-    })
-      .notNull()
-      .default('pending'),
-    externalId: varchar('externalId', { length: 128 }),
-    providerInvoiceId: varchar('providerInvoiceId', { length: 128 }),
-    createdAt: timestamp('createdAt').notNull(),
-    updatedAt: timestamp('updatedAt').notNull(),
-    currentPeriodEnd: timestamp('currentPeriodEnd'),
-  },
-);
+export const subscription = pgTable('Subscription', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  planId: varchar('planId', { length: 64 }).notNull(),
+  status: varchar('status', {
+    enum: ['pending', 'active', 'canceled', 'expired', 'failed'],
+  })
+    .notNull()
+    .default('pending'),
+  externalId: varchar('externalId', { length: 128 }),
+  providerInvoiceId: varchar('providerInvoiceId', { length: 128 }),
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+  currentPeriodEnd: timestamp('currentPeriodEnd'),
+});
 
 export type Subscription = InferSelectModel<typeof subscription>;
 
-export const setting = pgTable(
-  'Setting',
-  {
-    key: varchar('key', { length: 128 }).primaryKey().notNull(),
-    value: json('value').notNull(),
-    updatedAt: timestamp('updatedAt').notNull(),
-  },
-);
+export const setting = pgTable('Setting', {
+  key: varchar('key', { length: 128 }).primaryKey().notNull(),
+  value: json('value').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+});
 
 export type Setting = InferSelectModel<typeof setting>;
+
+export const voucher = pgTable('Voucher', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  code: varchar('code', { length: 64 }).notNull().unique(),
+  type: varchar('type', { enum: ['discount', 'free_subscription'] }).notNull(),
+  discountType: varchar('discountType', { enum: ['percentage', 'fixed'] }),
+  discountValue: varchar('discountValue', { length: 16 }),
+  planId: varchar('planId', { length: 64 }),
+  duration: varchar('duration', { length: 32 }), // e.g., '1_month', '3_months', '1_year'
+  maxUsages: varchar('maxUsages', { length: 16 }),
+  currentUsages: varchar('currentUsages', { length: 16 })
+    .notNull()
+    .default('0'),
+  isActive: boolean('isActive').notNull().default(true),
+  validFrom: timestamp('validFrom').notNull(),
+  validUntil: timestamp('validUntil'),
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+});
+
+export type Voucher = InferSelectModel<typeof voucher>;
+
+export const voucherUsage = pgTable('VoucherUsage', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  voucherId: uuid('voucherId')
+    .notNull()
+    .references(() => voucher.id),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  subscriptionId: uuid('subscriptionId').references(() => subscription.id),
+  usedAt: timestamp('usedAt').notNull(),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+export type VoucherUsage = InferSelectModel<typeof voucherUsage>;

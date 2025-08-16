@@ -29,4 +29,3 @@ export async function POST(request: Request) {
   await setSetting({ key, value });
   return new Response(null, { status: 204 });
 }
-

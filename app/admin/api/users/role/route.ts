@@ -18,4 +18,3 @@ export async function POST(request: Request) {
   await updateUserRole({ userId, role: role as any });
   return new Response(null, { status: 204 });
 }
-

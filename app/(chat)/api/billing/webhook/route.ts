@@ -8,10 +8,15 @@ export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   const callbackToken = process.env.XENDIT_CALLBACK_TOKEN;
-  const signature = request.headers.get('x-callback-token') || request.headers.get('X-Callback-Token');
+  const signature =
+    request.headers.get('x-callback-token') ||
+    request.headers.get('X-Callback-Token');
 
   if (!callbackToken) {
-    return new ChatSDKError('bad_request:api', 'Callback token not configured').toResponse();
+    return new ChatSDKError(
+      'bad_request:api',
+      'Callback token not configured',
+    ).toResponse();
   }
 
   if (!signature || signature !== callbackToken) {
@@ -35,7 +40,11 @@ export async function POST(request: Request) {
   }
 
   const sub = await getSubscriptionByExternalId({ externalId });
-  if (!sub) return new ChatSDKError('not_found:api', 'Subscription not found').toResponse();
+  if (!sub)
+    return new ChatSDKError(
+      'not_found:api',
+      'Subscription not found',
+    ).toResponse();
 
   if (status === 'PAID' || status === 'SETTLED') {
     const nextPeriod = new Date();
@@ -52,4 +61,3 @@ export async function POST(request: Request) {
 
   return new Response('OK', { status: 200 });
 }
-

@@ -16,4 +16,3 @@ export async function GET(request: Request) {
   const data = await listSubscriptionsPaged({ q, limit, offset });
   return Response.json(data, { status: 200 });
 }
-

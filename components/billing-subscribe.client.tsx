@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 
-export function BillingSubscribeClient({ planId = 'premium_monthly' }: { planId?: string }) {
+export function BillingSubscribeClient({
+  planId = 'premium_monthly',
+}: { planId?: string }) {
   const [loading, setLoading] = useState(false);
 
   const subscribe = async () => {
@@ -42,4 +44,3 @@ export function BillingSubscribeClient({ planId = 'premium_monthly' }: { planId?
     </button>
   );
 }
-

@@ -11,13 +11,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { chatModels } from '@/lib/ai/models';
-import { cn } from '@/lib/utils';
+import { cn, fetcher } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import type { Session } from 'next-auth';
 import useSWR from 'swr';
-import { fetcher } from '@/lib/utils';
 
 export function ModelSelector({
   session,
@@ -46,10 +45,10 @@ export function ModelSelector({
     [optimisticModelId, availableChatModels],
   );
 
-  const { data: billingStatus } = useSWR<{ hasActiveSubscription: boolean; reasoningRequiresSubscription: boolean }>(
-    '/api/billing/status',
-    fetcher,
-  );
+  const { data: billingStatus } = useSWR<{
+    hasActiveSubscription: boolean;
+    reasoningRequiresSubscription: boolean;
+  }>('/api/billing/status', fetcher);
 
   const requiresSub = billingStatus?.reasoningRequiresSubscription ?? true;
   const hasActive = billingStatus?.hasActiveSubscription ?? false;
@@ -102,7 +101,9 @@ export function ModelSelector({
                 <div className="flex flex-col gap-1 items-start">
                   <div>{chatModel.name}</div>
                   <div className="text-xs text-muted-foreground">
-                    {disabled ? 'Requires active subscription' : chatModel.description}
+                    {disabled
+                      ? 'Requires active subscription'
+                      : chatModel.description}
                   </div>
                 </div>
 

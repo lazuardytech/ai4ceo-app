@@ -34,7 +34,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               }}
               className="flex flex-row gap-3 items-center"
             >
-              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
+              <span className="text-lg font-semibold p-2 hover:bg-muted rounded-md cursor-pointer">
                 Chatbot
               </span>
             </Link>
@@ -63,7 +63,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           <Link
             href="/billing"
             onClick={() => setOpenMobile(false)}
-            className="flex items-center rounded-md px-2 py-2 text-sm hover:bg-muted"
+            className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
           >
             Billing
           </Link>
@@ -71,7 +71,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
             <Link
               href="/admin"
               onClick={() => setOpenMobile(false)}
-              className="flex items-center rounded-md px-2 py-2 text-sm hover:bg-muted"
+              className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
             >
               Admin
             </Link>

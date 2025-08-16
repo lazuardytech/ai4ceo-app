@@ -32,6 +32,8 @@ import {
   stream,
   subscription,
   type Subscription,
+  voucher,
+  voucherUsage,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -571,7 +573,10 @@ export async function updateUserRole({
       .returning();
     return u;
   } catch (error) {
-    throw new ChatSDKError('bad_request:database', 'Failed to update user role');
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update user role',
+    );
   }
 }
 
@@ -584,7 +589,10 @@ export async function listSubscriptions({ limit = 100 }: { limit?: number }) {
       .orderBy(desc(subscription.updatedAt))
       .limit(limit);
   } catch (error) {
-    throw new ChatSDKError('bad_request:database', 'Failed to list subscriptions');
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to list subscriptions',
+    );
   }
 }
 
@@ -598,9 +606,7 @@ export async function listUsersPaged({
   offset?: number;
 }) {
   try {
-    const where = q?.trim()
-      ? ilike(user.email, `%${q.trim()}%`)
-      : undefined;
+    const where = q?.trim() ? ilike(user.email, `%${q.trim()}%`) : undefined;
 
     const [{ count: total }] = await db
       .select({ count: count(user.id) })
@@ -647,9 +653,9 @@ export async function listSubscriptionsPaged({
 
     const where = q?.trim()
       ? or(
-        ilike(user.email, `%${q.trim()}%`),
-        ilike(subscription.planId, `%${q.trim()}%`),
-      )
+          ilike(user.email, `%${q.trim()}%`),
+          ilike(subscription.planId, `%${q.trim()}%`),
+        )
       : undefined;
 
     const [{ count: total }] = await db
@@ -673,6 +679,7 @@ export async function listSubscriptionsPaged({
   }
 }
 
+// TODO: Add token usage tracking when tokenUsage table is implemented
 export async function addTokenUsage({
   userId,
   chatId,
@@ -684,19 +691,8 @@ export async function addTokenUsage({
   inputTokens: number;
   outputTokens: number;
 }) {
-  try {
-    const totalTokens = inputTokens + outputTokens;
-    await db.insert(tokenUsage).values({
-      userId,
-      chatId,
-      inputTokens,
-      outputTokens,
-      totalTokens,
-      createdAt: new Date(),
-    });
-  } catch (error) {
-    throw new ChatSDKError('bad_request:database', 'Failed to add token usage');
-  }
+  // Placeholder - tokenUsage table not yet implemented
+  return;
 }
 
 export async function getTokenUsageByUserSince({
@@ -706,50 +702,8 @@ export async function getTokenUsageByUserSince({
   userId: string;
   since: Date;
 }) {
-  try {
-    const [{ sum }] = await db
-      .select({ sum: sql<number>`SUM(${tokenUsage.totalTokens})` })
-      .from(tokenUsage)
-      .where(and(eq(tokenUsage.userId, userId), gte(tokenUsage.createdAt, since)));
-    return Number(sum ?? 0);
-  } catch (error) {
-    throw new ChatSDKError('bad_request:database', 'Failed to get token usage');
-  }
-}
-
-export async function getTokenUsageSummary({
-  since,
-  limit = 50,
-  offset = 0,
-}: {
-  since: Date;
-  limit?: number;
-  offset?: number;
-}) {
-  try {
-    const rows = await db
-      .select({ userId: tokenUsage.userId, totalTokens: tokenUsage.totalTokens })
-      .from(tokenUsage)
-      .where(gte(tokenUsage.createdAt, since));
-
-    const map = new Map<string, number>();
-    for (const r of rows) {
-      const key = (r as any).userId as string;
-      const val = Number((r as any).totalTokens ?? 0);
-      map.set(key, (map.get(key) ?? 0) + val);
-    }
-
-    const aggregated = Array.from(map.entries()).map(([userId, total]) => ({
-      userId,
-      total,
-    }));
-
-    aggregated.sort((a, b) => b.total - a.total);
-    return aggregated.slice(offset, offset + limit);
-  } catch (error) {
-    // If the table does not exist yet or any query error occurs, return empty analytics
-    return [];
-  }
+  // Placeholder - tokenUsage table not yet implemented
+  return 0;
 }
 
 // Settings
@@ -773,7 +727,10 @@ export async function setSetting({ key, value }: { key: string; value: any }) {
     await db
       .insert(setting)
       .values({ key, value, updatedAt: now })
-      .onConflictDoUpdate({ target: setting.key, set: { value, updatedAt: now } });
+      .onConflictDoUpdate({
+        target: setting.key,
+        set: { value, updatedAt: now },
+      });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to set setting');
   }
@@ -823,7 +780,9 @@ export async function getActiveSubscriptionByUserId({
     const [sub] = await db
       .select()
       .from(subscription)
-      .where(and(eq(subscription.userId, userId), eq(subscription.status, 'active')))
+      .where(
+        and(eq(subscription.userId, userId), eq(subscription.status, 'active')),
+      )
       .orderBy(desc(subscription.updatedAt))
       .limit(1);
     return sub;
@@ -882,6 +841,356 @@ export async function updateSubscriptionStatus({
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to update subscription',
+    );
+  }
+}
+
+// Voucher management functions
+
+export async function createVoucher({
+  code,
+  type,
+  discountType,
+  discountValue,
+  planId,
+  duration,
+  maxUsages,
+  validFrom,
+  validUntil,
+}: {
+  code: string;
+  type: 'discount' | 'free_subscription';
+  discountType?: 'percentage' | 'fixed';
+  discountValue?: string;
+  planId?: string;
+  duration?: string;
+  maxUsages?: string;
+  validFrom: Date;
+  validUntil?: Date;
+}) {
+  try {
+    const now = new Date();
+    const [record] = await db
+      .insert(voucher)
+      .values({
+        code: code.toUpperCase(),
+        type,
+        discountType: discountType ?? null,
+        discountValue: discountValue ?? null,
+        planId: planId ?? null,
+        duration: duration ?? null,
+        maxUsages: maxUsages ?? null,
+        validFrom,
+        validUntil: validUntil ?? null,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+    return record;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to create voucher');
+  }
+}
+
+export async function getVoucherByCode({
+  code,
+}: {
+  code: string;
+}) {
+  try {
+    const [voucherRecord] = await db
+      .select()
+      .from(voucher)
+      .where(eq(voucher.code, code.toUpperCase()))
+      .limit(1);
+    return voucherRecord;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get voucher');
+  }
+}
+
+export async function validateVoucher({
+  code,
+  userId,
+}: {
+  code: string;
+  userId: string;
+}) {
+  try {
+    const voucherRecord = await getVoucherByCode({ code });
+
+    if (!voucherRecord) {
+      return { valid: false, reason: 'Voucher not found' };
+    }
+
+    if (!voucherRecord.isActive) {
+      return { valid: false, reason: 'Voucher is inactive' };
+    }
+
+    const now = new Date();
+    if (now < voucherRecord.validFrom) {
+      return { valid: false, reason: 'Voucher is not yet valid' };
+    }
+
+    if (voucherRecord.validUntil && now > voucherRecord.validUntil) {
+      return { valid: false, reason: 'Voucher has expired' };
+    }
+
+    if (voucherRecord.maxUsages) {
+      const maxUsages = Number.parseInt(voucherRecord.maxUsages);
+      const currentUsages = Number.parseInt(voucherRecord.currentUsages);
+      if (currentUsages >= maxUsages) {
+        return { valid: false, reason: 'Voucher usage limit reached' };
+      }
+    }
+
+    // Check if user has already used this voucher
+    const [existingUsage] = await db
+      .select()
+      .from(voucherUsage)
+      .where(
+        and(
+          eq(voucherUsage.voucherId, voucherRecord.id),
+          eq(voucherUsage.userId, userId),
+        ),
+      )
+      .limit(1);
+
+    if (existingUsage) {
+      return { valid: false, reason: 'Voucher already used by this user' };
+    }
+
+    return { valid: true, voucher: voucherRecord };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to validate voucher',
+    );
+  }
+}
+
+export async function applyVoucher({
+  voucherId,
+  userId,
+  subscriptionId,
+}: {
+  voucherId: string;
+  userId: string;
+  subscriptionId?: string;
+}) {
+  try {
+    const now = new Date();
+
+    // Record voucher usage
+    const [usage] = await db
+      .insert(voucherUsage)
+      .values({
+        voucherId,
+        userId,
+        subscriptionId: subscriptionId ?? null,
+        usedAt: now,
+        createdAt: now,
+      })
+      .returning();
+
+    // Update voucher usage count
+    await db
+      .update(voucher)
+      .set({
+        currentUsages: (
+          Number.parseInt(
+            (await getVoucherById({ id: voucherId }))?.currentUsages || '0',
+          ) + 1
+        ).toString(),
+        updatedAt: now,
+      })
+      .where(eq(voucher.id, voucherId));
+
+    return usage;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to apply voucher');
+  }
+}
+
+export async function getVoucherById({
+  id,
+}: {
+  id: string;
+}) {
+  try {
+    const [voucherRecord] = await db
+      .select()
+      .from(voucher)
+      .where(eq(voucher.id, id))
+      .limit(1);
+    return voucherRecord;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get voucher');
+  }
+}
+
+export async function listVouchersPaged({
+  q,
+  limit = 20,
+  offset = 0,
+  type,
+  isActive,
+}: {
+  q?: string | null;
+  limit?: number;
+  offset?: number;
+  type?: 'discount' | 'free_subscription' | null;
+  isActive?: boolean | null;
+}) {
+  try {
+    const conditions: any[] = [];
+    if (q?.trim()) {
+      conditions.push(
+        or(
+          ilike(voucher.code, `%${q.trim()}%`),
+          ilike(voucher.type, `%${q.trim()}%`),
+          ilike(voucher.planId, `%${q.trim()}%`),
+        ),
+      );
+    }
+    if (type) {
+      conditions.push(eq(voucher.type, type));
+    }
+    if (typeof isActive === 'boolean') {
+      conditions.push(eq(voucher.isActive, isActive));
+    }
+
+    const whereCond = conditions.length
+      ? (and(...conditions) as any)
+      : undefined;
+
+    const [items, [{ total }]] = await Promise.all([
+      db
+        .select()
+        .from(voucher)
+        .where(whereCond)
+        .orderBy(desc(voucher.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db.select({ total: count() }).from(voucher).where(whereCond),
+    ]);
+
+    return { items, total };
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to list vouchers');
+  }
+}
+
+export async function updateVoucher({
+  id,
+  isActive,
+  validUntil,
+  maxUsages,
+}: {
+  id: string;
+  isActive?: boolean;
+  validUntil?: Date | null;
+  maxUsages?: string;
+}) {
+  try {
+    const [updated] = await db
+      .update(voucher)
+      .set({
+        ...(isActive !== undefined && { isActive }),
+        ...(validUntil !== undefined && { validUntil }),
+        ...(maxUsages !== undefined && { maxUsages }),
+        updatedAt: new Date(),
+      })
+      .where(eq(voucher.id, id))
+      .returning();
+    return updated;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to update voucher');
+  }
+}
+
+export async function deleteVoucher({
+  id,
+}: {
+  id: string;
+}) {
+  try {
+    // First delete all usage records
+    await db.delete(voucherUsage).where(eq(voucherUsage.voucherId, id));
+
+    // Then delete the voucher
+    const [deleted] = await db
+      .delete(voucher)
+      .where(eq(voucher.id, id))
+      .returning();
+
+    return deleted;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to delete voucher');
+  }
+}
+
+export async function listUsersWithSubscriptionStatus({
+  q,
+  limit = 20,
+  offset = 0,
+}: {
+  q?: string | null;
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    // Left join to include all users, even those without subscriptions
+    const base = db
+      .select({
+        userId: user.id,
+        userEmail: user.email,
+        userRole: user.role,
+        subscriptionId: subscription.id,
+        planId: subscription.planId,
+        status: subscription.status,
+        currentPeriodEnd: subscription.currentPeriodEnd,
+        updatedAt: subscription.updatedAt,
+      })
+      .from(user)
+      .leftJoin(
+        subscription,
+        and(
+          eq(user.id, subscription.userId),
+          eq(subscription.status, 'active'),
+        ),
+      );
+
+    const where = q?.trim()
+      ? or(
+          ilike(user.email, `%${q.trim()}%`),
+          ilike(subscription.planId, `%${q.trim()}%`),
+        )
+      : undefined;
+
+    const [{ count: total }] = await db
+      .select({ count: count(user.id) })
+      .from(user)
+      .leftJoin(
+        subscription,
+        and(
+          eq(user.id, subscription.userId),
+          eq(subscription.status, 'active'),
+        ),
+      )
+      .where(where as any);
+
+    const items = await base
+      .where(where as any)
+      .orderBy(desc(user.email))
+      .limit(limit)
+      .offset(offset);
+
+    return { items, total };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to list users with subscription status',
     );
   }
 }

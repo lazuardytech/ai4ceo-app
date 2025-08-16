@@ -19,12 +19,11 @@ export function AdminNav({ items }: { items: AdminNavItem[] }) {
           <Link
             key={item.href}
             href={item.href}
-            className={
-              'block rounded-md px-3 py-2 text-sm ' +
-              (active
+            className={`block rounded-md px-3 py-2 text-sm ${
+              active
                 ? 'bg-primary text-primary-foreground'
-                : 'hover:bg-muted text-foreground')
-            }
+                : 'hover:bg-muted text-foreground'
+            }`}
           >
             {item.label}
           </Link>
@@ -33,4 +32,3 @@ export function AdminNav({ items }: { items: AdminNavItem[] }) {
     </nav>
   );
 }
-

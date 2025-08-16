@@ -7,8 +7,15 @@ import { generateUUID } from '@/lib/utils';
 export const runtime = 'nodejs';
 
 // Simple plan config. Extend as needed.
-const PLANS: Record<string, { amount: number; description: string; currency?: string }> = {
-  premium_monthly: { amount: 99000, description: 'Premium Monthly Subscription', currency: 'IDR' },
+const PLANS: Record<
+  string,
+  { amount: number; description: string; currency?: string }
+> = {
+  premium_monthly: {
+    amount: 99000,
+    description: 'Premium Monthly Subscription',
+    currency: 'IDR',
+  },
 };
 
 export async function POST(request: Request) {
@@ -24,7 +31,8 @@ export async function POST(request: Request) {
 
   const planId = body.planId || 'premium_monthly';
   const plan = PLANS[planId];
-  if (!plan) return new ChatSDKError('bad_request:api', 'Unknown plan').toResponse();
+  if (!plan)
+    return new ChatSDKError('bad_request:api', 'Unknown plan').toResponse();
 
   const externalId = `sub_${generateUUID()}`;
 
@@ -45,7 +53,10 @@ export async function POST(request: Request) {
   const secretKey = process.env.XENDIT_SECRET_KEY;
   const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
   if (!secretKey) {
-    return new ChatSDKError('bad_request:api', 'Xendit is not configured').toResponse();
+    return new ChatSDKError(
+      'bad_request:api',
+      'Xendit is not configured',
+    ).toResponse();
   }
 
   const callbackToken = process.env.XENDIT_CALLBACK_TOKEN || '';
@@ -70,7 +81,10 @@ export async function POST(request: Request) {
   });
 
   if (!res.ok) {
-    return new ChatSDKError('bad_request:api', 'Failed to create invoice').toResponse();
+    return new ChatSDKError(
+      'bad_request:api',
+      'Failed to create invoice',
+    ).toResponse();
   }
 
   const data = (await res.json()) as {
@@ -92,4 +106,3 @@ export async function POST(request: Request) {
     subscriptionId: subscription.id,
   });
 }
-

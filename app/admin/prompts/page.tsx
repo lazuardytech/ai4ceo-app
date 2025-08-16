@@ -4,7 +4,11 @@ import { getSettings } from '@/lib/db/queries';
 export default async function AdminPromptsPage() {
   const session = await auth();
   if (!session?.user || session.user.role !== 'superadmin') {
-    return <div className="p-6 text-sm text-red-500">Unauthorized: Superadmin only.</div>;
+    return (
+      <div className="p-6 text-sm text-red-500">
+        Unauthorized: Superadmin only.
+      </div>
+    );
   }
 
   const settings = await getSettings();
@@ -19,8 +23,17 @@ export default async function AdminPromptsPage() {
         <h2 className="font-medium">Regular Prompt</h2>
         <form method="post" action="/admin/api/settings" className="space-y-2">
           <input type="hidden" name="key" value="regularPromptOverride" />
-          <textarea name="value" defaultValue={regular} className="w-full h-48 border rounded px-2 py-1 text-sm font-mono" />
-          <button className="border rounded px-3 py-1 text-sm hover:bg-muted" type="submit">Save</button>
+          <textarea
+            name="value"
+            defaultValue={regular}
+            className="w-full h-48 border rounded px-2 py-1 text-sm font-mono"
+          />
+          <button
+            className="border rounded px-3 py-1 text-sm hover:bg-muted"
+            type="submit"
+          >
+            Save
+          </button>
         </form>
       </div>
 
@@ -28,11 +41,19 @@ export default async function AdminPromptsPage() {
         <h2 className="font-medium">Artifacts Prompt</h2>
         <form method="post" action="/admin/api/settings" className="space-y-2">
           <input type="hidden" name="key" value="artifactsPromptOverride" />
-          <textarea name="value" defaultValue={artifacts} className="w-full h-48 border rounded px-2 py-1 text-sm font-mono" />
-          <button className="border rounded px-3 py-1 text-sm hover:bg-muted" type="submit">Save</button>
+          <textarea
+            name="value"
+            defaultValue={artifacts}
+            className="w-full h-48 border rounded px-2 py-1 text-sm font-mono"
+          />
+          <button
+            className="border rounded px-3 py-1 text-sm hover:bg-muted"
+            type="submit"
+          >
+            Save
+          </button>
         </form>
       </div>
     </div>
   );
 }
-

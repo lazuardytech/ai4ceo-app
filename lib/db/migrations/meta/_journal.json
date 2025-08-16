@@ -71,6 +71,13 @@
       "when": 1755360067114,
       "tag": "0009_curious_zaladane",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1755363960287,
+      "tag": "0010_confused_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }

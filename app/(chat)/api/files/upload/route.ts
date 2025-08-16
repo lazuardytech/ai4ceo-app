@@ -60,7 +60,12 @@ export async function POST(request: Request) {
       R2_PUBLIC_BASE_URL,
     } = process.env as Record<string, string | undefined>;
 
-    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
+    if (
+      !R2_ACCOUNT_ID ||
+      !R2_ACCESS_KEY_ID ||
+      !R2_SECRET_ACCESS_KEY ||
+      !R2_BUCKET_NAME
+    ) {
       return NextResponse.json(
         { error: 'R2 is not configured. Missing environment variables.' },
         { status: 500 },
@@ -89,7 +94,8 @@ export async function POST(request: Request) {
       );
 
       const publicBase =
-        R2_PUBLIC_BASE_URL || `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`;
+        R2_PUBLIC_BASE_URL ||
+        `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`;
       const url = `${publicBase}/${key}`;
 
       return NextResponse.json({

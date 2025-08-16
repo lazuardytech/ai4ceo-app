@@ -7,7 +7,9 @@ export default async function AdminHomePage() {
   const session = await auth();
   if (!session?.user || session.user.role !== 'superadmin') {
     return (
-      <div className="p-6 text-sm text-red-500">Unauthorized: Superadmin only.</div>
+      <div className="p-6 text-sm text-red-500">
+        Unauthorized: Superadmin only.
+      </div>
     );
   }
 

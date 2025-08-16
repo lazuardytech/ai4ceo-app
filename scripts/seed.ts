@@ -25,13 +25,22 @@ async function main() {
   ];
 
   for (const s of seeding) {
-    const [existing] = await db.select().from(user).where(eq(user.email, s.email)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, s.email))
+      .limit(1);
     if (existing) {
-      await db.update(user).set({ role: s.role }).where(eq(user.id, existing.id));
+      await db
+        .update(user)
+        .set({ role: s.role })
+        .where(eq(user.id, existing.id));
       console.log(`Updated role for ${s.email} -> ${s.role}`);
     } else {
       const hashedPassword = generateHashedPassword(s.password);
-      await db.insert(user).values({ email: s.email, password: hashedPassword, role: s.role });
+      await db
+        .insert(user)
+        .values({ email: s.email, password: hashedPassword, role: s.role });
       console.log(`Created ${s.role} ${s.email}`);
     }
   }

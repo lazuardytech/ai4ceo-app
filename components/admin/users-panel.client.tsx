@@ -16,8 +16,15 @@ export function AdminUsersPanel() {
   const [limit, setLimit] = useState(20);
   const [offset, setOffset] = useState(0);
 
-  const key = useMemo(() => `/admin/api/users/list?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`, [q, limit, offset]);
-  const { data, isLoading, mutate } = useSWR<{ items: UserRow[]; total: number }>(key, fetcher);
+  const key = useMemo(
+    () =>
+      `/admin/api/users/list?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`,
+    [q, limit, offset],
+  );
+  const { data, isLoading, mutate } = useSWR<{
+    items: UserRow[];
+    total: number;
+  }>(key, fetcher);
 
   const total = data?.total ?? 0;
   const canPrev = offset > 0;
@@ -29,7 +36,10 @@ export function AdminUsersPanel() {
         const form = new FormData();
         form.append('userId', userId);
         form.append('role', role);
-        const res = await fetch('/admin/api/users/role', { method: 'POST', body: form });
+        const res = await fetch('/admin/api/users/role', {
+          method: 'POST',
+          body: form,
+        });
         if (!res.ok) throw new Error(await res.text());
         toast({ type: 'success', description: 'Role updated' });
         mutate();
@@ -67,7 +77,9 @@ export function AdminUsersPanel() {
           <option value={100}>100</option>
         </select>
         <div className="text-xs text-muted-foreground ml-auto">
-          {isLoading ? 'Loading…' : `${Math.min(offset + 1, total)}–${Math.min(offset + (data?.items.length || 0), total)} of ${total}`}
+          {isLoading
+            ? 'Loading…'
+            : `${Math.min(offset + 1, total)}–${Math.min(offset + (data?.items.length || 0), total)} of ${total}`}
         </div>
       </div>
 
@@ -83,7 +95,10 @@ export function AdminUsersPanel() {
           </thead>
           <tbody>
             {data?.items.map((u, i) => (
-              <tr key={u.id} className={"border-t "+(i%2?"bg-muted/20":"") }>
+              <tr
+                key={u.id}
+                className={`border-t ${i % 2 ? 'bg-muted/20' : ''}`}
+              >
                 <td className="p-2 align-top">{u.id}</td>
                 <td className="p-2 align-top">{u.email}</td>
                 <td className="p-2 align-top">{(u as any).role}</td>
@@ -108,6 +123,7 @@ export function AdminUsersPanel() {
 
       <div className="flex items-center gap-2 justify-end">
         <button
+          type="button"
           className="border rounded px-3 py-1 text-sm disabled:opacity-50"
           onClick={() => setOffset(Math.max(0, offset - limit))}
           disabled={!canPrev}
@@ -115,6 +131,7 @@ export function AdminUsersPanel() {
           Previous
         </button>
         <button
+          type="button"
           className="border rounded px-3 py-1 text-sm disabled:opacity-50"
           onClick={() => setOffset(offset + limit)}
           disabled={!canNext}
@@ -125,4 +142,3 @@ export function AdminUsersPanel() {
     </div>
   );
 }
-
