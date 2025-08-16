@@ -1,5 +1,6 @@
 import { auth } from '@/app/(auth)/auth';
 import { getSettings } from '@/lib/db/queries';
+import AdminModelsPanel from '@/components/admin/models-panel.client';
 
 export default async function AdminModelsPage() {
   const session = await auth();
@@ -16,6 +17,8 @@ export default async function AdminModelsPage() {
   const overrides = settings?.modelOverrides
     ? JSON.stringify(settings.modelOverrides, null, 2)
     : '';
+
+  // Client panel is imported directly; Server Component will render a Client boundary
 
   return (
     <div className="mx-auto max-w-3xl p-2 md:p-4 space-y-6">
@@ -47,31 +50,7 @@ export default async function AdminModelsPage() {
         </form>
       </div>
 
-      <div className="rounded-xl border p-4 space-y-3">
-        <h2 className="font-medium">Provider Overrides</h2>
-        <p className="text-sm text-muted-foreground">
-          Optional JSON mapping to override underlying provider model IDs.
-        </p>
-        <pre className="text-xs bg-muted/50 p-2 rounded">
-          {
-            '{\n  "chat-model": "provider/model-id",\n  "chat-model-reasoning": "provider/reasoning-id"\n}'
-          }
-        </pre>
-        <form method="post" action="/admin/api/settings" className="space-y-2">
-          <input type="hidden" name="key" value="modelOverrides" />
-          <textarea
-            name="value"
-            defaultValue={overrides}
-            className="w-full h-48 border rounded px-2 py-1 text-sm font-mono"
-          />
-          <button
-            className="border rounded px-3 py-1 text-sm hover:bg-muted"
-            type="submit"
-          >
-            Save
-          </button>
-        </form>
-      </div>
+      <AdminModelsPanel />
     </div>
   );
 }

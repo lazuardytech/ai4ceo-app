@@ -9,13 +9,9 @@ const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-import {
-  artifactModel,
-  chatModel,
-  reasoningModel,
-  titleModel,
-} from './models.test';
+import { artifactModel, chatModel, reasoningModel, titleModel } from './models.test';
 import { isTestEnvironment } from '../constants';
+import { getSettings } from '@/lib/db/queries';
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -30,12 +26,7 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        // 'chat-model': openrouter.chat('grok-2-vision-1212'),
-        // 'chat-model-reasoning': wrapLanguageModel({
-        //   model: openrouter.chat('grok-3-mini-beta'),
-        //   middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        // }),
-
+        // These are safe defaults; runtime code should prefer getLanguageModelForId or getDynamicLanguageModelForId
         'title-model': openrouter.chat('meta-llama/llama-3.2-3b-instruct:free'),
         'artifact-model': openrouter.chat('moonshotai/kimi-k2:free'),
         'chat-model': openrouter.chat('moonshotai/kimi-k2:free'),
@@ -45,16 +36,6 @@ export const myProvider = isTestEnvironment
           model: openrouter.chat('deepseek/deepseek-r1:free'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-
-        // 'title-model': groq('llama-3.1-8b-instant'),
-        // 'artifact-model': groq('llama-3.1-8b-instant'),
-        // 'block-model': groq('mixtral-8x7b-32768'),
-        // 'chat-model-small': groq('openai/gpt-oss-20b'),
-        // 'chat-model-large': groq('openai/gpt-oss-20b'),
-        // 'chat-model-reasoning': wrapLanguageModel({
-        //   model: groq('openai/gpt-oss-120b'),
-        //   middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        // }),
       },
       // imageModels: {
       //   'small-model': xai.imageModel('grok-2-image'),
@@ -72,14 +53,18 @@ export function getLanguageModelForId(
     return chatModel;
   }
 
+  // Default OpenRouter model mapping, used as fallback when overrides are missing
   const map: Record<string, string> = {
     'chat-model': 'moonshotai/kimi-k2:free',
+    'chat-model-small': 'moonshotai/kimi-k2:free',
+    'chat-model-large': 'moonshotai/kimi-k2:free',
     'chat-model-reasoning': 'deepseek/deepseek-r1:free',
     'title-model': 'meta-llama/llama-3.2-3b-instruct:free',
     'artifact-model': 'moonshotai/kimi-k2:free',
   };
 
-  const modelId = overrides?.[id] || map[id] || map['chat-model'];
+  const overrideId = overrides?.[id];
+  const modelId = (overrideId?.trim()) || map[id] || map['chat-model'];
 
   if (id === 'chat-model-reasoning') {
     return wrapLanguageModel({
@@ -89,4 +74,20 @@ export function getLanguageModelForId(
   }
 
   return openrouter.chat(modelId);
+}
+
+// Convenience helper that reads settings to resolve overrides dynamically at runtime.
+// Prefer this in server code when you don't already have settings handy.
+export async function getDynamicLanguageModelForId(id: string) {
+  if (isTestEnvironment) {
+    return getLanguageModelForId(id, null);
+  }
+  try {
+    const settings = await getSettings();
+    const overrides = (settings?.modelOverrides ?? null) as Record<string, string> | null;
+    return getLanguageModelForId(id, overrides);
+  } catch {
+    // Fallback to defaults if settings retrieval fails
+    return getLanguageModelForId(id, null);
+  }
 }

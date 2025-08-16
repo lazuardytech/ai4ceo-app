@@ -814,6 +814,27 @@ export async function getSubscriptionByExternalId({
   }
 }
 
+export async function getLatestSubscriptionByUserId({
+  userId,
+}: {
+  userId: string;
+}) {
+  try {
+    const [sub] = await db
+      .select()
+      .from(subscription)
+      .where(eq(subscription.userId, userId))
+      .orderBy(desc(subscription.createdAt))
+      .limit(1);
+    return sub;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get latest subscription',
+    );
+  }
+}
+
 export async function updateSubscriptionStatus({
   id,
   status,
@@ -834,6 +855,41 @@ export async function updateSubscriptionStatus({
         providerInvoiceId: providerInvoiceId ?? null,
         updatedAt: new Date(),
       })
+      .where(eq(subscription.id, id))
+      .returning();
+    return updated;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update subscription',
+    );
+  }
+}
+
+export async function updateSubscriptionAdmin({
+  id,
+  planId,
+  status,
+  currentPeriodEnd,
+  externalId,
+}: {
+  id: string;
+  planId?: string;
+  status?: Subscription['status'];
+  currentPeriodEnd?: Date | null;
+  externalId?: string | null;
+}) {
+  try {
+    const patch: any = { updatedAt: new Date() };
+    if (planId !== undefined) patch.planId = planId;
+    if (status !== undefined) patch.status = status;
+    if (currentPeriodEnd !== undefined)
+      patch.currentPeriodEnd = currentPeriodEnd;
+    if (externalId !== undefined) patch.externalId = externalId;
+
+    const [updated] = await db
+      .update(subscription)
+      .set(patch)
       .where(eq(subscription.id, id))
       .returning();
     return updated;

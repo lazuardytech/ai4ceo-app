@@ -64,9 +64,9 @@ export function AdminVouchersPanel() {
   const [filterType, setFilterType] = useState<
     'all' | 'discount' | 'free_subscription'
   >('all');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>(
-    'all',
-  );
+  const [filterStatus, setFilterStatus] = useState<
+    'all' | 'active' | 'inactive'
+  >('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<VoucherRow | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,15 +100,21 @@ export function AdminVouchersPanel() {
 
   // Server action form states
   const [createState, createAction] = useActionState(
-    createVoucherAction as unknown as (state: ActionState<'create'>) => Promise<ActionState<'create'>>,
+    createVoucherAction as unknown as (
+      state: ActionState<'create'>,
+    ) => Promise<ActionState<'create'>>,
     undefined as unknown as ActionState<'create'>,
   );
   const [updateState, updateAction] = useActionState(
-    updateVoucherAction as unknown as (state: ActionState<'update'>) => Promise<ActionState<'update'>>,
+    updateVoucherAction as unknown as (
+      state: ActionState<'update'>,
+    ) => Promise<ActionState<'update'>>,
     undefined as unknown as ActionState<'update'>,
   );
   const [deleteState, deleteAction] = useActionState(
-    deleteVoucherAction as unknown as (state: ActionState<'delete'>) => Promise<ActionState<'delete'>>,
+    deleteVoucherAction as unknown as (
+      state: ActionState<'delete'>,
+    ) => Promise<ActionState<'delete'>>,
     undefined as unknown as ActionState<'delete'>,
   );
 
