@@ -93,13 +93,27 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-            {message.role === 'assistant' && getAgentLabel() && (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border">
-                  {getAgentLabel()}
-                </span>
-              </div>
-            )}
+            {(() => {
+              const expert = getAgentLabel();
+              const wrapperStart = expert && message.role === 'assistant';
+              return (
+                <>
+                  {wrapperStart ? (
+                    <div className="rounded-xl border bg-muted/30 p-3 md:p-4">
+                      <div className="mb-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border">
+                          {expert}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-4">
+                        {/* Content below will render within expert block */}
+                        {null}
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              );
+            })()}
             {attachmentsFromMessage.length > 0 && (
               <div
                 data-testid={`message-attachments`}
@@ -134,7 +148,9 @@ const PurePreviewMessage = ({
 
               if (type === 'text') {
                 if (mode === 'view') {
-                  return (
+                  const expert = getAgentLabel();
+                  const isAssistant = message.role === 'assistant';
+                  const contentBlock = (
                     <div key={key} className="flex flex-row gap-2 items-start">
                       {message.role === 'user' && !isReadonly && (
                         <Tooltip>
@@ -165,6 +181,20 @@ const PurePreviewMessage = ({
                       </div>
                     </div>
                   );
+                  if (isAssistant && expert) {
+                    // Render inside the expert block container by duplicating within a bordered wrapper
+                    return (
+                      <div key={key} className="rounded-xl border bg-muted/30 p-3 md:p-4">
+                        <div className="mb-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border">
+                            {expert}
+                          </span>
+                        </div>
+                        {contentBlock}
+                      </div>
+                    );
+                  }
+                  return contentBlock;
                 }
 
                 if (mode === 'edit') {

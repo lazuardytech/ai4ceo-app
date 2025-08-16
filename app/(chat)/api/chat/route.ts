@@ -226,6 +226,36 @@ export async function POST(request: Request) {
       }
     }
 
+    // Prepare expert prompts synchronously to avoid awaiting inside stream execute
+    let expertRuns: Array<{
+      agent: { id: string; name: string; slug: string };
+      system: string;
+    }> = [];
+    if (selectedAgents.length > 0) {
+      // Compute once: userText for this turn
+      const userText = extractText(message.parts as any);
+      const baseForExperts = buildSystemPrompt({
+        selectedChatModel,
+        requestHints,
+        regularOverride: settings?.regularPromptOverride,
+        artifactsOverride: settings?.artifactsPromptOverride,
+      });
+      const list: typeof expertRuns = [];
+      for (const a of selectedAgents) {
+        const kb = await retrieveAgentContext({ agentId: a.id, query: userText, limit: 5 });
+        const agentFull = await getAgentById({ id: a.id });
+        if (!agentFull) continue;
+        const system = buildExpertSystemPrompt({
+          agent: agentFull,
+          baseSystem: baseForExperts,
+          context: kb,
+          previousAssistant: priorByAgent[a.id] ?? [],
+        });
+        list.push({ agent: a, system });
+      }
+      expertRuns = list;
+    }
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         // Helper to emit a friendly assistant error message into the stream
@@ -247,32 +277,11 @@ export async function POST(request: Request) {
         };
 
         // If experts are selected, run each expert sequentially, otherwise general response
-        if (agentIdsLocal && agentIdsLocal.length > 0) {
+        if (expertRuns.length > 0) {
           (async () => {
-            for (const agentId of agentIdsLocal) {
-              const agent = await getAgentById({ id: agentId });
-              if (!agent) continue;
-              let userText = '';
-              try {
-                userText = message.parts
-                  .filter((p: any) => p.type === 'text')
-                  .map((p: any) => p.text)
-                  .join('\n');
-              } catch {}
-
-              const kb = await retrieveAgentContext({ agentId, query: userText, limit: 5 });
-              const expertSystem = buildExpertSystemPrompt({
-                agent,
-                baseSystem: buildSystemPrompt({
-                  selectedChatModel,
-                  requestHints,
-                  regularOverride: settings?.regularPromptOverride,
-                  artifactsOverride: settings?.artifactsPromptOverride,
-                }),
-                context: kb,
-                previousAssistant: priorByAgent[agentId] ?? [],
-              });
-
+            for (const run of expertRuns) {
+              const agent = run.agent;
+              const expertSystem = run.system;
               const candidates = resolveModelCandidatesForId(
                 selectedChatModel,
                 (settings?.modelOverridesOpenRouter as any) ?? (settings?.modelOverrides as any) ?? null,
@@ -304,8 +313,18 @@ export async function POST(request: Request) {
                       functionId: `stream-text-${agent.slug}-${c.provider}`,
                     },
                   });
-                  result.consumeStream();
-                  dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
+                  const ui = result.toUIMessageStream({
+                    sendReasoning: true,
+                    messageMetadata: () => ({
+                      createdAt: new Date().toISOString(),
+                      agentId: agent.id,
+                      agentName: agent.name,
+                      agentSlug: agent.slug,
+                    }),
+                  });
+                  dataStream.merge(ui);
+                  // Wait until this expert finishes before starting next
+                  await result.consumeStream({ onError: (e: any) => console.error(e) });
                   streamed = true;
                   break;
                 } catch (err: any) {
