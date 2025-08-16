@@ -34,6 +34,8 @@ import {
   type Subscription,
   voucher,
   voucherUsage,
+  agent,
+  agentKnowledge,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -733,6 +735,336 @@ export async function setSetting({ key, value }: { key: string; value: any }) {
       });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to set setting');
+  }
+}
+
+// Agents (Experts)
+export async function listAgents({
+  q,
+  isActive,
+  limit = 100,
+  offset = 0,
+}: {
+  q?: string | null;
+  isActive?: boolean | null;
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    const conditions: any[] = [];
+    if (q?.trim()) {
+      conditions.push(
+        or(
+          ilike(agent.name, `%${q.trim()}%`),
+          ilike(agent.slug, `%${q.trim()}%`),
+          ilike(agent.description, `%${q.trim()}%`),
+        ),
+      );
+    }
+    if (typeof isActive === 'boolean') conditions.push(eq(agent.isActive, isActive));
+    const whereCond = conditions.length ? (and(...conditions) as any) : undefined;
+    const [items, [{ total }]] = await Promise.all([
+      db
+        .select()
+        .from(agent)
+        .where(whereCond)
+        .orderBy(desc(agent.updatedAt))
+        .limit(limit)
+        .offset(offset),
+      db.select({ total: count() }).from(agent).where(whereCond),
+    ]);
+    return { items, total };
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to list agents');
+  }
+}
+
+export async function getAgentById({ id }: { id: string }) {
+  try {
+    const [row] = await db.select().from(agent).where(eq(agent.id, id)).limit(1);
+    return row;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get agent');
+  }
+}
+
+export async function createAgent({
+  slug,
+  name,
+  description,
+  prePrompt,
+  personality,
+  isActive = true,
+  ragEnabled = true,
+}: {
+  slug: string;
+  name: string;
+  description?: string | null;
+  prePrompt: string;
+  personality: string;
+  isActive?: boolean;
+  ragEnabled?: boolean;
+}) {
+  try {
+    const now = new Date();
+    const [row] = await db
+      .insert(agent)
+      .values({
+        slug,
+        name,
+        description: description ?? null,
+        prePrompt,
+        personality,
+        isActive,
+        ragEnabled,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+    return row;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to create agent');
+  }
+}
+
+export async function updateAgent({
+  id,
+  name,
+  description,
+  prePrompt,
+  personality,
+  isActive,
+  ragEnabled,
+}: {
+  id: string;
+  name?: string;
+  description?: string | null;
+  prePrompt?: string;
+  personality?: string;
+  isActive?: boolean;
+  ragEnabled?: boolean;
+}) {
+  try {
+    const [row] = await db
+      .update(agent)
+      .set({
+        name: name as any,
+        description: (description as any) ?? undefined,
+        prePrompt: prePrompt as any,
+        personality: personality as any,
+        isActive: isActive as any,
+        ragEnabled: ragEnabled as any,
+        updatedAt: new Date(),
+      })
+      .where(eq(agent.id, id))
+      .returning();
+    return row;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to update agent');
+  }
+}
+
+export async function deleteAgent({ id }: { id: string }) {
+  try {
+    await db.delete(agentKnowledge).where(eq(agentKnowledge.agentId, id));
+    const [row] = await db.delete(agent).where(eq(agent.id, id)).returning();
+    return row;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to delete agent');
+  }
+}
+
+export async function listAgentKnowledge({
+  agentId,
+  q,
+  limit = 100,
+  offset = 0,
+}: {
+  agentId: string;
+  q?: string | null;
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    const conditions: any[] = [eq(agentKnowledge.agentId, agentId)];
+    if (q?.trim()) {
+      conditions.push(
+        or(
+          ilike(agentKnowledge.title, `%${q.trim()}%`),
+          ilike(agentKnowledge.content, `%${q.trim()}%`),
+          ilike(agentKnowledge.tags, `%${q.trim()}%`),
+        ),
+      );
+    }
+    const whereCond = and(...conditions) as any;
+    const [items, [{ total }]] = await Promise.all([
+      db
+        .select()
+        .from(agentKnowledge)
+        .where(whereCond)
+        .orderBy(desc(agentKnowledge.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db.select({ total: count() }).from(agentKnowledge).where(whereCond),
+    ]);
+    return { items, total };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to list agent knowledge',
+    );
+  }
+}
+
+export async function addAgentKnowledge({
+  agentId,
+  title,
+  content,
+  tags,
+}: {
+  agentId: string;
+  title: string;
+  content: string;
+  tags?: string | null;
+}) {
+  try {
+    const [row] = await db
+      .insert(agentKnowledge)
+      .values({ agentId, title, content, tags: tags ?? null })
+      .returning();
+    return row;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to add knowledge');
+  }
+}
+
+export async function deleteAgentKnowledge({ id }: { id: string }) {
+  try {
+    const [row] = await db
+      .delete(agentKnowledge)
+      .where(eq(agentKnowledge.id, id))
+      .returning();
+    return row;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to delete knowledge');
+  }
+}
+
+export async function getActiveAgents() {
+  try {
+    return await db
+      .select()
+      .from(agent)
+      .where(eq(agent.isActive, true))
+      .orderBy(asc(agent.slug));
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get agents');
+  }
+}
+
+export async function seedDefaultAgentsIfEmpty() {
+  const existing = await getActiveAgents();
+  if (existing && existing.length > 0) return existing;
+  const defaults = [
+    {
+      slug: 'tech',
+      name: 'Tech Expert',
+      description: 'Software, architecture, scalability, devops, product engineering.',
+      prePrompt:
+        'You are a pragmatic senior technology advisor. Provide clear, actionable guidance with pros/cons and trade-offs. Use concise bullet points and small code snippets when helpful.',
+      personality:
+        'Direct, calm, and practical. Values clarity, safety, and maintainability.',
+    },
+    {
+      slug: 'law',
+      name: 'Law Expert',
+      description: 'Contracts, compliance, privacy, IP, risk flags (not legal advice).',
+      prePrompt:
+        'You are a legal domain expert. Identify risks, compliance requirements, and contractual considerations. Always include a disclaimer that this is not legal advice.',
+      personality:
+        'Cautious, methodical, structured. Highlights risk and mitigation.',
+    },
+    {
+      slug: 'tax',
+      name: 'Tax Expert',
+      description: 'Tax implications, jurisdictions, reporting, optimization (not tax advice).',
+      prePrompt:
+        'You are a tax specialist. Outline tax treatments, thresholds, and reporting obligations across typical jurisdictions. Offer scenarios and assumptions. Add a not tax advice disclaimer.',
+      personality:
+        'Precise, conservative, assumption-driven. Emphasizes compliance.',
+    },
+    {
+      slug: 'hr',
+      name: 'Human Resource Expert',
+      description: 'Hiring, org design, performance, compensation, policies.',
+      prePrompt:
+        'You are an HR strategist. Provide practical frameworks, policy considerations, and communication tips. Tailor advice to company size and stage.',
+      personality:
+        'Empathetic, structured, outcome-oriented. Balances people and process.',
+    },
+    {
+      slug: 'design',
+      name: 'Designer Expert',
+      description: 'UX/UI, visual design, IA, usability, accessibility.',
+      prePrompt:
+        'You are a product design expert. Offer user-centered recommendations, quick wireframe ideas, and usability heuristics. Reference accessibility when relevant.',
+      personality:
+        'Curious, user-first, iterative. Prefers simplicity and clarity.',
+    },
+  ];
+  for (const d of defaults) {
+    await createAgent({
+      slug: d.slug,
+      name: d.name,
+      description: d.description,
+      prePrompt: d.prePrompt,
+      personality: d.personality,
+      isActive: true,
+      ragEnabled: true,
+    });
+  }
+  return getActiveAgents();
+}
+
+export async function retrieveAgentContext({
+  agentId,
+  query,
+  limit = 5,
+}: {
+  agentId: string;
+  query: string;
+  limit?: number;
+}) {
+  try {
+    const terms = query
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((t) => t.length > 2)
+      .slice(0, 5);
+    const where = terms.length
+      ? and(
+          eq(agentKnowledge.agentId, agentId),
+          or(
+            ...terms.map((t) =>
+              or(
+                ilike(agentKnowledge.title, `%${t}%`),
+                ilike(agentKnowledge.content, `%${t}%`),
+                ilike(agentKnowledge.tags, `%${t}%`),
+              ),
+            ),
+          ),
+        )
+      : (eq(agentKnowledge.agentId, agentId) as any);
+
+    return await db
+      .select()
+      .from(agentKnowledge)
+      .where(where as any)
+      .orderBy(desc(agentKnowledge.createdAt))
+      .limit(limit);
+  } catch (error) {
+    // soft-fail: no context
+    return [];
   }
 }
 

@@ -31,6 +31,7 @@ export function Chat({
   isReadonly,
   session,
   autoResume,
+  initialSelectedAgentIds = [],
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -39,6 +40,7 @@ export function Chat({
   isReadonly: boolean;
   session: Session;
   autoResume: boolean;
+  initialSelectedAgentIds?: string[];
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -49,6 +51,7 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
+  const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>(initialSelectedAgentIds);
 
   const {
     messages,
@@ -73,6 +76,7 @@ export function Chat({
             message: messages.at(-1),
             selectedChatModel: initialChatModel,
             selectedVisibilityType: visibilityType,
+            selectedAgentIds,
             ...body,
           },
         };
@@ -135,6 +139,8 @@ export function Chat({
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}
+          selectedAgentIds={selectedAgentIds}
+          onChangeSelectedAgentIds={setSelectedAgentIds}
         />
 
         <Messages

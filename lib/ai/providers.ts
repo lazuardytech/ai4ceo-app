@@ -9,7 +9,12 @@ const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-import { artifactModel, chatModel, reasoningModel, titleModel } from './models.test';
+import {
+  artifactModel,
+  chatModel,
+  reasoningModel,
+  titleModel,
+} from './models.test';
 import { isTestEnvironment } from '../constants';
 import { getSettings } from '@/lib/db/queries';
 
@@ -64,7 +69,7 @@ export function getLanguageModelForId(
   };
 
   const overrideId = overrides?.[id];
-  const modelId = (overrideId?.trim()) || map[id] || map['chat-model'];
+  const modelId = overrideId?.trim() || map[id] || map['chat-model'];
 
   if (id === 'chat-model-reasoning') {
     return wrapLanguageModel({
@@ -84,7 +89,10 @@ export async function getDynamicLanguageModelForId(id: string) {
   }
   try {
     const settings = await getSettings();
-    const overrides = (settings?.modelOverrides ?? null) as Record<string, string> | null;
+    const overrides = (settings?.modelOverrides ?? null) as Record<
+      string,
+      string
+    > | null;
     return getLanguageModelForId(id, overrides);
   } catch {
     // Fallback to defaults if settings retrieval fails

@@ -39,6 +39,8 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
+import { buildExpertSystemPrompt } from '@/lib/ai/experts';
+import { getAgentById, retrieveAgentContext } from '@/lib/db/queries';
 
 export const maxDuration = 60;
 
@@ -85,6 +87,7 @@ export async function POST(request: Request) {
       message: ChatMessage;
       selectedChatModel: ChatModel['id'];
       selectedVisibilityType: VisibilityType;
+      selectedAgentIds?: string[];
     } = requestBody;
 
     const session = await auth();
@@ -166,6 +169,70 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        // If experts are selected, run each expert sequentially, otherwise general response
+        if (requestBody.selectedAgentIds && requestBody.selectedAgentIds.length > 0) {
+          (async () => {
+            for (const agentId of requestBody.selectedAgentIds!) {
+              const agent = await getAgentById({ id: agentId });
+              if (!agent) continue;
+              let userText = '';
+              try {
+                userText = message.parts
+                  .filter((p: any) => p.type === 'text')
+                  .map((p: any) => p.text)
+                  .join('\n');
+              } catch {}
+
+              const kb = await retrieveAgentContext({ agentId, query: userText, limit: 5 });
+              const expertSystem = buildExpertSystemPrompt({
+                agent,
+                baseSystem: buildSystemPrompt({
+                  selectedChatModel,
+                  requestHints,
+                  regularOverride: settings?.regularPromptOverride,
+                  artifactsOverride: settings?.artifactsPromptOverride,
+                }),
+                context: kb,
+              });
+
+              const result = streamText({
+                model: getLanguageModelForId(
+                  selectedChatModel,
+                  settings?.modelOverrides,
+                ),
+                system: expertSystem,
+                messages: convertToModelMessages([message]),
+                stopWhen: stepCountIs(5),
+                experimental_activeTools:
+                  selectedChatModel === 'chat-model-reasoning' ? [] : [
+                    'getWeather',
+                    'createDocument',
+                    'updateDocument',
+                    'requestSuggestions',
+                  ],
+                experimental_transform: smoothStream({ chunking: 'word' }),
+                tools: {
+                  getWeather,
+                  createDocument: createDocument({ session, dataStream }),
+                  updateDocument: updateDocument({ session, dataStream }),
+                  requestSuggestions: requestSuggestions({ session, dataStream }),
+                },
+                experimental_telemetry: {
+                  isEnabled: isProductionEnvironment,
+                  functionId: `stream-text-${agent.slug}`,
+                },
+              });
+              result.consumeStream();
+              dataStream.merge(
+                result.toUIMessageStream({
+                  sendReasoning: true,
+                }),
+              );
+            }
+          })();
+          return;
+        }
+
         const result = streamText({
           model: getLanguageModelForId(
             selectedChatModel,

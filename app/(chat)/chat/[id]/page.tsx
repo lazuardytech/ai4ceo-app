@@ -41,6 +41,13 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model-small');
+  const expertCookie = cookieStore.get('selected-experts');
+  let initialSelectedAgentIds: string[] = [];
+  try {
+    initialSelectedAgentIds = expertCookie?.value ? JSON.parse(expertCookie.value) : [];
+  } catch {
+    initialSelectedAgentIds = [];
+  }
 
   if (!chatModelFromCookie) {
     return (
@@ -53,6 +60,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           isReadonly={session?.user?.id !== chat.userId}
           session={session}
           autoResume={true}
+          initialSelectedAgentIds={initialSelectedAgentIds}
         />
         <DataStreamHandler />
       </>
@@ -69,6 +77,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         isReadonly={session?.user?.id !== chat.userId}
         session={session}
         autoResume={true}
+        initialSelectedAgentIds={initialSelectedAgentIds}
       />
       <DataStreamHandler />
     </>

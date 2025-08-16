@@ -54,14 +54,22 @@ export default function AdminModelsPanel() {
     '/admin/api/models/openrouter',
     fetcher,
   );
-  const { data: settings } = useSWR<Record<string, any>>('/admin/api/settings', fetcher);
+  const { data: settings } = useSWR<Record<string, any>>(
+    '/admin/api/settings',
+    fetcher,
+  );
 
   const [overrides, setOverrides] = useState<Record<string, string>>({});
-  const models = useMemo(() => openRouterList?.models ?? ([] as OpenRouterModel[]), [openRouterList?.models]);
+  const models = useMemo(
+    () => openRouterList?.models ?? ([] as OpenRouterModel[]),
+    [openRouterList?.models],
+  );
 
   // Update overrides from settings only when the value actually changes
   const overridesFromSettings = useMemo(
-    () => (settings?.modelOverrides as Record<string, string> | undefined) ?? undefined,
+    () =>
+      (settings?.modelOverrides as Record<string, string> | undefined) ??
+      undefined,
     [settings?.modelOverrides],
   );
   useEffect(() => {
@@ -121,13 +129,16 @@ export default function AdminModelsPanel() {
             <Label className="text-right">{friendlyName(id)}</Label>
             <Select
               value={
-                overrides[id] && modelOptions.some((o) => o.value === overrides[id])
+                overrides[id] &&
+                modelOptions.some((o) => o.value === overrides[id])
                   ? overrides[id]
                   : modelOptions.some((o) => o.value === DEFAULT_MODEL_MAP[id])
                     ? DEFAULT_MODEL_MAP[id]
                     : ''
               }
-              onValueChange={(v) => setOverrides((prev) => ({ ...prev, [id]: v }))}
+              onValueChange={(v) =>
+                setOverrides((prev) => ({ ...prev, [id]: v }))
+              }
             >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select OpenRouter model" />

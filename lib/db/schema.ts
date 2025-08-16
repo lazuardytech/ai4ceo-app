@@ -172,6 +172,41 @@ export const stream = pgTable(
 
 export type Stream = InferSelectModel<typeof stream>;
 
+// Experts / Agents
+export const agent = pgTable('Agent', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  slug: varchar('slug', { length: 64 }).notNull(),
+  name: varchar('name', { length: 64 }).notNull(),
+  description: text('description'),
+  prePrompt: text('prePrompt').notNull(),
+  personality: text('personality').notNull(),
+  isActive: boolean('isActive').notNull().default(true),
+  ragEnabled: boolean('ragEnabled').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Agent = InferSelectModel<typeof agent>;
+
+export const agentKnowledge = pgTable(
+  'AgentKnowledge',
+  {
+    id: uuid('id').notNull().defaultRandom(),
+    agentId: uuid('agentId')
+      .notNull()
+      .references(() => agent.id),
+    title: varchar('title', { length: 128 }).notNull(),
+    content: text('content').notNull(),
+    tags: text('tags'), // optional comma-separated tags
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.id] }),
+  }),
+);
+
+export type AgentKnowledge = InferSelectModel<typeof agentKnowledge>;
+
 export const subscription = pgTable('Subscription', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   userId: uuid('userId')
