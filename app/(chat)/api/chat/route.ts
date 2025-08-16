@@ -36,6 +36,7 @@ import { after } from 'next/server';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
+import { getActiveSubscriptionByUserId } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
 
 export const maxDuration = 60;
@@ -118,6 +119,14 @@ export async function POST(request: Request) {
     } else {
       if (chat.userId !== session.user.id) {
         return new ChatSDKError('forbidden:chat').toResponse();
+      }
+    }
+
+    // Gate premium-only model (reasoning) by active subscription
+    if (selectedChatModel === 'chat-model-reasoning') {
+      const active = await getActiveSubscriptionByUserId({ userId: session.user.id });
+      if (!active) {
+        return new ChatSDKError('forbidden:auth').toResponse();
       }
     }
 

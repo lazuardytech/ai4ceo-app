@@ -27,6 +27,8 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  subscription,
+  type Subscription,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -533,6 +535,113 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+// Subscriptions
+export async function createSubscription({
+  userId,
+  planId,
+  externalId,
+  providerInvoiceId,
+}: {
+  userId: string;
+  planId: string;
+  externalId?: string | null;
+  providerInvoiceId?: string | null;
+}) {
+  try {
+    const now = new Date();
+    const [record] = await db
+      .insert(subscription)
+      .values({
+        userId,
+        planId,
+        status: 'pending',
+        externalId: externalId ?? null,
+        providerInvoiceId: providerInvoiceId ?? null,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+    return record;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to create subscription',
+    );
+  }
+}
+
+export async function getActiveSubscriptionByUserId({
+  userId,
+}: {
+  userId: string;
+}) {
+  try {
+    const [sub] = await db
+      .select()
+      .from(subscription)
+      .where(and(eq(subscription.userId, userId), eq(subscription.status, 'active')))
+      .orderBy(desc(subscription.updatedAt))
+      .limit(1);
+    return sub;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get active subscription',
+    );
+  }
+}
+
+export async function getSubscriptionByExternalId({
+  externalId,
+}: {
+  externalId: string;
+}) {
+  try {
+    const [sub] = await db
+      .select()
+      .from(subscription)
+      .where(eq(subscription.externalId, externalId))
+      .limit(1);
+    return sub;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get subscription',
+    );
+  }
+}
+
+export async function updateSubscriptionStatus({
+  id,
+  status,
+  currentPeriodEnd,
+  providerInvoiceId,
+}: {
+  id: string;
+  status: Subscription['status'];
+  currentPeriodEnd?: Date | null;
+  providerInvoiceId?: string | null;
+}) {
+  try {
+    const [updated] = await db
+      .update(subscription)
+      .set({
+        status,
+        currentPeriodEnd: currentPeriodEnd ?? null,
+        providerInvoiceId: providerInvoiceId ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(subscription.id, id))
+      .returning();
+    return updated;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update subscription',
     );
   }
 }

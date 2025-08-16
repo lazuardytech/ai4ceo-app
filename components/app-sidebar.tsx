@@ -59,6 +59,15 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarMenu>
+          <Link
+            href="/billing"
+            onClick={() => setOpenMobile(false)}
+            className="flex items-center rounded-md px-2 py-2 text-sm hover:bg-muted"
+          >
+            Billing
+          </Link>
+        </SidebarMenu>
         <SidebarHistory user={user} />
       </SidebarContent>
       <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
