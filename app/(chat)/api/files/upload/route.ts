@@ -1,8 +1,9 @@
-import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 import { auth } from '@/app/(auth)/auth';
+import { generateUUID } from '@/lib/utils';
 
 // Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
@@ -48,14 +49,54 @@ export async function POST(request: Request) {
 
     // Get filename from formData since Blob doesn't have name property
     const filename = (formData.get('file') as File).name;
-    const fileBuffer = await file.arrayBuffer();
+    const arrayBuffer = await file.arrayBuffer();
+    const body = Buffer.from(arrayBuffer);
+
+    const {
+      R2_ACCOUNT_ID,
+      R2_ACCESS_KEY_ID,
+      R2_SECRET_ACCESS_KEY,
+      R2_BUCKET_NAME,
+      R2_PUBLIC_BASE_URL,
+    } = process.env as Record<string, string | undefined>;
+
+    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
+      return NextResponse.json(
+        { error: 'R2 is not configured. Missing environment variables.' },
+        { status: 500 },
+      );
+    }
+
+    const client = new S3Client({
+      region: 'auto',
+      endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: R2_ACCESS_KEY_ID,
+        secretAccessKey: R2_SECRET_ACCESS_KEY,
+      },
+    });
+
+    const key = `uploads/${Date.now()}-${generateUUID()}-${filename}`;
 
     try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: 'public',
-      });
+      await client.send(
+        new PutObjectCommand({
+          Bucket: R2_BUCKET_NAME,
+          Key: key,
+          Body: body,
+          ContentType: (file as any).type || 'application/octet-stream',
+        }),
+      );
 
-      return NextResponse.json(data);
+      const publicBase =
+        R2_PUBLIC_BASE_URL || `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`;
+      const url = `${publicBase}/${key}`;
+
+      return NextResponse.json({
+        url,
+        pathname: key,
+        contentType: (file as any).type,
+      });
     } catch (error) {
       return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }

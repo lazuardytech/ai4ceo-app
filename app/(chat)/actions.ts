@@ -12,7 +12,7 @@ import { myProvider } from '@/lib/ai/providers';
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
-  cookieStore.set('chat-model', model);
+  cookieStore.set('chat-model-small', model);
 }
 
 export async function generateTitleFromUserMessage({
