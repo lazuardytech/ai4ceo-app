@@ -44,8 +44,14 @@ export default function Page() {
       toast({ type: 'success', description: 'Account created successfully!' });
 
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      // Hard replace to onboarding to avoid client-side flicker
+      updateSession().finally(() => {
+        if (typeof window !== 'undefined') {
+          window.location.replace('/onboarding');
+        } else {
+          router.replace('/onboarding');
+        }
+      });
     }
   }, [state, router, updateSession]);
 

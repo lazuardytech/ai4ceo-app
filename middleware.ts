@@ -13,7 +13,13 @@ export async function middleware(request: NextRequest) {
     return new Response('pong', { status: 200 });
   }
 
-  if (pathname.startsWith('/api/auth')) {
+  // Publicly allowed routes for auth flow and billing
+  const allowAuth = pathname.startsWith('/api/auth');
+  const allowLoginRegister = pathname === '/login' || pathname === '/register';
+  const allowOnboarding = pathname.startsWith('/onboarding');
+  const allowBilling = pathname.startsWith('/billing') || pathname.startsWith('/api/billing');
+  const allowStatic = pathname.startsWith('/_next') || pathname.startsWith('/public');
+  if (allowAuth || allowStatic) {
     return NextResponse.next();
   }
 
@@ -26,29 +32,66 @@ export async function middleware(request: NextRequest) {
   // Admin route protection: allow only superadmin
   if (pathname.startsWith('/admin')) {
     if (!token) {
-      const redirectUrl = encodeURIComponent(request.url);
-      return NextResponse.redirect(
-        new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
-      );
+      return NextResponse.redirect(new URL('/login', request.url));
     }
     // @ts-ignore role injected into JWT in auth
     if (token.role !== 'superadmin') {
       return new NextResponse('Forbidden', { status: 403 });
     }
+    return NextResponse.next();
   }
 
+  // Require authentication for everything except login/register and auth assets
   if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
-
-    return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
-    );
+    if (allowLoginRegister) {
+      return NextResponse.next();
+    }
+    // unauthenticated -> login
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   const isGuest = guestRegex.test(token?.email ?? '');
 
+  // Prevent logged-in users from accessing login/register
   if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
     return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Guests are forced to register
+  if (isGuest) {
+    if (!allowLoginRegister) {
+      return NextResponse.redirect(new URL('/register', request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // If user hasn't completed onboarding (missing name in JWT), send to onboarding
+  // token.name is set in auth callbacks from DB user.name
+  const missingName = !((token as any).name && String((token as any).name).trim().length > 0);
+  if (missingName && !allowOnboarding) {
+    return NextResponse.redirect(new URL('/onboarding', request.url));
+  }
+
+  // Require active subscription for general app usage; allow billing and onboarding pages explicitly
+  const isGeneralAppPage = !allowBilling && !allowOnboarding && !allowLoginRegister;
+  if (isGeneralAppPage) {
+    try {
+      const url = new URL('/api/billing/status', request.url);
+      const res = await fetch(url, {
+        headers: { cookie: request.headers.get('cookie') || '' },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (!data?.hasActiveSubscription) {
+          return NextResponse.redirect(new URL('/billing', request.url));
+        }
+      } else {
+        // If status endpoint fails, be conservative and redirect to billing
+        return NextResponse.redirect(new URL('/billing', request.url));
+      }
+    } catch {
+      return NextResponse.redirect(new URL('/billing', request.url));
+    }
   }
 
   return NextResponse.next();
@@ -61,6 +104,8 @@ export const config = {
     '/api/:path*',
     '/login',
     '/register',
+    '/onboarding',
+    '/billing',
 
     /*
      * Match all request paths except for the ones starting with:
@@ -69,5 +114,6 @@ export const config = {
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      */
     '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    '/images'
   ],
 };

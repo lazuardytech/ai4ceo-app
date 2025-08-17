@@ -59,7 +59,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu>
+        <SidebarMenu className='p-2'>
           <Link
             href="/profile"
             onClick={() => setOpenMobile(false)}

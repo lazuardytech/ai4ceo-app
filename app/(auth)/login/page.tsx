@@ -39,8 +39,15 @@ export default function Page() {
       });
     } else if (state.status === 'success') {
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      // Ensure cookies/session are established, then hard navigate.
+      // Using full replace avoids client-side flicker against middleware.
+      updateSession().finally(() => {
+        if (typeof window !== 'undefined') {
+          window.location.replace('/');
+        } else {
+          router.replace('/');
+        }
+      });
     }
   }, [state.status, router, updateSession]);
 
