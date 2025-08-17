@@ -72,7 +72,7 @@ export default async function BillingPage() {
               <Badge variant="outline">Free plan</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              You're on the free plan. Upgrade to Premium for higher limits, priority support, and advanced features.
+              You&apos;re on the free plan. Upgrade to Premium for higher limits, priority support, and advanced features.
             </p>
           </div>
         )}
@@ -101,7 +101,7 @@ export default async function BillingPage() {
       {/* Support Information */}
       <div className="text-sm text-muted-foreground space-y-2">
         <p>
-          After payment, you'll be redirected to a confirmation page.
+          After payment, you`&apos;`ll be redirected to a confirmation page.
           You can revisit this page anytime to see your updated subscription
           status.
         </p>
