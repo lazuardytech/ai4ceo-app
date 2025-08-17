@@ -53,14 +53,14 @@ export function SidebarUserNav({ user }: { user: User }) {
                 className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10"
               >
                 <Image
-                  src={`https://avatar.vercel.sh/${user.email}`}
-                  alt={user.email ?? 'User Avatar'}
+                  src={(data?.user?.image as string) || (user as any).image || `https://avatar.vercel.sh/${user.email}`}
+                  alt={(data?.user?.name as string) ?? (user as any).name ?? (user?.email ?? 'User Avatar')}
                   width={24}
                   height={24}
                   className="rounded-full"
                 />
                 <span data-testid="user-email" className="truncate">
-                  {isGuest ? 'Guest' : user?.email}
+                  {isGuest ? 'Guest' : (data?.user?.name ?? user?.name ?? user?.email)}
                 </span>
                 <ChevronUp className="ml-auto" />
               </SidebarMenuButton>

@@ -25,9 +25,9 @@ export default async function BillingPage() {
   return (
     <div className="mx-auto max-w-2xl p-6 space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">Subscription Management</h1>
+        <h1 className="text-xl font-semibold">Your Subscription</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your plan, billing, and voucher codes.
+          Manage your plan, billing, and vouchers.
         </p>
       </div>
 
@@ -69,11 +69,10 @@ export default async function BillingPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-sm">Status:</span>
-              <Badge variant="outline">Free User</Badge>
+              <Badge variant="outline">Free plan</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              You&apos;re currently using the free tier. Upgrade to premium for
-              additional features.
+              You're on the free plan. Upgrade to Premium for higher limits, priority support, and advanced features.
             </p>
           </div>
         )}
@@ -86,12 +85,12 @@ export default async function BillingPage() {
       {!active && (
         <div className="rounded-xl border p-4 space-y-3">
           <div>
-            <h2 className="font-medium">Premium Monthly</h2>
+            <h2 className="font-medium">Premium (Monthly)</h2>
             <p className="text-sm text-muted-foreground">IDR 99,000 / month</p>
             <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-              <li>• Unlimited chat messages</li>
+              <li>• Higher monthly message limits</li>
               <li>• Priority support</li>
-              <li>• Advanced AI models</li>
+              <li>• Access to advanced AI models</li>
               <li>• Document processing</li>
             </ul>
           </div>
@@ -102,18 +101,18 @@ export default async function BillingPage() {
       {/* Support Information */}
       <div className="text-sm text-muted-foreground space-y-2">
         <p>
-          After payment, you will be redirected to a confirmation page. If
-          something goes wrong, you can revisit this page to see the updated
+          After payment, you'll be redirected to a confirmation page.
+          You can revisit this page anytime to see your updated subscription
           status.
         </p>
         <p>
-          Have a voucher code? Use the voucher application form above to apply
-          discounts or activate free subscriptions.
+          Have a voucher? Enter it above to redeem discounts or activate free
+          subscriptions.
         </p>
         <p>
           Need help?{' '}
           <Link className="underline" href="/">
-            Contact support
+            Contact Support
           </Link>
         </p>
       </div>

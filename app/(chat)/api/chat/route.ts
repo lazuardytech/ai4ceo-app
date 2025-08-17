@@ -12,12 +12,16 @@ import {
   createStreamId,
   deleteChatById,
   getChatById,
-  getMessageCountByUserId,
+  getMonthlyMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
   saveMessages,
   getActiveSubscriptionByUserId,
   getSettings,
+  getAgentById,
+  retrieveAgentContext,
+  getAgentIdsByChatId,
+  setChatAgents,
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -27,7 +31,7 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { resolveModelCandidatesForId } from '@/lib/ai/providers';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
+
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
 import {
@@ -40,7 +44,7 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { buildExpertSystemPrompt } from '@/lib/ai/experts';
-import { getAgentById, retrieveAgentContext, getAgentIdsByChatId, setChatAgents } from '@/lib/db/queries';
+
 
 export const maxDuration = 60;
 
@@ -96,14 +100,26 @@ export async function POST(request: Request) {
       return new ChatSDKError('unauthorized:chat').toResponse();
     }
 
-    const userType: UserType = session.user.type;
+    // Enforce monthly usage limits with settings override
+    const [settingsForLimits, activeSub] = await Promise.all([
+      getSettings(),
+      getActiveSubscriptionByUserId({ userId: session.user.id }),
+    ]);
+    const msgLimits = (settingsForLimits?.messageLimits as any) || {};
+    const standardMonthly = Number(
+      (msgLimits && (msgLimits.standardMonthly as any)) ?? 1000,
+    );
+    const premiumMonthly = Number(
+      (msgLimits && (msgLimits.premiumMonthly as any)) ?? 150,
+    );
+    const isPremium = Boolean(activeSub);
+    const monthlyLimit = isPremium ? premiumMonthly : standardMonthly;
 
-    const messageCount = await getMessageCountByUserId({
+    const monthCount = await getMonthlyMessageCountByUserId({
       id: session.user.id,
-      differenceInHours: 24,
     });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    if (monthCount >= monthlyLimit) {
       return new ChatSDKError('rate_limit:chat').toResponse();
     }
 
@@ -124,7 +140,7 @@ export async function POST(request: Request) {
       if (requestBody.selectedAgentIds && requestBody.selectedAgentIds.length > 0) {
         try {
           await setChatAgents({ chatId: id, agentIds: requestBody.selectedAgentIds });
-        } catch {}
+        } catch { }
       }
     } else {
       if (chat.userId !== session.user.id) {
@@ -178,7 +194,7 @@ export async function POST(request: Request) {
     if (agentIdsLocal.length === 0) {
       try {
         agentIdsLocal = await getAgentIdsByChatId({ chatId: id });
-      } catch {}
+      } catch { }
     }
 
     // Preload selected agents and prior assistant snippets for continuity
@@ -277,7 +293,7 @@ export async function POST(request: Request) {
               }),
               transient: true,
             });
-          } catch {}
+          } catch { }
         };
 
         // If experts are selected, run each expert sequentially, otherwise general response
@@ -366,7 +382,7 @@ export async function POST(request: Request) {
               }),
               transient: true,
             });
-          } catch {}
+          } catch { }
         }
         const baseSystem = buildSystemPrompt({
           selectedChatModel,

@@ -536,6 +536,46 @@ export async function getMessageCountByUserId({
   }
 }
 
+export async function getMonthlyMessageCountByUserId({
+  id,
+  month,
+  year,
+}: {
+  id: string;
+  month?: number; // 0-11, defaults to current month
+  year?: number; // full year (e.g., 2025), defaults to current year
+}) {
+  try {
+    const now = new Date();
+    const m = typeof month === 'number' ? month : now.getMonth();
+    const y = typeof year === 'number' ? year : now.getFullYear();
+
+    const periodStart = new Date(y, m, 1);
+    const nextMonthStart = m === 11 ? new Date(y + 1, 0, 1) : new Date(y, m + 1, 1);
+
+    const [stats] = await db
+      .select({ count: count(message.id) })
+      .from(message)
+      .innerJoin(chat, eq(message.chatId, chat.id))
+      .where(
+        and(
+          eq(chat.userId, id),
+          gte(message.createdAt, periodStart),
+          lt(message.createdAt, nextMonthStart),
+          eq(message.role, 'user'),
+        ),
+      )
+      .execute();
+
+    return stats?.count ?? 0;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get monthly message count by user id',
+    );
+  }
+}
+
 export async function createStreamId({
   streamId,
   chatId,
@@ -677,9 +717,9 @@ export async function listSubscriptionsPaged({
 
     const where = q?.trim()
       ? or(
-          ilike(user.email, `%${q.trim()}%`),
-          ilike(subscription.planId, `%${q.trim()}%`),
-        )
+        ilike(user.email, `%${q.trim()}%`),
+        ilike(subscription.planId, `%${q.trim()}%`),
+      )
       : undefined;
 
     const [{ count: total }] = await db
@@ -1567,9 +1607,9 @@ export async function listUsersWithSubscriptionStatus({
 
     const where = q?.trim()
       ? or(
-          ilike(user.email, `%${q.trim()}%`),
-          ilike(subscription.planId, `%${q.trim()}%`),
-        )
+        ilike(user.email, `%${q.trim()}%`),
+        ilike(subscription.planId, `%${q.trim()}%`),
+      )
       : undefined;
 
     const [{ count: total }] = await db

@@ -80,6 +80,8 @@ export const {
         token.id = user.id as string;
         token.type = user.type;
         token.role = (user as any).role ?? 'user';
+        token.name = (user as any).name ?? token.name ?? null;
+        (token as any).image = (user as any).image ?? (token as any).image ?? (token as any).picture ?? null;
       }
 
       return token;
@@ -89,6 +91,9 @@ export const {
         session.user.id = token.id;
         session.user.type = token.type;
         session.user.role = (token as any).role ?? 'user';
+        session.user.name = (token as any).name ?? session.user.name ?? null;
+        session.user.image =
+          (token as any).image ?? (token as any).picture ?? session.user.image ?? null;
       }
 
       return session;

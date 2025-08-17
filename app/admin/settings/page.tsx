@@ -21,7 +21,33 @@ export default async function AdminSettingsPage() {
           {JSON.stringify(settings, null, 2)}
         </pre>
       </div>
-      {/* Token rate limits removed */}
+      {/* Monthly Message Limits */}
+      <div className="rounded-xl border p-4 text-sm">
+        <h2 className="font-medium mb-2">Monthly Message Limits</h2>
+        <p className="text-muted-foreground mb-2">
+          Configure per-month message limits. Standard applies to users without an active subscription. Premium applies to users with an active subscription.
+        </p>
+        <form method="post" action="/admin/api/settings" className="space-y-2">
+          <input type="hidden" name="key" value="messageLimits" />
+          <textarea
+            className="border rounded px-2 py-1 font-mono"
+            name="value"
+            defaultValue={JSON.stringify(
+              (settings as any)?.messageLimits ?? { standardMonthly: 1000, premiumMonthly: 150 },
+              null,
+              2
+            )}
+          />
+          <button
+            className="border rounded px-3 py-1 hover:bg-muted w-fit"
+            type="submit"
+          >
+            Save limits
+          </button>
+        </form>
+      </div>
+
+      {/* Set any setting */}
       <div className="rounded-xl border p-4 text-sm">
         <h2 className="font-medium mb-2">Set a setting</h2>
         <form method="post" action="/admin/api/settings">

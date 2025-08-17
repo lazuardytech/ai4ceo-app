@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 export function BillingSubscribeClient({
   planId = 'premium_monthly',
@@ -37,14 +38,14 @@ export function BillingSubscribeClient({
 
   return (
     <div className="space-y-2">
-      <button
+      <Button
         type="button"
-        className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted"
         onClick={subscribe}
         disabled={loading}
+        className="h-9"
       >
         {loading ? 'Redirecting…' : 'Subscribe'}
-      </button>
+      </Button>
       {errorMsg && (
         <Alert variant="destructive">
           <AlertDescription>{errorMsg}</AlertDescription>
