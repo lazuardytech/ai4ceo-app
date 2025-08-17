@@ -288,3 +288,20 @@ export const voucherUsage = pgTable('VoucherUsage', {
 });
 
 export type VoucherUsage = InferSelectModel<typeof voucherUsage>;
+
+export const userFile = pgTable('UserFile', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  contentType: varchar('contentType', { length: 128 }),
+  size: varchar('size', { length: 32 }),
+  storagePath: text('storagePath'),
+  isDeleted: boolean('isDeleted').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type UserFile = InferSelectModel<typeof userFile>;

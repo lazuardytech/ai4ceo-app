@@ -61,6 +61,13 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <SidebarContent>
         <SidebarMenu>
           <Link
+            href="/files"
+            onClick={() => setOpenMobile(false)}
+            className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
+          >
+            Files
+          </Link>
+          <Link
             href="/billing"
             onClick={() => setOpenMobile(false)}
             className="flex items-center rounded-md p-2 text-sm hover:bg-muted"

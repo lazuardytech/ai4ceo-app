@@ -4,6 +4,11 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 import { auth } from '@/app/(auth)/auth';
 import { generateUUID } from '@/lib/utils';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { userFile } from '@/lib/db/schema';
+
+export const runtime = 'nodejs';
 
 // Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
@@ -98,10 +103,31 @@ export async function POST(request: Request) {
         `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`;
       const url = `${publicBase}/${key}`;
 
+      // Persist file metadata to UserFile table
+      try {
+        const sql = postgres(process.env.POSTGRES_URL!);
+        const db = drizzle(sql);
+        await db.insert(userFile).values({
+          userId: (session as any).user.id,
+          name: filename,
+          url,
+          contentType: (file as any).type || null,
+          size: String(((file as any).size as number) ?? ''),
+          storagePath: key,
+        });
+      } catch (e) {
+        return NextResponse.json(
+          { error: 'Failed to save file metadata' },
+          { status: 500 },
+        );
+      }
+
       return NextResponse.json({
         url,
         pathname: key,
         contentType: (file as any).type,
+        size: (file as any).size,
+        name: filename,
       });
     } catch (error) {
       return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
