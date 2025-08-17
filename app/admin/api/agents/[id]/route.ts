@@ -10,6 +10,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   }
   const contentType = request.headers.get('content-type') || '';
   let body: any = {};
+  let isForm = false;
   if (contentType.includes('application/json')) {
     body = await request.json();
   } else {
@@ -17,8 +18,15 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     body = Object.fromEntries(form.entries());
     body.isActive = form.get('isActive') ? true : false;
     body.ragEnabled = form.get('ragEnabled') ? true : false;
+    isForm = true;
   }
   const updated = await updateAgent({ id: params.id, ...body });
+  if (isForm) {
+    return new Response(null, {
+      status: 303,
+      headers: { Location: `/admin/experts?ok=1&msg=${encodeURIComponent('Expert updated')}` },
+    });
+  }
   return Response.json(updated, { status: 200 });
 }
 
@@ -42,13 +50,19 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const form = await request.formData();
   const method = (form.get('_method') as string) || 'PUT';
   if (method.toUpperCase() === 'DELETE') {
-    const deleted = await deleteAgent({ id: params.id });
-    return Response.json(deleted, { status: 200 });
+    await deleteAgent({ id: params.id });
+    return new Response(null, {
+      status: 303,
+      headers: { Location: `/admin/experts?ok=1&msg=${encodeURIComponent('Expert deleted')}` },
+    });
   }
   const body: any = Object.fromEntries(form.entries());
   body.isActive = form.get('isActive') ? true : false;
   body.ragEnabled = form.get('ragEnabled') ? true : false;
   delete body._method;
-  const updated = await updateAgent({ id: params.id, ...body });
-  return Response.json(updated, { status: 200 });
+  await updateAgent({ id: params.id, ...body });
+  return new Response(null, {
+    status: 303,
+    headers: { Location: `/admin/experts?ok=1&msg=${encodeURIComponent('Expert updated')}` },
+  });
 }

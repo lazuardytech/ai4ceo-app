@@ -26,6 +26,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   let title: string | undefined;
   let content: string | undefined;
   let tags: string | undefined;
+  let isForm = false;
   if (contentType.includes('application/json')) {
     const body = await request.json();
     title = body?.title;
@@ -36,10 +37,17 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     title = (form.get('title') as string) || undefined;
     content = (form.get('content') as string) || undefined;
     tags = (form.get('tags') as string) || undefined;
+    isForm = true;
   }
   if (!title || !content) {
     return new ChatSDKError('bad_request:api', 'Missing required fields').toResponse();
   }
-  const created = await addAgentKnowledge({ agentId: params.id, title, content, tags });
-  return Response.json(created, { status: 201 });
+  await addAgentKnowledge({ agentId: params.id, title, content, tags });
+  if (isForm) {
+    return new Response(null, {
+      status: 303,
+      headers: { Location: `/admin/experts/${params.id}?ok=1&msg=${encodeURIComponent('Knowledge added')}` },
+    });
+  }
+  return Response.json({ ok: true }, { status: 201 });
 }

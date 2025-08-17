@@ -23,6 +23,7 @@ function PureChatHeader({
   session,
   selectedAgentIds,
   onChangeSelectedAgentIds,
+  onChangeModel,
 }: {
   chatId: string;
   selectedModelId: string;
@@ -31,6 +32,7 @@ function PureChatHeader({
   session: Session;
   selectedAgentIds: string[];
   onChangeSelectedAgentIds: (ids: string[]) => void;
+  onChangeModel: (id: string) => void;
 }) {
   const router = useRouter();
   const { open } = useSidebar();
@@ -64,6 +66,7 @@ function PureChatHeader({
         <ModelSelector
           session={session}
           selectedModelId={selectedModelId}
+          onChange={onChangeModel}
           className="order-1 md:order-2"
         />
       )}
@@ -73,6 +76,8 @@ function PureChatHeader({
           chatId={chatId}
           selectedAgentIds={selectedAgentIds}
           onChange={onChangeSelectedAgentIds}
+          isReasoningActive={selectedModelId === 'chat-model-reasoning'}
+          onExpertsActivated={() => onChangeModel('chat-model-reasoning')}
           className="order-1 md:order-2"
         />
       )}

@@ -1,5 +1,18 @@
 import { auth } from '@/app/(auth)/auth';
 import { listAgents } from '@/lib/db/queries';
+import { ToastOnQuery } from '@/components/admin/toast-on-query.client';
+import { UnsavedGuard } from '@/components/admin/unsaved-guard.client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default async function AdminExpertsPage() {
   const session = await auth();
@@ -13,11 +26,13 @@ export default async function AdminExpertsPage() {
 
   return (
     <div className="mx-auto max-w-4xl p-6 space-y-6">
+      <ToastOnQuery />
+      <UnsavedGuard selector="form" />
       <h1 className="text-xl font-semibold">Experts</h1>
 
       <div className="rounded-xl border p-4 space-y-3">
         <h2 className="font-medium">Create Expert</h2>
-        <form method="post" action="/admin/api/agents" className="grid gap-2">
+        <form id="create-expert-form" method="post" action="/admin/api/agents" className="grid gap-2">
           <input className="border rounded px-2 py-1 text-sm" name="slug" placeholder="slug (e.g., tech)" required />
           <input className="border rounded px-2 py-1 text-sm" name="name" placeholder="name" required />
           <input className="border rounded px-2 py-1 text-sm" name="description" placeholder="description" />
@@ -27,7 +42,25 @@ export default async function AdminExpertsPage() {
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isActive" defaultChecked /> Active</label>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="ragEnabled" defaultChecked /> RAG Enabled</label>
           </div>
-          <button className="border rounded px-3 py-1 text-sm hover:bg-muted w-fit" type="submit">Create</button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="border rounded px-3 py-1 text-sm hover:bg-muted w-fit" type="button">Create</button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Create expert?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will create a new expert with the provided configuration.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => (document.getElementById('create-expert-form') as HTMLFormElement)?.requestSubmit()}>
+                  Create
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </form>
       </div>
 
@@ -38,7 +71,7 @@ export default async function AdminExpertsPage() {
             <div key={a.id} className="border rounded p-3 space-y-2">
               <div className="text-sm font-medium">{a.name} <span className="text-muted-foreground">({a.slug})</span></div>
               <div className="text-xs text-muted-foreground">{a.description}</div>
-              <form method="post" action={`/admin/api/agents/${a.id}`} className="grid gap-2">
+              <form id={`update-expert-${a.id}`} method="post" action={`/admin/api/agents/${a.id}`} className="grid gap-2">
                 <input type="hidden" name="_method" value="PUT" />
                 <input className="border rounded px-2 py-1 text-sm" name="name" defaultValue={a.name} />
                 <input className="border rounded px-2 py-1 text-sm" name="description" defaultValue={a.description ?? ''} />
@@ -49,16 +82,52 @@ export default async function AdminExpertsPage() {
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="ragEnabled" defaultChecked={a.ragEnabled} /> RAG Enabled</label>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <button type="submit" className="border rounded px-3 py-1 text-sm hover:bg-muted">
-                    Save
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button type="button" className="border rounded px-3 py-1 text-sm hover:bg-muted">
+                        Save
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Save changes?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will update the expert configuration.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => (document.getElementById(`update-expert-${a.id}`) as HTMLFormElement)?.requestSubmit()}>
+                          Save
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   <a href={`/admin/experts/${a.id}`} className="border rounded px-3 py-1 text-sm hover:bg-muted">Manage Knowledge</a>
                 </div>
               </form>
-              <form method="post" action={`/admin/api/agents/${a.id}`} className="inline">
+              <form id={`delete-expert-${a.id}`} method="post" action={`/admin/api/agents/${a.id}`} className="inline">
                 <input type="hidden" name="_method" value="DELETE" />
-                <button className="text-red-600 text-sm" type="submit">Delete</button>
               </form>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="text-red-600 text-sm" type="button">Delete</button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete expert?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => (document.getElementById(`delete-expert-${a.id}`) as HTMLFormElement)?.requestSubmit()}>
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           ))}
         </div>

@@ -4,6 +4,17 @@ import useSWR from 'swr';
 import { useEffect, useMemo, useState } from 'react';
 import { fetcher } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -121,29 +132,45 @@ export default function AdminModelsPanel() {
     [groqModels],
   );
 
+  const [banner, setBanner] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   async function handleSave() {
     // Save OpenRouter overrides
     const form = new FormData();
     form.set('key', 'modelOverridesOpenRouter');
     form.set('value', JSON.stringify(overridesOR, null, 2));
     const res = await fetch('/admin/api/settings', { method: 'POST', body: form });
-    if (!res.ok) return alert('Failed to save OpenRouter mappings');
+    if (!res.ok) {
+      setBanner('Failed to save OpenRouter mappings');
+      setTimeout(() => setBanner(null), 2500);
+      return;
+    }
 
     // Save Groq overrides
     const form2 = new FormData();
     form2.set('key', 'modelOverridesGroq');
     form2.set('value', JSON.stringify(overridesGroq, null, 2));
     const res2 = await fetch('/admin/api/settings', { method: 'POST', body: form2 });
-    if (!res2.ok) return alert('Failed to save Groq mappings');
+    if (!res2.ok) {
+      setBanner('Failed to save Groq mappings');
+      setTimeout(() => setBanner(null), 2500);
+      return;
+    }
 
     // Save default provider preference
     const form3 = new FormData();
     form3.set('key', 'defaultProviderPreference');
     form3.set('value', providerPref);
     const res3 = await fetch('/admin/api/settings', { method: 'POST', body: form3 });
-    if (!res3.ok) return alert('Failed to save provider preference');
+    if (!res3.ok) {
+      setBanner('Failed to save provider preference');
+      setTimeout(() => setBanner(null), 2500);
+      return;
+    }
 
-    alert('Saved');
+    setBanner('Saved');
+    setTimeout(() => setBanner(null), 2000);
   }
 
   return (
@@ -155,9 +182,37 @@ export default function AdminModelsPanel() {
             <Button variant="outline" onClick={() => { refreshModels(); refreshGroq(); }}>
               Refresh Lists
             </Button>
-            <Button onClick={handleSave}>Save</Button>
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <AlertDialogTrigger asChild>
+                <Button onClick={() => setConfirmOpen(true)}>Save</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Save model settings?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will update provider preference and model mappings for your deployment.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      setConfirmOpen(false);
+                      await handleSave();
+                    }}
+                  >
+                    Save
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
+        {banner && (
+          <div className="mt-2 text-sm px-2 py-1 rounded border bg-muted/30 inline-block">
+            {banner}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="rounded border p-3 space-y-2">

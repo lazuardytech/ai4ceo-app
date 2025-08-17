@@ -28,6 +28,7 @@ export async function POST(request: Request) {
   }
   const contentType = request.headers.get('content-type') || '';
   let payload: any = {};
+  let isForm = false;
   if (contentType.includes('application/json')) {
     payload = await request.json();
   } else {
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
     payload = Object.fromEntries(form.entries());
     payload.isActive = form.get('isActive') ? true : false;
     payload.ragEnabled = form.get('ragEnabled') ? true : false;
+    isForm = true;
   }
   const { slug, name, description, prePrompt, personality, isActive, ragEnabled } = payload ?? {};
   if (!slug || !name || !prePrompt || !personality) {
@@ -49,5 +51,11 @@ export async function POST(request: Request) {
     isActive: typeof isActive === 'boolean' ? isActive : true,
     ragEnabled: typeof ragEnabled === 'boolean' ? ragEnabled : true,
   });
+  if (isForm) {
+    return new Response(null, {
+      status: 303,
+      headers: { Location: `/admin/experts?ok=1&msg=${encodeURIComponent('Expert created')}` },
+    });
+  }
   return Response.json(created, { status: 201 });
 }

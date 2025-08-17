@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function BillingSubscribeClient({
   planId = 'premium_monthly',
 }: { planId?: string }) {
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const subscribe = async () => {
     try {
@@ -27,20 +29,27 @@ export function BillingSubscribeClient({
       }
     } catch (e) {
       console.error(e);
-      alert('Failed to start subscription. Please try again.');
+      setErrorMsg('Failed to start subscription. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <button
-      type="button"
-      className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted"
-      onClick={subscribe}
-      disabled={loading}
-    >
-      {loading ? 'Redirecting…' : 'Subscribe'}
-    </button>
+    <div className="space-y-2">
+      <button
+        type="button"
+        className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted"
+        onClick={subscribe}
+        disabled={loading}
+      >
+        {loading ? 'Redirecting…' : 'Subscribe'}
+      </button>
+      {errorMsg && (
+        <Alert variant="destructive">
+          <AlertDescription>{errorMsg}</AlertDescription>
+        </Alert>
+      )}
+    </div>
   );
 }

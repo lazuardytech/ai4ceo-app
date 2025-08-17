@@ -87,7 +87,7 @@ export function AdminUsersPanel() {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left sticky top-0">
             <tr>
-              <th className="p-2">ID</th>
+              {/*<th className="p-2">ID</th>*/}
               <th className="p-2">Email</th>
               <th className="p-2">Role</th>
               <th className="p-2">Actions</th>
@@ -99,7 +99,7 @@ export function AdminUsersPanel() {
                 key={u.id}
                 className={`border-t ${i % 2 ? 'bg-muted/20' : ''}`}
               >
-                <td className="p-2 align-top">{u.id}</td>
+                {/*<td className="p-2 align-top">{u.id}</td>*/}
                 <td className="p-2 align-top">{u.email}</td>
                 <td className="p-2 align-top">{(u as any).role}</td>
                 <td className="p-2 align-top">

@@ -173,7 +173,7 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    // Resolve expert selection once upfront (avoid await inside writer)
+    // Resolve expert selection once upfront (avoid await inside stream execute)
     let agentIdsLocal = requestBody.selectedAgentIds ?? [];
     if (agentIdsLocal.length === 0) {
       try {
@@ -183,7 +183,11 @@ export async function POST(request: Request) {
 
     // Preload selected agents and prior assistant snippets for continuity
     let selectedAgents: Array<{ id: string; name: string; slug: string }> = [];
-    if (agentIdsLocal && agentIdsLocal.length > 0) {
+    // Only enable expert flow when using the Reasoning (thinker) model
+    const expertModeEnabled =
+      agentIdsLocal.length > 0 && selectedChatModel === 'chat-model-reasoning';
+
+    if (expertModeEnabled) {
       const list: Array<{ id: string; name: string; slug: string }> = [];
       for (const aid of agentIdsLocal) {
         const a = await getAgentById({ id: aid });
@@ -204,7 +208,7 @@ export async function POST(request: Request) {
     }
 
     const priorByAgent: Record<string, string[]> = {};
-    if (selectedAgents.length > 0) {
+    if (expertModeEnabled && selectedAgents.length > 0) {
       for (const a of selectedAgents) {
         priorByAgent[a.id] = [];
       }
@@ -231,7 +235,7 @@ export async function POST(request: Request) {
       agent: { id: string; name: string; slug: string };
       system: string;
     }> = [];
-    if (selectedAgents.length > 0) {
+    if (expertModeEnabled && selectedAgents.length > 0) {
       // Compute once: userText for this turn
       const userText = extractText(message.parts as any);
       const baseForExperts = buildSystemPrompt({
@@ -341,6 +345,28 @@ export async function POST(request: Request) {
             }
           })();
           return;
+        }
+        // If agents were selected but non-reasoning model is active, inform the user and fall back to general flow
+        if (agentIdsLocal.length > 0 && selectedChatModel !== 'chat-model-reasoning') {
+          try {
+            dataStream.write({
+              type: 'data-appendMessage',
+              data: JSON.stringify({
+                id: generateUUID(),
+                role: 'assistant',
+                parts: [
+                  {
+                    type: 'text',
+                    text: 'Note: Experts run only with the Reasoning model. Switch to Reasoning to enable expert replies. Continuing with a general response…',
+                  },
+                ],
+                attachments: [],
+                createdAt: new Date(),
+                chatId: id,
+              }),
+              transient: true,
+            });
+          } catch {}
         }
         const baseSystem = buildSystemPrompt({
           selectedChatModel,

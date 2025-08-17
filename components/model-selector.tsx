@@ -22,9 +22,11 @@ export function ModelSelector({
   session,
   selectedModelId,
   className,
+  onChange,
 }: {
   session: Session;
   selectedModelId: string;
+  onChange?: (id: string) => void;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
   const [optimisticModelId, setOptimisticModelId] =
@@ -88,6 +90,7 @@ export function ModelSelector({
                   startTransition(() => {
                     setOptimisticModelId(id);
                     saveChatModelAsCookie(id);
+                    onChange?.(id);
                   });
                 }
               }}

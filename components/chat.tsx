@@ -52,6 +52,7 @@ export function Chat({
 
   const [input, setInput] = useState<string>('');
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>(initialSelectedAgentIds);
+  const [selectedChatModelId, setSelectedChatModelId] = useState<string>(initialChatModel);
 
   const {
     messages,
@@ -74,7 +75,7 @@ export function Chat({
           body: {
             id,
             message: messages.at(-1),
-            selectedChatModel: initialChatModel,
+            selectedChatModel: selectedChatModelId,
             selectedVisibilityType: visibilityType,
             selectedAgentIds,
             ...body,
@@ -135,12 +136,13 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={initialChatModel}
+          selectedModelId={selectedChatModelId}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}
           selectedAgentIds={selectedAgentIds}
           onChangeSelectedAgentIds={setSelectedAgentIds}
+          onChangeModel={setSelectedChatModelId}
         />
 
         <Messages

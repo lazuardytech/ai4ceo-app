@@ -35,6 +35,17 @@ import { Badge } from '../ui/badge';
 import Form from 'next/form';
 import { useFormStatus } from 'react-dom';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   createVoucherAction,
   deleteVoucherAction,
   updateVoucherAction,
@@ -534,24 +545,35 @@ export function AdminVouchersPanel() {
                   >
                     <Edit className="size-4" />
                   </Button>
-                  <Form action={deleteAction}>
+                  <Form id={`delete-form-${voucher.id}`} action={deleteAction}>
                     <input type="hidden" name="id" value={voucher.id} />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        if (
-                          !confirm(
-                            'Are you sure you want to delete this voucher?',
-                          )
-                        ) {
-                          e.preventDefault();
-                        }
-                      }}
-                    >
-                      <Trash2 className="size-4 text-red-500" />
-                    </Button>
                   </Form>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <Trash2 className="size-4 text-red-500" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete voucher?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete voucher {voucher.code}? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => {
+                            const form = document.getElementById(`delete-form-${voucher.id}`) as HTMLFormElement | null;
+                            form?.requestSubmit();
+                          }}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardHeader>
