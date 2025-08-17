@@ -88,6 +88,13 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           >
             Billing
           </Link>
+          <Link
+            href="/referral"
+            onClick={() => setOpenMobile(false)}
+            className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
+          >
+            Referral
+          </Link>
           {user?.role === 'superadmin' && (
             <Link
               href="/admin"

@@ -37,6 +37,14 @@ import {
   agent,
   agentKnowledge,
   chatAgent,
+  referral,
+  referralTransaction,
+  referralUsage,
+  referralConfig,
+  type Referral,
+  type ReferralTransaction,
+  type ReferralUsage,
+  type ReferralConfig,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -226,18 +234,26 @@ export async function getChatById({ id }: { id: string }) {
 
 export async function getAgentIdsByChatId({ chatId }: { chatId: string }) {
   try {
-    const rows = await db.select().from(chatAgent).where(eq(chatAgent.chatId, chatId));
+    const rows = await db
+      .select()
+      .from(chatAgent)
+      .where(eq(chatAgent.chatId, chatId));
     return rows.map((r) => r.agentId);
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat agents');
   }
 }
 
-export async function setChatAgents({ chatId, agentIds }: { chatId: string; agentIds: string[] }) {
+export async function setChatAgents({
+  chatId,
+  agentIds,
+}: { chatId: string; agentIds: string[] }) {
   try {
     await db.delete(chatAgent).where(eq(chatAgent.chatId, chatId));
     if (agentIds.length > 0) {
-      await db.insert(chatAgent).values(agentIds.map((id) => ({ chatId, agentId: id })));
+      await db
+        .insert(chatAgent)
+        .values(agentIds.map((id) => ({ chatId, agentId: id })));
     }
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to set chat agents');
@@ -551,7 +567,8 @@ export async function getMonthlyMessageCountByUserId({
     const y = typeof year === 'number' ? year : now.getFullYear();
 
     const periodStart = new Date(y, m, 1);
-    const nextMonthStart = m === 11 ? new Date(y + 1, 0, 1) : new Date(y, m + 1, 1);
+    const nextMonthStart =
+      m === 11 ? new Date(y + 1, 0, 1) : new Date(y, m + 1, 1);
 
     const [stats] = await db
       .select({ count: count(message.id) })
@@ -717,9 +734,9 @@ export async function listSubscriptionsPaged({
 
     const where = q?.trim()
       ? or(
-        ilike(user.email, `%${q.trim()}%`),
-        ilike(subscription.planId, `%${q.trim()}%`),
-      )
+          ilike(user.email, `%${q.trim()}%`),
+          ilike(subscription.planId, `%${q.trim()}%`),
+        )
       : undefined;
 
     const [{ count: total }] = await db
@@ -823,8 +840,11 @@ export async function listAgents({
         ),
       );
     }
-    if (typeof isActive === 'boolean') conditions.push(eq(agent.isActive, isActive));
-    const whereCond = conditions.length ? (and(...conditions) as any) : undefined;
+    if (typeof isActive === 'boolean')
+      conditions.push(eq(agent.isActive, isActive));
+    const whereCond = conditions.length
+      ? (and(...conditions) as any)
+      : undefined;
     const [items, [{ total }]] = await Promise.all([
       db
         .select()
@@ -843,7 +863,11 @@ export async function listAgents({
 
 export async function getAgentById({ id }: { id: string }) {
   try {
-    const [row] = await db.select().from(agent).where(eq(agent.id, id)).limit(1);
+    const [row] = await db
+      .select()
+      .from(agent)
+      .where(eq(agent.id, id))
+      .limit(1);
     return row;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get agent');
@@ -1009,7 +1033,10 @@ export async function deleteAgentKnowledge({ id }: { id: string }) {
       .returning();
     return row;
   } catch (error) {
-    throw new ChatSDKError('bad_request:database', 'Failed to delete knowledge');
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to delete knowledge',
+    );
   }
 }
 
@@ -1032,7 +1059,8 @@ export async function seedDefaultAgentsIfEmpty() {
     {
       slug: 'tech',
       name: 'Tech Expert',
-      description: 'Software, architecture, scalability, devops, product engineering.',
+      description:
+        'Software, architecture, scalability, devops, product engineering.',
       prePrompt:
         'You are a pragmatic senior technology advisor. Provide clear, actionable guidance with pros/cons and trade-offs. Use concise bullet points and small code snippets when helpful.',
       personality:
@@ -1041,7 +1069,8 @@ export async function seedDefaultAgentsIfEmpty() {
     {
       slug: 'law',
       name: 'Law Expert',
-      description: 'Contracts, compliance, privacy, IP, risk flags (not legal advice).',
+      description:
+        'Contracts, compliance, privacy, IP, risk flags (not legal advice).',
       prePrompt:
         'You are a legal domain expert. Identify risks, compliance requirements, and contractual considerations. Always include a disclaimer that this is not legal advice.',
       personality:
@@ -1050,7 +1079,8 @@ export async function seedDefaultAgentsIfEmpty() {
     {
       slug: 'tax',
       name: 'Tax Expert',
-      description: 'Tax implications, jurisdictions, reporting, optimization (not tax advice).',
+      description:
+        'Tax implications, jurisdictions, reporting, optimization (not tax advice).',
       prePrompt:
         'You are a tax specialist. Outline tax treatments, thresholds, and reporting obligations across typical jurisdictions. Offer scenarios and assumptions. Add a not tax advice disclaimer.',
       personality:
@@ -1111,7 +1141,9 @@ export async function retrieveAgentContext({
     const ranked = rows
       .map((r: any) => ({
         row: r,
-        score: Array.isArray(r.vector) ? cosine(queryVec, r.vector as number[]) : 0,
+        score: Array.isArray(r.vector)
+          ? cosine(queryVec, r.vector as number[])
+          : 0,
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
@@ -1607,9 +1639,9 @@ export async function listUsersWithSubscriptionStatus({
 
     const where = q?.trim()
       ? or(
-        ilike(user.email, `%${q.trim()}%`),
-        ilike(subscription.planId, `%${q.trim()}%`),
-      )
+          ilike(user.email, `%${q.trim()}%`),
+          ilike(subscription.planId, `%${q.trim()}%`),
+        )
       : undefined;
 
     const [{ count: total }] = await db
@@ -1635,6 +1667,359 @@ export async function listUsersWithSubscriptionStatus({
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to list users with subscription status',
+    );
+  }
+}
+
+// Referral System Queries
+
+export async function getUserReferral({ userId }: { userId: string }) {
+  try {
+    const [userReferral] = await db
+      .select()
+      .from(referral)
+      .where(eq(referral.userId, userId))
+      .limit(1);
+    return userReferral;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get user referral',
+    );
+  }
+}
+
+export async function createReferral({
+  userId,
+  referralCode,
+}: {
+  userId: string;
+  referralCode: string;
+}) {
+  try {
+    const now = new Date();
+    const [newReferral] = await db
+      .insert(referral)
+      .values({
+        userId,
+        referralCode,
+        bonusBalance: '0',
+        totalEarned: '0',
+        totalReferrals: '0',
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+    return newReferral;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to create referral');
+  }
+}
+
+export async function updateReferralBalance({
+  userId,
+  bonusBalance,
+  totalEarned,
+  totalReferrals,
+}: {
+  userId: string;
+  bonusBalance?: string;
+  totalEarned?: string;
+  totalReferrals?: string;
+}) {
+  try {
+    const updateData: any = { updatedAt: new Date() };
+    if (bonusBalance !== undefined) updateData.bonusBalance = bonusBalance;
+    if (totalEarned !== undefined) updateData.totalEarned = totalEarned;
+    if (totalReferrals !== undefined)
+      updateData.totalReferrals = totalReferrals;
+
+    const [updated] = await db
+      .update(referral)
+      .set(updateData)
+      .where(eq(referral.userId, userId))
+      .returning();
+    return updated;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update referral balance',
+    );
+  }
+}
+
+export async function getReferralTransactions({
+  userId,
+  page = 1,
+  limit = 10,
+}: {
+  userId: string;
+  page?: number;
+  limit?: number;
+}) {
+  try {
+    const offset = (page - 1) * limit;
+
+    // Get user's referral record first
+    const userReferral = await getUserReferral({ userId });
+    if (!userReferral) {
+      return {
+        transactions: [],
+        pagination: { page, limit, total: 0, hasMore: false },
+      };
+    }
+
+    // Get total count
+    const [{ total }] = await db
+      .select({ total: count(referralTransaction.id) })
+      .from(referralTransaction)
+      .where(eq(referralTransaction.referralId, userReferral.id));
+
+    // Get paginated transactions
+    const transactions = await db
+      .select()
+      .from(referralTransaction)
+      .where(eq(referralTransaction.referralId, userReferral.id))
+      .orderBy(desc(referralTransaction.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    const hasMore = offset + transactions.length < total;
+
+    return {
+      transactions,
+      pagination: { page, limit, total, hasMore },
+    };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get referral transactions',
+    );
+  }
+}
+
+export async function validateReferralCode({
+  referralCode,
+}: { referralCode: string }) {
+  try {
+    const [referralRecord] = await db
+      .select()
+      .from(referral)
+      .where(
+        and(
+          eq(referral.referralCode, referralCode),
+          eq(referral.isActive, true),
+        ),
+      )
+      .limit(1);
+
+    return { valid: !!referralRecord, referral: referralRecord };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to validate referral code',
+    );
+  }
+}
+
+export async function applyReferralCode({
+  referralCode,
+  newUserId,
+  bonusAmount,
+}: {
+  referralCode: string;
+  newUserId: string;
+  bonusAmount: string;
+}) {
+  try {
+    // Validate referral code and get referrer info
+    const validation = await validateReferralCode({ referralCode });
+    if (!validation.valid || !validation.referral) {
+      throw new ChatSDKError('bad_request:referral', 'Invalid referral code');
+    }
+
+    const referrerReferral = validation.referral;
+
+    // Check if user is trying to use their own referral code
+    if (referrerReferral.userId === newUserId) {
+      throw new ChatSDKError(
+        'forbidden:referral',
+        'Cannot use your own referral code',
+      );
+    }
+
+    // Check if this user has already used a referral code
+    const [existingUsage] = await db
+      .select()
+      .from(referralUsage)
+      .where(eq(referralUsage.referredUserId, newUserId))
+      .limit(1);
+
+    if (existingUsage) {
+      throw new ChatSDKError(
+        'rate_limit:referral',
+        'User has already used a referral code',
+      );
+    }
+
+    const now = new Date();
+
+    // Create referral usage record
+    const [usage] = await db
+      .insert(referralUsage)
+      .values({
+        referralCode,
+        referrerId: referrerReferral.userId,
+        referredUserId: newUserId,
+        bonusAmount,
+        status: 'completed',
+        createdAt: now,
+        completedAt: now,
+      })
+      .returning();
+
+    // Update referrer's statistics
+    const newBonusBalance = (
+      parseFloat(referrerReferral.bonusBalance) + parseFloat(bonusAmount)
+    ).toString();
+    const newTotalEarned = (
+      parseFloat(referrerReferral.totalEarned) + parseFloat(bonusAmount)
+    ).toString();
+    const newTotalReferrals = (
+      parseInt(referrerReferral.totalReferrals) + 1
+    ).toString();
+
+    await updateReferralBalance({
+      userId: referrerReferral.userId,
+      bonusBalance: newBonusBalance,
+      totalEarned: newTotalEarned,
+      totalReferrals: newTotalReferrals,
+    });
+
+    // Create transaction record for the bonus earned
+    await db.insert(referralTransaction).values({
+      referralId: referrerReferral.id,
+      type: 'bonus_earned',
+      amount: bonusAmount,
+      description: 'Referral bonus earned',
+      relatedUserId: newUserId,
+      createdAt: now,
+    });
+
+    // Create transaction record for the referral signup
+    await db.insert(referralTransaction).values({
+      referralId: referrerReferral.id,
+      type: 'referral_signup',
+      amount: '0',
+      description: 'New user signed up with referral code',
+      relatedUserId: newUserId,
+      createdAt: now,
+    });
+
+    return usage;
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to apply referral code',
+    );
+  }
+}
+
+export async function getReferralConfig() {
+  try {
+    const [config] = await db
+      .select()
+      .from(referralConfig)
+      .where(eq(referralConfig.isActive, true))
+      .orderBy(desc(referralConfig.updatedAt))
+      .limit(1);
+
+    // Return default config if none exists
+    if (!config) {
+      return {
+        benefitType: 'bonus_credits' as const,
+        benefitValue: '10000',
+        planId: null,
+        discountPercentage: null,
+        validityDays: null,
+        isActive: true,
+      };
+    }
+
+    return config;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get referral config',
+    );
+  }
+}
+
+export async function updateReferralConfig({
+  benefitType,
+  benefitValue,
+  planId,
+  discountPercentage,
+  validityDays,
+}: {
+  benefitType: 'free_subscription' | 'discount_percentage' | 'bonus_credits';
+  benefitValue: string;
+  planId?: string | null;
+  discountPercentage?: string | null;
+  validityDays?: string | null;
+}) {
+  try {
+    const now = new Date();
+
+    // Deactivate existing configs
+    await db
+      .update(referralConfig)
+      .set({ isActive: false, updatedAt: now })
+      .where(eq(referralConfig.isActive, true));
+
+    // Create new config
+    const [newConfig] = await db
+      .insert(referralConfig)
+      .values({
+        benefitType,
+        benefitValue,
+        planId: planId ?? null,
+        discountPercentage: discountPercentage ?? null,
+        validityDays: validityDays ?? null,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+
+    return newConfig;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update referral config',
+    );
+  }
+}
+
+export async function checkReferralCodeUniqueness({
+  referralCode,
+}: { referralCode: string }) {
+  try {
+    const [existing] = await db
+      .select()
+      .from(referral)
+      .where(eq(referral.referralCode, referralCode))
+      .limit(1);
+
+    return !existing; // Return true if code is unique (no existing record found)
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to check referral code uniqueness',
     );
   }
 }

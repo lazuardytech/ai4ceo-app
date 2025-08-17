@@ -310,3 +310,76 @@ export const userFile = pgTable('UserFile', {
 });
 
 export type UserFile = InferSelectModel<typeof userFile>;
+
+// Referral System Tables
+export const referral = pgTable('Referral', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  referralCode: varchar('referralCode', { length: 32 }).notNull().unique(),
+  bonusBalance: varchar('bonusBalance', { length: 16 }).notNull().default('0'),
+  totalEarned: varchar('totalEarned', { length: 16 }).notNull().default('0'),
+  totalReferrals: varchar('totalReferrals', { length: 16 })
+    .notNull()
+    .default('0'),
+  isActive: boolean('isActive').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Referral = InferSelectModel<typeof referral>;
+
+export const referralTransaction = pgTable('ReferralTransaction', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  referralId: uuid('referralId')
+    .notNull()
+    .references(() => referral.id),
+  type: varchar('type', {
+    enum: ['bonus_earned', 'bonus_used', 'referral_signup'],
+  }).notNull(),
+  amount: varchar('amount', { length: 16 }).notNull(),
+  description: text('description').notNull(),
+  relatedUserId: uuid('relatedUserId').references(() => user.id), // The referred user
+  subscriptionId: uuid('subscriptionId').references(() => subscription.id), // If related to subscription
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type ReferralTransaction = InferSelectModel<typeof referralTransaction>;
+
+export const referralUsage = pgTable('ReferralUsage', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  referralCode: varchar('referralCode', { length: 32 }).notNull(),
+  referrerId: uuid('referrerId')
+    .notNull()
+    .references(() => user.id),
+  referredUserId: uuid('referredUserId')
+    .notNull()
+    .references(() => user.id),
+  bonusAmount: varchar('bonusAmount', { length: 16 }).notNull(),
+  status: varchar('status', { enum: ['pending', 'completed', 'cancelled'] })
+    .notNull()
+    .default('pending'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  completedAt: timestamp('completedAt'),
+});
+
+export type ReferralUsage = InferSelectModel<typeof referralUsage>;
+
+export const referralConfig = pgTable('ReferralConfig', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  benefitType: varchar('benefitType', {
+    enum: ['free_subscription', 'discount_percentage', 'bonus_credits'],
+  })
+    .notNull()
+    .default('bonus_credits'),
+  benefitValue: varchar('benefitValue', { length: 16 }).notNull(), // Amount, percentage, or plan duration
+  planId: varchar('planId', { length: 64 }), // For free subscription benefits
+  discountPercentage: varchar('discountPercentage', { length: 8 }), // For discount benefits
+  validityDays: varchar('validityDays', { length: 8 }), // How long the benefit is valid
+  isActive: boolean('isActive').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type ReferralConfig = InferSelectModel<typeof referralConfig>;

@@ -15,7 +15,8 @@ export type Surface =
   | 'history'
   | 'vote'
   | 'document'
-  | 'suggestions';
+  | 'suggestions'
+  | 'referral';
 
 export type ErrorCode = `${ErrorType}:${Surface}`;
 
@@ -31,6 +32,7 @@ export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
   vote: 'response',
   document: 'response',
   suggestions: 'response',
+  referral: 'response',
 };
 
 export class ChatSDKError extends Error {
@@ -106,6 +108,15 @@ export function getMessageByErrorCode(errorCode: ErrorCode): string {
       return 'You need to sign in to view this document. Please sign in and try again.';
     case 'bad_request:document':
       return 'The request to create or update the document was invalid. Please check your input and try again.';
+
+    case 'not_found:referral':
+      return 'Referral record not found. Please check and try again.';
+    case 'bad_request:referral':
+      return 'Invalid referral code provided. Please check the code and try again.';
+    case 'forbidden:referral':
+      return 'You cannot use your own referral code.';
+    case 'rate_limit:referral':
+      return 'Referral code has already been used by this user.';
 
     default:
       return 'Something went wrong. Please try again later.';

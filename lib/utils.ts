@@ -133,3 +133,57 @@ export function getTextFromMessage(message: ChatMessage): string {
     .map((part) => part.text)
     .join('');
 }
+
+// Referral Code Generation Utilities
+
+export function generateReferralCode(length: number = 8): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+
+  // Use crypto.getRandomValues for cryptographically secure random generation
+  if (typeof window !== 'undefined' && window.crypto) {
+    const array = new Uint8Array(length);
+    window.crypto.getRandomValues(array);
+    for (let i = 0; i < length; i++) {
+      result += characters[array[i] % characters.length];
+    }
+  } else if (typeof require !== 'undefined') {
+    // Node.js environment
+    const crypto = require('crypto');
+    const array = crypto.randomBytes(length);
+    for (let i = 0; i < length; i++) {
+      result += characters[array[i] % characters.length];
+    }
+  } else {
+    // Fallback to Math.random (less secure)
+    for (let i = 0; i < length; i++) {
+      result += characters[Math.floor(Math.random() * characters.length)];
+    }
+  }
+
+  return result;
+}
+
+export function validateReferralCodeFormat(code: string): boolean {
+  // Check if code matches expected format: 6-12 alphanumeric characters
+  const regex = /^[A-Z0-9]{6,12}$/;
+  return regex.test(code);
+}
+
+export async function generateUniqueReferralCode(
+  checkUniqueness: (code: string) => Promise<boolean>,
+  maxRetries: number = 10,
+): Promise<string> {
+  for (let i = 0; i < maxRetries; i++) {
+    const code = generateReferralCode(8);
+    const isUnique = await checkUniqueness(code);
+    if (isUnique) {
+      return code;
+    }
+  }
+
+  throw new ChatSDKError(
+    'referral:code_generation_failed',
+    'Failed to generate unique referral code after maximum retries',
+  );
+}

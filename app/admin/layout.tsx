@@ -21,6 +21,7 @@ export default async function AdminLayout({
     { label: 'Users', href: '/admin/users' },
     { label: 'Subscriptions', href: '/admin/subscriptions' },
     { label: 'Vouchers', href: '/admin/vouchers' },
+    { label: 'Referral', href: '/admin/referral' },
     { label: 'Models', href: '/admin/models' },
     { label: 'Experts', href: '/admin/experts' },
     { label: 'Prompts', href: '/admin/prompts' },
