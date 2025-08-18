@@ -22,12 +22,26 @@ export default async function Page() {
   }
 
   const active = await getActiveSubscriptionByUserId({ userId: session.user.id! });
-  console.log(active, 'ini active')
   if (!active) {
     redirect('/billing');
   }
 
   const id = generateCUID();
+
+  const chatSession = {
+    user: {
+      id: session.user.id!,
+      email: session.user.email!,
+      role: (['user', 'admin', 'superadmin'].includes(
+        (session.user as any).role,
+      )
+        ? ((session.user as any).role as 'user' | 'admin' | 'superadmin')
+        : 'user'),
+      name: (session.user as any).name ?? null,
+      image: (session.user as any).image ?? null,
+      type: 'regular' as const,
+    },
+  } as const;
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model-small');
@@ -42,7 +56,7 @@ export default async function Page() {
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType="private"
           isReadonly={false}
-          session={{ user: { ...session.user, type: 'regular' } }}
+          session={chatSession as any}
           autoResume={false}
         />
         <DataStreamHandler />
@@ -59,7 +73,7 @@ export default async function Page() {
         initialChatModel={modelIdFromCookie.value}
         initialVisibilityType="private"
         isReadonly={false}
-        session={{ user: { ...session.user, type: 'regular' } }}
+        session={chatSession as any}
         autoResume={false}
       />
       <DataStreamHandler />
