@@ -33,7 +33,7 @@ export function AuthForm({
           name="email"
           className="bg-muted text-md md:text-sm"
           type="email"
-          placeholder="user@acme.com"
+          placeholder="Enter your email address"
           autoComplete="email"
           required
           autoFocus
@@ -53,6 +53,7 @@ export function AuthForm({
           id="password"
           name="password"
           className="bg-muted text-md md:text-sm"
+          placeholder="Enter your password"
           type="password"
           required
         />
@@ -70,11 +71,11 @@ export function AuthForm({
           <Input
             id="referralCode"
             name="referralCode"
-            className="bg-muted text-md md:text-sm font-mono"
+            className="bg-muted text-md md:text-sm"
             type="text"
             placeholder="Enter referral code"
             defaultValue={defaultReferralCode}
-            style={{ textTransform: 'uppercase' }}
+            // style={{ textTransform: 'uppercase' }}
             onChange={(e) => {
               e.target.value = e.target.value.toUpperCase();
             }}

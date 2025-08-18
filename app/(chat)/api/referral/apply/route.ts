@@ -1,10 +1,14 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth-client';
 import { applyReferralCode, getReferralConfig } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import { validateReferralCodeFormat } from '@/lib/utils';
+import { headers } from 'next/headers';
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user) {
     return new ChatSDKError('unauthorized:auth').toResponse();
   }

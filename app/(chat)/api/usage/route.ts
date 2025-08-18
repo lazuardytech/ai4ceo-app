@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { getCurrentUser } from '@/lib/auth-guard';
 import {
   getActiveSubscriptionByUserId,
   getMonthlyMessageCountByUserId,
@@ -9,8 +9,8 @@ import { ChatSDKError } from '@/lib/errors';
 export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
-  const session = await auth();
-  if (!session?.user) {
+  const user = await getCurrentUser();
+  if (!user) {
     return new ChatSDKError('unauthorized:auth').toResponse();
   }
 
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
     const [settings, active] = await Promise.all([
       getSettings(),
-      getActiveSubscriptionByUserId({ userId: session.user.id }),
+      getActiveSubscriptionByUserId({ userId: user.id }),
     ]);
 
     // Limits (admin-configurable via settings: messageLimits)
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
     const limit = isPremium ? premiumMonthly : standardMonthly;
 
     const used = await getMonthlyMessageCountByUserId({
-      id: session.user.id,
+      id: user.id,
       month,
       year,
     });

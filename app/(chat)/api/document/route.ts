@@ -1,11 +1,13 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import type { ArtifactKind } from '@/components/artifact';
+import { getSession } from '@/lib/auth-client';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
+import { headers } from 'next/headers';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -18,7 +20,9 @@ export async function GET(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:document').toResponse();
@@ -50,7 +54,9 @@ export async function POST(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
 
   if (!session?.user) {
     return new ChatSDKError('not_found:document').toResponse();
@@ -103,7 +109,9 @@ export async function DELETE(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:document').toResponse();

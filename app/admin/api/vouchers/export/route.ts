@@ -1,6 +1,8 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth-client';
 import { listVouchersPaged } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
+import { headers } from 'next/headers';
 
 function toCsvValue(v: any) {
   if (v === null || v === undefined) return '';
@@ -10,7 +12,9 @@ function toCsvValue(v: any) {
 }
 
 export async function GET(request: Request) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
@@ -35,7 +39,7 @@ export async function GET(request: Request) {
     offset: 0,
   });
 
-  const headers = [
+  const customHeaders = [
     'id',
     'code',
     'type',
@@ -70,7 +74,7 @@ export async function GET(request: Request) {
     (v as any).updatedAt?.toISOString?.() ?? (v as any).updatedAt,
   ]);
 
-  const csv = [headers, ...rows]
+  const csv = [customHeaders, ...rows]
     .map((row) => row.map(toCsvValue).join(','))
     .join('\n');
 

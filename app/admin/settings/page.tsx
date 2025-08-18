@@ -1,8 +1,12 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth-client';
 import { getSettings } from '@/lib/db/queries';
+import { headers } from 'next/headers';
 
 export default async function AdminSettingsPage() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return (
       <div className="p-6 text-sm text-red-500">

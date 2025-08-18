@@ -4,16 +4,18 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { ChatSDKError } from '@/lib/errors';
 import { createVoucher, updateVoucher, deleteVoucher } from '@/lib/db/queries';
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth-client';
+import { headers } from 'next/headers';
 
 export type ActionState<T extends string = string> =
   | { ok: true; message?: string; tag?: T }
   | {
-      ok: false;
-      message?: string;
-      fieldErrors?: Record<string, string>;
-      tag?: T;
-    };
+    ok: false;
+    message?: string;
+    fieldErrors?: Record<string, string>;
+    tag?: T;
+  };
 
 const baseSchema = z.object({
   code: z
@@ -126,7 +128,9 @@ export async function createVoucherAction(
   _prev: ActionState<'create'> | undefined,
   formData: FormData,
 ): Promise<ActionState<'create'>> {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return { ok: false, message: 'Unauthorized', tag: 'create' };
   }
@@ -198,7 +202,9 @@ export async function updateVoucherAction(
   _prev: ActionState<'update'> | undefined,
   formData: FormData,
 ): Promise<ActionState<'update'>> {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return { ok: false, message: 'Unauthorized', tag: 'update' };
   }
@@ -242,7 +248,9 @@ export async function deleteVoucherAction(
   _prev: ActionState<'delete'> | undefined,
   formData: FormData,
 ): Promise<ActionState<'delete'>> {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return { ok: false, message: 'Unauthorized', tag: 'delete' };
   }

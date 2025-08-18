@@ -1,9 +1,11 @@
-import { auth } from "@/app/(auth)/auth";
 import { ChatSDKError } from "@/lib/errors";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { setting as settingTable, user as userTable } from "@/lib/db/schema";
+import { getSession } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 type Body = {
   name?: string;
@@ -19,10 +21,11 @@ function getDb() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user) return new ChatSDKError("unauthorized:auth").toResponse();
-  if (session.user.type !== "regular")
-    return new ChatSDKError("forbidden:auth").toResponse();
+  // if (session.user.type !== "regular") return new ChatSDKError("forbidden:auth").toResponse();
 
   let body: Body;
   try {
@@ -71,4 +74,3 @@ export async function POST(request: Request) {
     await sql.end({ timeout: 1 });
   }
 }
-

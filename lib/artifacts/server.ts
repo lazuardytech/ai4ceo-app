@@ -5,7 +5,7 @@ import { textDocumentHandler } from '@/artifacts/text/server';
 import type { ArtifactKind } from '@/components/artifact';
 import type { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
-import type { Session } from 'next-auth';
+type UserSession = { user: { id: string } & Record<string, any> };
 import type { UIMessageStreamWriter } from 'ai';
 import type { ChatMessage } from '../types';
 
@@ -21,14 +21,14 @@ export interface CreateDocumentCallbackProps {
   id: string;
   title: string;
   dataStream: UIMessageStreamWriter<ChatMessage>;
-  session: Session;
+  session: UserSession;
 }
 
 export interface UpdateDocumentCallbackProps {
   document: Document;
   description: string;
   dataStream: UIMessageStreamWriter<ChatMessage>;
-  session: Session;
+  session: UserSession;
 }
 
 export interface DocumentHandler<T = ArtifactKind> {

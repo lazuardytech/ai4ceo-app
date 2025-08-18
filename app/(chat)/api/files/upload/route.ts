@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
-import { auth } from '@/app/(auth)/auth';
+import { getCurrentUser } from '@/lib/auth-guard';
 import { generateUUID } from '@/lib/utils';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
@@ -24,9 +24,9 @@ const FileSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
         const sql = postgres(process.env.POSTGRES_URL!);
         const db = drizzle(sql);
         await db.insert(userFile).values({
-          userId: (session as any).user.id,
+          userId: user.id,
           name: filename,
           url,
           contentType: (file as any).type || null,

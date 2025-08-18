@@ -6,7 +6,8 @@ import {
   stepCountIs,
   streamText,
 } from 'ai';
-import { auth, type UserType } from '@/app/(auth)/auth';
+import type { UserType } from '@/lib/ai/entitlements';
+import { getCurrentUser } from '@/lib/auth-guard';
 import { type RequestHints, buildSystemPrompt } from '@/lib/ai/prompts';
 import {
   createStreamId,
@@ -94,16 +95,16 @@ export async function POST(request: Request) {
       selectedAgentIds?: string[];
     } = requestBody;
 
-    const session = await auth();
+    const user = await getCurrentUser();
 
-    if (!session?.user) {
+    if (!user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
     }
 
     // Enforce monthly usage limits with settings override
     const [settingsForLimits, activeSub] = await Promise.all([
       getSettings(),
-      getActiveSubscriptionByUserId({ userId: session.user.id }),
+      getActiveSubscriptionByUserId({ userId: user.id }),
     ]);
     const msgLimits = (settingsForLimits?.messageLimits as any) || {};
     const standardMonthly = Number(
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
     const monthlyLimit = isPremium ? premiumMonthly : standardMonthly;
 
     const monthCount = await getMonthlyMessageCountByUserId({
-      id: session.user.id,
+      id: user.id,
     });
 
     if (monthCount >= monthlyLimit) {
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
 
       await saveChat({
         id,
-        userId: session.user.id,
+        userId: user.id,
         title,
         visibility: selectedVisibilityType,
       });
@@ -143,7 +144,7 @@ export async function POST(request: Request) {
         } catch { }
       }
     } else {
-      if (chat.userId !== session.user.id) {
+      if (chat.userId !== user.id) {
         return new ChatSDKError('forbidden:chat').toResponse();
       }
     }
@@ -156,7 +157,7 @@ export async function POST(request: Request) {
       reasoningRequiresSubscription
     ) {
       const active = await getActiveSubscriptionByUserId({
-        userId: session.user.id,
+        userId: user.id,
       });
       if (!active) return new ChatSDKError('forbidden:auth').toResponse();
     }
@@ -324,9 +325,9 @@ export async function POST(request: Request) {
                     experimental_transform: smoothStream({ chunking: 'word' }),
                     tools: {
                       getWeather,
-                      createDocument: createDocument({ session, dataStream }),
-                      updateDocument: updateDocument({ session, dataStream }),
-                      requestSuggestions: requestSuggestions({ session, dataStream }),
+                      createDocument: createDocument({ session: { user } as any, dataStream }),
+                      updateDocument: updateDocument({ session: { user } as any, dataStream }),
+                      requestSuggestions: requestSuggestions({ session: { user } as any, dataStream }),
                     },
                     experimental_telemetry: {
                       isEnabled: isProductionEnvironment,
@@ -413,9 +414,9 @@ export async function POST(request: Request) {
                 experimental_transform: smoothStream({ chunking: 'word' }),
                 tools: {
                   getWeather,
-                  createDocument: createDocument({ session, dataStream }),
-                  updateDocument: updateDocument({ session, dataStream }),
-                  requestSuggestions: requestSuggestions({ session, dataStream }),
+                  createDocument: createDocument({ session: { user } as any, dataStream }),
+                  updateDocument: updateDocument({ session: { user } as any, dataStream }),
+                  requestSuggestions: requestSuggestions({ session: { user } as any, dataStream }),
                 },
                 experimental_telemetry: {
                   isEnabled: isProductionEnvironment,
@@ -505,15 +506,15 @@ export async function DELETE(request: Request) {
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!user) {
     return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
   const chat = await getChatById({ id });
 
-  if (chat.userId !== session.user.id) {
+  if (chat.userId !== user.id) {
     return new ChatSDKError('forbidden:chat').toResponse();
   }
 

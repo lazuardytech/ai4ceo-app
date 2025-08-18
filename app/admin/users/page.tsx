@@ -1,9 +1,13 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 
 import { AdminUsersPanel } from '@/components/admin/users-panel.client';
+import { getSession } from '@/lib/auth-client';
+import { headers } from 'next/headers';
 
 export default async function AdminUsersPage() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return (
       <div className="p-6 text-sm text-red-500">

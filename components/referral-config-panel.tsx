@@ -63,7 +63,7 @@ export function ReferralConfigPanel() {
     setError(null);
 
     try {
-      const response = await fetch('/api/admin/referral/config');
+      const response = await fetch('/admin/api/referral/config');
 
       if (!response.ok) {
         throw new Error('Failed to fetch referral configuration');
@@ -85,7 +85,7 @@ export function ReferralConfigPanel() {
     setError(null);
 
     try {
-      const response = await fetch('/api/admin/referral/config', {
+      const response = await fetch('/admin/api/referral/config', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

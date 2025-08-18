@@ -15,7 +15,16 @@ import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
-import type { Session } from 'next-auth';
+type UserSession = {
+  user: {
+    id: string;
+    email: string;
+    role: 'user' | 'admin' | 'superadmin';
+    name?: string | null;
+    image?: string | null;
+    type: 'guest' | 'regular';
+  };
+};
 import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
@@ -38,7 +47,7 @@ export function Chat({
   initialChatModel: string;
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
-  session: Session;
+  session: UserSession;
   autoResume: boolean;
   initialSelectedAgentIds?: string[];
 }) {

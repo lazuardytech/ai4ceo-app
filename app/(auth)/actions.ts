@@ -8,8 +8,7 @@ import {
   applyReferralCode,
   getReferralConfig,
 } from '@/lib/db/queries';
-
-import { signIn } from './auth';
+import { auth } from '@/lib/auth';
 
 const authFormSchema = z.object({
   email: z.string().email(),
@@ -36,10 +35,11 @@ export const login = async (
       password: formData.get('password'),
     });
 
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
+    await auth.api.signInEmail({
+      body: {
+        email: validatedData.email,
+        password: validatedData.password,
+      },
     });
 
     return { status: 'success' };
@@ -54,12 +54,12 @@ export const login = async (
 
 export interface RegisterActionState {
   status:
-    | 'idle'
-    | 'in_progress'
-    | 'success'
-    | 'failed'
-    | 'user_exists'
-    | 'invalid_data';
+  | 'idle'
+  | 'in_progress'
+  | 'success'
+  | 'failed'
+  | 'user_exists'
+  | 'invalid_data';
 }
 
 export const register = async (
@@ -115,10 +115,11 @@ export const register = async (
       }
     }
 
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
+    await auth.api.signInEmail({
+      body: {
+        email: validatedData.email,
+        password: validatedData.password,
+      },
     });
 
     return { status: 'success' };

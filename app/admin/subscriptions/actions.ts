@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { ChatSDKError } from '@/lib/errors';
 import {
   createSubscription,
@@ -10,15 +10,17 @@ import {
   getLatestSubscriptionByUserId,
   updateSubscriptionAdmin,
 } from '@/lib/db/queries';
+import { getSession } from '@/lib/auth-client';
+import { headers } from 'next/headers';
 
 export type ActionState<T extends string = string> =
   | { ok: true; message?: string; tag?: T }
   | {
-      ok: false;
-      message?: string;
-      fieldErrors?: Record<string, string>;
-      tag?: T;
-    };
+    ok: false;
+    message?: string;
+    fieldErrors?: Record<string, string>;
+    tag?: T;
+  };
 
 const schema = z.object({
   userId: z.string().uuid(),
@@ -40,7 +42,9 @@ export async function setUserSubscriptionAction(
   _prev: ActionState<'set'> | undefined,
   formData: FormData,
 ): Promise<ActionState<'set'>> {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (
     !session?.user ||
     (session.user.role !== 'superadmin' && session.user.role !== 'admin')

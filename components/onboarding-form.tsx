@@ -143,4 +143,3 @@ export function OnboardingForm({ defaultName }: { defaultName?: string | null })
     </div>
   );
 }
-

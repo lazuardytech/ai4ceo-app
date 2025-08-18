@@ -1,6 +1,5 @@
-import { auth } from '@/app/(auth)/auth';
+import { getCurrentUser } from '@/lib/auth-guard';
 import { ChatSDKError } from '@/lib/errors';
-import { isTestEnvironment } from '@/lib/constants';
 import { createSubscription } from '@/lib/db/queries';
 import { generateUUID } from '@/lib/utils';
 
@@ -19,8 +18,8 @@ const PLANS: Record<
 };
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user) return new ChatSDKError('unauthorized:chat').toResponse();
+  const user = await getCurrentUser();
+  if (!user) return new ChatSDKError('unauthorized:chat').toResponse();
 
   let body: { planId?: string };
   try {
@@ -35,20 +34,6 @@ export async function POST(request: Request) {
     return new ChatSDKError('bad_request:api', 'Unknown plan').toResponse();
 
   const externalId = `sub_${generateUUID()}`;
-
-  if (isTestEnvironment) {
-    const subscription = await createSubscription({
-      userId: session.user.id,
-      planId,
-      externalId,
-    });
-
-    return Response.json({
-      invoice_url: `https://example.com/invoice/${externalId}`,
-      external_id: externalId,
-      subscriptionId: subscription.id,
-    });
-  }
 
   const secretKey = process.env.XENDIT_SECRET_KEY;
   const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
@@ -94,7 +79,7 @@ export async function POST(request: Request) {
   };
 
   const subscription = await createSubscription({
-    userId: session.user.id,
+    userId: user.id,
     planId,
     externalId: data.external_id,
     providerInvoiceId: data.id,

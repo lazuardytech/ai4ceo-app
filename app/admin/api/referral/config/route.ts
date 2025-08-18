@@ -1,9 +1,12 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { getReferralConfig, updateReferralConfig } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
+import { headers } from 'next/headers';
 
 export async function GET() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user) {
     return new ChatSDKError('unauthorized:auth').toResponse();
   }
@@ -36,7 +39,9 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user) {
     return new ChatSDKError('unauthorized:auth').toResponse();
   }

@@ -1,59 +1,33 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from '@/components/toast';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-
-import { login, type LoginActionState } from '../actions';
-import { useSession } from 'next-auth/react';
+import { signIn } from '@/lib/auth-client';
 
 export default function Page() {
-  const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
 
-  const [state, formAction] = useActionState<LoginActionState, FormData>(
-    login,
-    {
-      status: 'idle',
-    },
-  );
+  const handleSubmit = async (formData: FormData) => {
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    setEmail(email);
 
-  const { update: updateSession } = useSession();
-
-  useEffect(() => {
-    if (state.status === 'failed') {
-      toast({
-        type: 'error',
-        description: 'Invalid credentials!',
+    await signIn.email({
+      email,
+      password,
+      callbackURL: '/',
+    })
+      .then(() => {
+        setIsSuccessful(true);
+      })
+      .catch(() => {
+        toast({ type: 'error', description: 'Invalid credentials!' });
       });
-    } else if (state.status === 'invalid_data') {
-      toast({
-        type: 'error',
-        description: 'Failed validating your submission!',
-      });
-    } else if (state.status === 'success') {
-      setIsSuccessful(true);
-      // Ensure cookies/session are established, then hard navigate.
-      // Using full replace avoids client-side flicker against middleware.
-      updateSession().finally(() => {
-        if (typeof window !== 'undefined') {
-          window.location.replace('/');
-        } else {
-          router.replace('/');
-        }
-      });
-    }
-  }, [state.status, router, updateSession]);
-
-  const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
-    formAction(formData);
   };
 
   return (

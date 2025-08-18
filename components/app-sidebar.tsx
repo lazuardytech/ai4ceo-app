@@ -1,6 +1,4 @@
 'use client';
-
-import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
 
 import { PlusIcon } from '@/components/icons';
@@ -19,7 +17,15 @@ import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import Image from 'next/image';
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+export type MinimalUser = {
+  id: string;
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  role?: 'user' | 'admin' | 'superadmin';
+};
+
+export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
 

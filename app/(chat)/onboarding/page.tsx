@@ -1,17 +1,15 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/app/(auth)/auth";
 import { OnboardingForm } from "@/components/onboarding-form";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export default async function OnboardingPage() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
 
   if (!session?.user) {
     redirect("/login");
-  }
-
-  // Only for registered (non-guest) users
-  if (session.user.type !== "regular") {
-    redirect("/register");
   }
 
   // If name already set, skip onboarding
@@ -25,4 +23,3 @@ export default async function OnboardingPage() {
     </div>
   );
 }
-

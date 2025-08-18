@@ -1,9 +1,13 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { ChatSDKError } from '@/lib/errors';
 import { listVouchersPaged } from '@/lib/db/queries';
+import { headers } from 'next/headers';
 
 export async function GET(request: Request) {
-  const session = await auth();
+  "use server"
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }

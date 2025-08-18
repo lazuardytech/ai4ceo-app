@@ -1,8 +1,12 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth-client';
 import { ChatSDKError } from '@/lib/errors';
+import { headers } from 'next/headers';
 
 export async function GET() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
@@ -36,14 +40,14 @@ export async function GET() {
     const data = await res.json();
     const models = Array.isArray(data.data)
       ? data.data.map((m: any) => ({
-          id: m.id as string,
-          name: (m.name as string) || (m.id as string),
-          description:
-            (m.description as string) || m.pricing?.prompt || '' || '',
-          context_length: m.context_length,
-          pricing: m.pricing,
-          top_provider: m.top_provider,
-        }))
+        id: m.id as string,
+        name: (m.name as string) || (m.id as string),
+        description:
+          (m.description as string) || m.pricing?.prompt || '' || '',
+        context_length: m.context_length,
+        pricing: m.pricing,
+        top_provider: m.top_provider,
+      }))
       : [];
 
     return Response.json({ models }, { status: 200 });

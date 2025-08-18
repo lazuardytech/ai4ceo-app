@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { listAgents } from '@/lib/db/queries';
 import { ToastOnQuery } from '@/components/admin/toast-on-query.client';
 import { UnsavedGuard } from '@/components/admin/unsaved-guard.client';
@@ -13,9 +13,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { getSession } from '@/lib/auth-client';
+import { headers } from 'next/headers';
 
 export default async function AdminExpertsPage() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return (
       <div className="p-6 text-sm text-red-500">Unauthorized: Superadmin only.</div>

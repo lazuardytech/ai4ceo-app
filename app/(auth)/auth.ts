@@ -1,102 +1,61 @@
-import { compare } from 'bcrypt-ts';
-import NextAuth, { type DefaultSession } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import { createGuestUser, getUser } from '@/lib/db/queries';
-import { authConfig } from './auth.config';
-import { DUMMY_PASSWORD } from '@/lib/constants';
-import type { DefaultJWT } from 'next-auth/jwt';
+// import 'server-only';
 
-export type UserType = 'guest' | 'regular';
+// import { db } from '@/lib/db';
+// import { session, user as userTable } from '@/lib/db/schema';
+// import { and, eq, gt } from 'drizzle-orm';
+// import { auth as betterAuth } from '@/lib/auth'
+// import { headers } from 'next/headers';
+// // import { getSession } from '@/lib/auth-client';
 
-declare module 'next-auth' {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      type: UserType;
-      role: 'user' | 'admin' | 'superadmin';
-    } & DefaultSession['user'];
-  }
+// export type UserType = 'guest' | 'regular';
 
-  interface User {
-    id?: string;
-    email?: string | null;
-    type: UserType;
-    role?: 'user' | 'admin' | 'superadmin';
-  }
-}
+// export interface SessionLike {
+//   user: {
+//     id: string;
+//     email: string;
+//     name: string | null;
+//     image?: string | null;
+//     role: 'user' | 'admin' | 'superadmin';
+//     type: UserType;
+//   };
+// }
 
-declare module 'next-auth/jwt' {
-  interface JWT extends DefaultJWT {
-    id: string;
-    type: UserType;
-    role: 'user' | 'admin' | 'superadmin';
-  }
-}
+// async function findUserBySessionToken(token: string) {
+//   const now = new Date();
+//   const [sess] = await db
+//     .select()
+//     .from(session)
+//     .where(and(eq(session.token, token), gt(session.expiresAt, now)))
+//     .limit(1);
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
-  ...authConfig,
-  providers: [
-    Credentials({
-      credentials: {},
-      async authorize({ email, password }: any) {
-        const users = await getUser(email);
+//   if (!sess) return null;
 
-        if (users.length === 0) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
+//   const [u] = await db
+//     .select({
+//       id: userTable.id,
+//       email: userTable.email,
+//       name: userTable.name,
+//       image: userTable.image,
+//       role: userTable.role,
+//     })
+//     .from(userTable)
+//     .where(eq(userTable.id, sess.userId))
+//     .limit(1);
 
-        const [user] = users;
+//   return u ?? null;
+// }
 
-        if (!user.password) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
+// // export async function auth(): Promise<SessionLike | null> {
+// export async function auth() {
+//   const token = await betterAuth.api.getSession({
+//     headers: await headers()
+//   });
 
-        const passwordsMatch = await compare(password, user.password);
+//   console.log(token, 'ini token')
 
-        if (!passwordsMatch) return null;
-
-        return { ...user, type: 'regular', role: (user as any).role ?? 'user' };
-      },
-    }),
-    Credentials({
-      id: 'guest',
-      credentials: {},
-      async authorize() {
-        const [guestUser] = await createGuestUser();
-        return { ...guestUser, type: 'guest', role: 'user' };
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id as string;
-        token.type = user.type;
-        token.role = (user as any).role ?? 'user';
-        token.name = (user as any).name ?? token.name ?? null;
-        (token as any).image = (user as any).image ?? (token as any).image ?? (token as any).picture ?? null;
-      }
-
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.type = token.type;
-        session.user.role = (token as any).role ?? 'user';
-        session.user.name = (token as any).name ?? session.user.name ?? null;
-        session.user.image =
-          (token as any).image ?? (token as any).picture ?? session.user.image ?? null;
-      }
-
-      return session;
-    },
-  },
-});
+//   // if (!token) return null;
+//   // // const u = await findUserBySessionToken(token.data?.session.token || '');
+//   // const u = { test: 'test' }
+//   // if (!u) return null;
+//   // return { user: { ...u, type: 'regular' } };
+// }

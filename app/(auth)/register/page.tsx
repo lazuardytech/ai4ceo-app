@@ -1,18 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 
-import { register, type RegisterActionState } from '../actions';
 import { toast } from '@/components/toast';
-import { useSession } from 'next-auth/react';
+import { signUp } from '@/lib/auth-client';
+// import { auth } from '@/lib/auth';
 
-export default function Page() {
-  const router = useRouter();
+export default function RegisterPage() {
   const searchParams = useSearchParams();
 
   const [email, setEmail] = useState('');
@@ -21,44 +20,24 @@ export default function Page() {
   );
   const [isSuccessful, setIsSuccessful] = useState(false);
 
-  const [state, formAction] = useActionState<RegisterActionState, FormData>(
-    register,
-    {
-      status: 'idle',
-    },
-  );
-
-  const { update: updateSession } = useSession();
-
-  useEffect(() => {
-    if (state.status === 'user_exists') {
-      toast({ type: 'error', description: 'Account already exists!' });
-    } else if (state.status === 'failed') {
-      toast({ type: 'error', description: 'Failed to create account!' });
-    } else if (state.status === 'invalid_data') {
-      toast({
-        type: 'error',
-        description: 'Failed validating your submission!',
+  const handleSubmit = async (formData: FormData) => {
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const referral = (formData.get('referralCode') as string) || '';
+    setEmail(email);
+    setReferralCode(referral);
+    const name = email?.split('@')[0] || 'User';
+    const res = await signUp.email({ email, password, name, role: 'user', callbackURL: '/onboarding' })
+      .then(() => {
+        toast({ type: 'success', description: 'Account created successfully!' });
+        setIsSuccessful(true);
+        window.location.replace('/onboarding');
+      })
+      .catch(() => {
+        toast({ type: 'error', description: 'Failed to create account!' });
       });
-    } else if (state.status === 'success') {
-      toast({ type: 'success', description: 'Account created successfully!' });
 
-      setIsSuccessful(true);
-      // Hard replace to onboarding to avoid client-side flicker
-      updateSession().finally(() => {
-        if (typeof window !== 'undefined') {
-          window.location.replace('/onboarding');
-        } else {
-          router.replace('/onboarding');
-        }
-      });
-    }
-  }, [state, router, updateSession]);
-
-  const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
-    setReferralCode((formData.get('referralCode') as string) || '');
-    formAction(formData);
+    console.log(res)
   };
 
   return (

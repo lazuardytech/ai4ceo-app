@@ -1,10 +1,14 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth-client';
 import { addAgentKnowledge, listAgentKnowledge } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
+import { headers } from 'next/headers';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
@@ -18,7 +22,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user || session.user.role !== 'superadmin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }

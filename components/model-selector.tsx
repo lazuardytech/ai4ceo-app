@@ -15,7 +15,6 @@ import { cn, fetcher } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import type { Session } from 'next-auth';
 import useSWR from 'swr';
 
 export function ModelSelector({
@@ -24,7 +23,7 @@ export function ModelSelector({
   className,
   onChange,
 }: {
-  session: Session;
+  session: { user: { type: 'guest' | 'regular' } };
   selectedModelId: string;
   onChange?: (id: string) => void;
 } & React.ComponentProps<typeof Button>) {

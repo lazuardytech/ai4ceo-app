@@ -1,9 +1,13 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth-client';
 import { getAgentIdsByChatId, getChatById, setChatAgents } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
+import { headers } from 'next/headers';
 
 export async function GET(request: Request) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user) return new ChatSDKError('unauthorized:chat').toResponse();
   const { searchParams } = new URL(request.url);
   const chatId = searchParams.get('chatId');
@@ -21,7 +25,9 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
   if (!session?.user) return new ChatSDKError('unauthorized:chat').toResponse();
   const { searchParams } = new URL(request.url);
   const chatId = searchParams.get('chatId');
@@ -35,7 +41,7 @@ export async function PUT(request: Request) {
   let body: any = {};
   try {
     body = await request.json();
-  } catch {}
+  } catch { }
   const agentIds: string[] = Array.isArray(body?.agentIds) ? body.agentIds : [];
   await setChatAgents({ chatId, agentIds });
   return Response.json({ ok: true, persisted: true }, { status: 200 });

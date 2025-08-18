@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/app/(auth)/auth';
+import { getCurrentUser } from '@/lib/auth-guard';
 import { ChatSDKError } from '@/lib/errors';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
@@ -127,8 +127,8 @@ async function uploadAvatarToR2({
 }
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user) {
+  const user = await getCurrentUser();
+  if (!user) {
     return new ChatSDKError('unauthorized:auth').toResponse();
   }
 
@@ -147,7 +147,7 @@ export async function GET() {
         role: userTable.role,
       })
       .from(userTable)
-      .where(eq(userTable.id, session.user.id));
+      .where(eq(userTable.id, user.id));
 
     const [profile] = rows;
 
@@ -163,8 +163,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const session = await auth();
-  if (!session?.user) {
+  const user = await getCurrentUser();
+  if (!user) {
     return new ChatSDKError('unauthorized:auth').toResponse();
   }
 
@@ -204,7 +204,7 @@ export async function PATCH(request: Request) {
         try {
           const { url } = await uploadAvatarToR2({
             file: image,
-            userId: session.user.id,
+            userId: user.id,
             filename: fileName,
           });
           updates.image = url;
@@ -250,7 +250,7 @@ export async function PATCH(request: Request) {
     const result = await db
       .update(userTable)
       .set(updates)
-      .where(eq(userTable.id, session.user.id))
+      .where(eq(userTable.id, user.id))
       .returning({
         id: userTable.id,
         email: userTable.email,

@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { getCurrentUser } from '@/lib/auth-guard';
 import { getActiveSubscriptionByUserId } from '@/lib/db/queries';
 import Link from 'next/link';
 import { BillingSubscribeClient } from '@/components/billing-subscribe.client';
@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 export const experimental_ppr = true;
 
 export default async function BillingPage() {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!user) {
     return (
       <div className="p-6">
         <p className="text-sm">Please sign in to manage your subscription.</p>
@@ -19,7 +19,7 @@ export default async function BillingPage() {
   }
 
   const active = await getActiveSubscriptionByUserId({
-    userId: session.user.id,
+    userId: user.id,
   });
 
   return (

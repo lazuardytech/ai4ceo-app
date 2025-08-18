@@ -1,9 +1,13 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { ReferralDashboard } from '@/components/referral-dashboard';
+import { getSession } from '@/lib/auth-client';
+import { headers } from 'next/headers';
 
 export default async function ReferralPage() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
 
   if (!session?.user) {
     redirect('/login');

@@ -39,7 +39,7 @@ export function ReferralDashboard() {
         // Fetch referral data and config in parallel
         const [referralResponse, configResponse] = await Promise.all([
           fetch('/api/referral'),
-          fetch('/api/admin/referral/config').catch(() => null), // Config might not be accessible to regular users
+          fetch('/api/referral').catch(() => null), // Config might not be accessible to regular users
         ]);
 
         if (!referralResponse.ok) {

@@ -1,17 +1,10 @@
-import { auth } from '@/app/(auth)/auth';
+import { requireSuperadmin } from '@/lib/auth-guard';
 import { listUsers, listSubscriptions } from '@/lib/db/queries';
 
 export const experimental_ppr = true;
 
 export default async function AdminHomePage() {
-  const session = await auth();
-  if (!session?.user || session.user.role !== 'superadmin') {
-    return (
-      <div className="p-6 text-sm text-red-500">
-        Unauthorized: Superadmin only.
-      </div>
-    );
-  }
+  const user = await requireSuperadmin();
 
   const [users, subs] = await Promise.all([
     listUsers({ limit: 100 }),
@@ -32,7 +25,7 @@ export default async function AdminHomePage() {
         </div>
         <div className="rounded-xl border p-4">
           <div className="text-sm text-muted-foreground">Role</div>
-          <div className="text-2xl font-semibold">{session.user.role}</div>
+          <div className="text-2xl font-semibold">{user.role}</div>
         </div>
       </div>
       <p className="text-sm text-muted-foreground">

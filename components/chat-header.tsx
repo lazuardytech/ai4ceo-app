@@ -12,7 +12,6 @@ import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { type VisibilityType, VisibilitySelector } from './visibility-selector';
-import type { Session } from 'next-auth';
 import { ExpertSelector } from './expert-selector';
 
 function PureChatHeader({
@@ -29,7 +28,7 @@ function PureChatHeader({
   selectedModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
-  session: Session;
+  session: { user: { type: 'guest' | 'regular' } };
   selectedAgentIds: string[];
   onChangeSelectedAgentIds: (ids: string[]) => void;
   onChangeModel: (id: string) => void;

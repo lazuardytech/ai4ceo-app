@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { requireSuperadmin } from '@/lib/auth-guard';
 import { AdminNav } from '@/components/admin-nav';
 
 export default async function AdminLayout({
@@ -6,15 +6,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
-  if (!session?.user || session.user.role !== 'superadmin') {
-    return (
-      <div className="p-6 text-sm text-red-500">
-        Unauthorized: Superadmin only.
-      </div>
-    );
-  }
+  // Enforce superadmin using Better Auth session cookie
+  const user = await requireSuperadmin();
 
   const items = [
     { label: 'Overview', href: '/admin' },

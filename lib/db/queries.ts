@@ -41,10 +41,6 @@ import {
   referralTransaction,
   referralUsage,
   referralConfig,
-  type Referral,
-  type ReferralTransaction,
-  type ReferralUsage,
-  type ReferralConfig,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -734,9 +730,9 @@ export async function listSubscriptionsPaged({
 
     const where = q?.trim()
       ? or(
-          ilike(user.email, `%${q.trim()}%`),
-          ilike(subscription.planId, `%${q.trim()}%`),
-        )
+        ilike(user.email, `%${q.trim()}%`),
+        ilike(subscription.planId, `%${q.trim()}%`),
+      )
       : undefined;
 
     const [{ count: total }] = await db
@@ -1639,9 +1635,9 @@ export async function listUsersWithSubscriptionStatus({
 
     const where = q?.trim()
       ? or(
-          ilike(user.email, `%${q.trim()}%`),
-          ilike(subscription.planId, `%${q.trim()}%`),
-        )
+        ilike(user.email, `%${q.trim()}%`),
+        ilike(subscription.planId, `%${q.trim()}%`),
+      )
       : undefined;
 
     const [{ count: total }] = await db
@@ -2021,5 +2017,21 @@ export async function checkReferralCodeUniqueness({
       'bad_request:database',
       'Failed to check referral code uniqueness',
     );
+  }
+}
+
+export async function findUserRoles({ id }: { id: string }) {
+  try {
+    const [userRecord] = await db
+      .select()
+      .from(user)
+      .where(eq(user.id, id))
+      .limit(1);
+    if (!userRecord) {
+      throw new Error('User not found');
+    }
+    return userRecord.role;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to find user roles');
   }
 }

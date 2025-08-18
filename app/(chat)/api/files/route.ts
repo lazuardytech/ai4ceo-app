@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/app/(auth)/auth';
+import { getCurrentUser } from '@/lib/auth-guard';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { and, desc, eq, inArray, ilike, sql } from 'drizzle-orm';
@@ -50,8 +50,8 @@ function getR2Client() {
  * - offset (default 0)
  */
 export async function GET(request: Request) {
-  const session = await auth();
-  if (!session?.user) {
+  const user = await getCurrentUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -81,8 +81,8 @@ export async function GET(request: Request) {
       .from(userFile)
       .where(
         includeDeleted
-          ? eq(userFile.userId, session.user.id)
-          : and(eq(userFile.userId, session.user.id), eq(userFile.isDeleted, false)),
+          ? eq(userFile.userId, user.id)
+          : and(eq(userFile.userId, user.id), eq(userFile.isDeleted, false)),
       )
       .orderBy(desc(userFile.createdAt))
       .limit(limit)
@@ -104,8 +104,8 @@ export async function GET(request: Request) {
  * { "id": "uuid-of-userfile" }
  */
 export async function DELETE(request: Request) {
-  const session = await auth();
-  if (!session?.user) {
+  const user = await getCurrentUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -129,7 +129,7 @@ export async function DELETE(request: Request) {
     const [file] = await db
       .select()
       .from(userFile)
-      .where(and(eq(userFile.id, id), eq(userFile.userId, session.user.id)));
+      .where(and(eq(userFile.id, id), eq(userFile.userId, user.id)));
 
     if (!file) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
@@ -168,7 +168,7 @@ export async function DELETE(request: Request) {
     const chats = await db
       .select({ id: chat.id })
       .from(chat)
-      .where(eq(chat.userId, session.user.id));
+      .where(eq(chat.userId, user.id));
 
     const chatIds = chats.map((c) => c.id);
     let messagesUpdated = 0;
