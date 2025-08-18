@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { requireAuth } from '@/lib/auth-guard';
 import Script from 'next/script';
 import { DataStreamProvider } from '@/components/data-stream-provider';
+import { CommandMenu } from '@/components/command-menu';
 
 export default async function Layout({
   children,
@@ -28,6 +29,8 @@ export default async function Layout({
           <AppSidebar user={user} />
           <SidebarInset>
             {children}
+            {/* Global command palette in chat area */}
+            <CommandMenu user={{ role: (user as any)?.role }} />
           </SidebarInset>
         </SidebarProvider>
       </DataStreamProvider>
