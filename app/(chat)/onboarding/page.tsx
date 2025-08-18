@@ -12,8 +12,8 @@ export default async function OnboardingPage() {
     redirect("/login");
   }
 
-  // If name already set, skip onboarding
-  if ((session.user.name || "").trim().length > 0) {
+  // If already onboarded, skip onboarding
+  if (session.user.onboarded) {
     redirect("/");
   }
 

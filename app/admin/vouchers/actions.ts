@@ -177,7 +177,7 @@ export async function createVoucherAction(
 }
 
 const updateSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().cuid2(),
   isActive: z
     .union([z.string(), z.boolean()])
     .transform((v) => (typeof v === 'boolean' ? v : v === 'true'))
@@ -242,7 +242,7 @@ export async function updateVoucherAction(
   }
 }
 
-const deleteSchema = z.object({ id: z.string().uuid() });
+const deleteSchema = z.object({ id: z.string().cuid2() });
 
 export async function deleteVoucherAction(
   _prev: ActionState<'delete'> | undefined,

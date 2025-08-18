@@ -4,10 +4,10 @@ import { ChatSDKError } from '@/lib/errors';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { and, eq } from 'drizzle-orm';
-import { user as userTable } from '@/lib/db/schema';
+import { user as userTable, setting as settingTable } from '@/lib/db/schema';
 import { z } from 'zod';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { generateUUID } from '@/lib/utils';
+import { generateCUID } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 
@@ -56,6 +56,7 @@ const jsonUpdateSchema = z.object({
     .regex(/^[A-Za-z0-9-_]{1,16}$/)
     .optional(),
   imageUrl: z.string().url().optional(),
+  botTraits: z.array(z.string()).optional(),
 });
 
 const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -101,7 +102,7 @@ async function uploadAvatarToR2({
   }
 
   const client = getR2Client();
-  const key = `avatars/${userId}/${Date.now()}-${generateUUID()}-${filename}`;
+  const key = `avatars/${userId}/${Date.now()}-${generateCUID()}-${filename}`;
 
   const arrayBuffer = await file.arrayBuffer();
   const body = Buffer.from(arrayBuffer);
@@ -145,6 +146,7 @@ export async function GET() {
         timezone: userTable.timezone,
         locale: userTable.locale,
         role: userTable.role,
+        onboarded: userTable.onboarded,
       })
       .from(userTable)
       .where(eq(userTable.id, user.id));
@@ -155,7 +157,16 @@ export async function GET() {
       return new ChatSDKError('not_found:auth', 'User not found').toResponse();
     }
 
-    return NextResponse.json(profile);
+    // Load preferences
+    const key = `user:${user.id}:preferences`;
+    const prefRows = await db
+      .select({ value: settingTable.value })
+      .from(settingTable)
+      .where(eq(settingTable.key, key));
+    const prefs = (prefRows?.[0]?.value as any) || {};
+    const botTraits = Array.isArray(prefs.botTraits) ? prefs.botTraits : [];
+
+    return NextResponse.json({ ...profile, botTraits });
   } catch (error) {
     console.error('GET /api/profile error:', error);
     return new ChatSDKError('bad_request:api').toResponse();
@@ -173,6 +184,7 @@ export async function PATCH(request: Request) {
 
     const { db } = getDb();
     const updates: Record<string, any> = {};
+    let didPrefsUpdate = false;
 
     if (contentType.includes('multipart/form-data')) {
       // Multipart/form-data update with optional image file
@@ -231,16 +243,56 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: msg }, { status: 400 });
       }
 
-      const { name, bio, timezone, locale, imageUrl } = parsed.data;
+      const { name, bio, timezone, locale, imageUrl, botTraits } = parsed.data;
 
       if (name !== undefined) updates.name = name;
       if (bio !== undefined) updates.bio = bio;
       if (timezone !== undefined) updates.timezone = timezone;
       if (locale !== undefined) updates.locale = locale;
       if (imageUrl !== undefined) updates.image = imageUrl;
+
+      // Update preferences if provided
+      if (botTraits !== undefined) {
+        const key = `user:${user.id}:preferences`;
+        const now = new Date();
+        const value = { botTraits, onboarded: true } as any;
+        // Upsert-like behavior
+        // Using drizzle update + insert pattern similar to onboarding
+        const updated = await db
+          .update(settingTable)
+          .set({ value, updatedAt: now })
+          .where(eq(settingTable.key, key))
+          .returning();
+        if (!updated || updated.length === 0) {
+          await db
+            .insert(settingTable)
+            .values({ key, value, updatedAt: now })
+            .returning();
+        }
+        didPrefsUpdate = true;
+      }
     }
 
     if (Object.keys(updates).length === 0) {
+      if (didPrefsUpdate) {
+        // Return current profile with latest preferences
+        const rows = await db
+          .select({
+            id: userTable.id,
+            email: userTable.email,
+            name: userTable.name,
+            image: userTable.image,
+            bio: userTable.bio,
+            timezone: userTable.timezone,
+            locale: userTable.locale,
+            role: userTable.role,
+            onboarded: userTable.onboarded,
+          })
+          .from(userTable)
+          .where(eq(userTable.id, user.id));
+        const [profile] = rows;
+        return NextResponse.json(profile ?? {});
+      }
       return NextResponse.json(
         { message: 'No fields to update' },
         { status: 200 },

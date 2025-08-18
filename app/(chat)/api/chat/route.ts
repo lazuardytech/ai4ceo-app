@@ -24,7 +24,7 @@ import {
   getAgentIdsByChatId,
   setChatAgents,
 } from '@/lib/db/queries';
-import { convertToUIMessages, generateUUID } from '@/lib/utils';
+import { convertToUIMessages, generateCUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
@@ -187,7 +187,7 @@ export async function POST(request: Request) {
       ],
     });
 
-    const streamId = generateUUID();
+    const streamId = generateCUID();
     await createStreamId({ streamId, chatId: id });
 
     // Resolve expert selection once upfront (avoid await inside stream execute)
@@ -285,7 +285,7 @@ export async function POST(request: Request) {
             dataStream.write({
               type: 'data-appendMessage',
               data: JSON.stringify({
-                id: generateUUID(),
+                id: generateCUID(),
                 role: 'assistant',
                 parts: [{ type: 'text', text: `${title}\n\n${detail}` }],
                 attachments: [],
@@ -369,7 +369,7 @@ export async function POST(request: Request) {
             dataStream.write({
               type: 'data-appendMessage',
               data: JSON.stringify({
-                id: generateUUID(),
+                id: generateCUID(),
                 role: 'assistant',
                 parts: [
                   {
@@ -440,7 +440,7 @@ export async function POST(request: Request) {
           }
         })();
       },
-      generateId: generateUUID,
+      generateId: generateCUID,
       onFinish: async ({ messages }) => {
         // Add agent metadata to assistant messages where possible, and persist attachments
         const toSave = messages.map((m) => {

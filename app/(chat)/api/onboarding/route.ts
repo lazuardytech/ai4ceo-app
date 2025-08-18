@@ -39,13 +39,13 @@ export async function POST(request: Request) {
 
   const { db, sql } = getDb();
   try {
-    // Update display name if provided
-    if (name.length > 0) {
-      await db
-        .update(userTable)
-        .set({ name })
-        .where(eq(userTable.id, session.user.id));
-    }
+    // Update display name if provided and mark as onboarded
+    const updateUser: Record<string, any> = { onboarded: true };
+    if (name.length > 0) updateUser.name = name;
+    await db
+      .update(userTable)
+      .set(updateUser)
+      .where(eq(userTable.id, session.user.id));
 
     // Persist preferences in settings as a JSON blob
     const key = `user:${session.user.id}:preferences`;

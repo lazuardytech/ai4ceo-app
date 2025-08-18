@@ -9,7 +9,7 @@ import {
   UndoIcon,
 } from '@/components/icons';
 import { toast } from 'sonner';
-import { generateUUID } from '@/lib/utils';
+import { generateCUID } from '@/lib/utils';
 import {
   Console,
   type ConsoleOutput,
@@ -82,8 +82,8 @@ export const codeArtifact = new Artifact<'code', Metadata>({
         content: streamPart.data,
         isVisible:
           draftArtifact.status === 'streaming' &&
-          draftArtifact.content.length > 300 &&
-          draftArtifact.content.length < 310
+            draftArtifact.content.length > 300 &&
+            draftArtifact.content.length < 310
             ? true
             : draftArtifact.isVisible,
         status: 'streaming',
@@ -117,7 +117,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       label: 'Run',
       description: 'Execute code',
       onClick: async ({ content, setMetadata }) => {
-        const runId = generateUUID();
+        const runId = generateCUID();
         const outputContent: Array<ConsoleOutputContent> = [];
 
         setMetadata((metadata) => ({

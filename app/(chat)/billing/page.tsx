@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { BillingSubscribeClient } from '@/components/billing-subscribe.client';
 import { VoucherApplication } from '@/components/voucher-application';
 import { Badge } from '@/components/ui/badge';
-
-export const experimental_ppr = true;
+import { SidebarToggle } from '@/components/sidebar-toggle';
 
 export default async function BillingPage() {
   const user = await getCurrentUser();
@@ -24,6 +23,9 @@ export default async function BillingPage() {
 
   return (
     <div className="mx-auto max-w-2xl p-6 space-y-6">
+      <div className="px-2 -mt-2">
+        <SidebarToggle />
+      </div>
       <div>
         <h1 className="text-xl font-semibold">Your Subscription</h1>
         <p className="text-sm text-muted-foreground">

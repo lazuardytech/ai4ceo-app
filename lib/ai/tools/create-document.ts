@@ -1,4 +1,4 @@
-import { generateUUID } from '@/lib/utils';
+import { generateCUID } from '@/lib/utils';
 import { tool, type UIMessageStreamWriter } from 'ai';
 import { z } from 'zod';
 import {
@@ -25,7 +25,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       kind: z.enum(artifactKinds),
     }),
     execute: async ({ title, kind }) => {
-      const id = generateUUID();
+      const id = generateCUID();
 
       dataStream.write({
         type: 'data-kind',

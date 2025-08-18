@@ -19,6 +19,7 @@ export type CurrentUser = {
   name: string | null;
   image?: string | null;
   role: 'user' | 'admin' | 'superadmin';
+  onboarded?: boolean;
 };
 
 async function findUserBySessionToken(token: string) {
@@ -79,7 +80,7 @@ export async function requireSuperadmin(): Promise<CurrentUser> {
 
 export async function ensureOnboarded(): Promise<CurrentUser> {
   const user = await requireAuth();
-  if (!user.name || String(user.name).trim().length === 0) {
+  if (!user.onboarded) {
     redirect('/onboarding');
   }
   return user;

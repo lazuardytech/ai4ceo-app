@@ -1,8 +1,6 @@
 import { requireSuperadmin } from '@/lib/auth-guard';
 import { listUsers, listSubscriptions } from '@/lib/db/queries';
 
-export const experimental_ppr = true;
-
 export default async function AdminHomePage() {
   const user = await requireSuperadmin();
 

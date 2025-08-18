@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 
@@ -11,6 +10,7 @@ import { PlusIcon, VercelIcon } from './icons';
 import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { toast } from './toast';
 import { type VisibilityType, VisibilitySelector } from './visibility-selector';
 import { ExpertSelector } from './expert-selector';
 
@@ -48,7 +48,30 @@ function PureChatHeader({
             <Button
               variant="outline"
               className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
-              onClick={() => {
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/billing/status');
+                  if (res.ok) {
+                    const data = (await res.json()) as { hasActiveSubscription: boolean };
+                    if (!data.hasActiveSubscription) {
+                      toast({
+                        type: 'error',
+                        description: 'You need an active plan to start a new chat.',
+                      });
+                      // Optionally guide user to billing page
+                      router.push('/billing');
+                      return;
+                    }
+                  } else {
+                    // If API fails, show a friendly message and do not navigate
+                    toast({ type: 'error', description: 'Unable to verify plan status.' });
+                    return;
+                  }
+                } catch {
+                  toast({ type: 'error', description: 'Unable to verify plan status.' });
+                  return;
+                }
+
                 router.push('/');
                 router.refresh();
               }}

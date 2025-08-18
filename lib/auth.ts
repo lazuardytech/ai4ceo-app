@@ -5,7 +5,7 @@ import { user, session, account, verification } from "./db/schema";
 import { customSession } from "better-auth/plugins";
 import { findUserRoles } from "./db/queries";
 import { nextCookies } from "better-auth/next-js";
-import { randomUUID } from "node:crypto";
+import { generateCUID } from "./utils";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -17,7 +17,7 @@ export const auth = betterAuth({
   },
   advanced: {
     database: {
-      generateId: ({ model, size }) => (model === "user" ? randomUUID() : generateId(size ?? 24)),
+      generateId: ({ model, size }) => (model === "user" ? generateCUID() : generateId(size ?? 24)),
     },
   },
   user: {
@@ -30,6 +30,10 @@ export const auth = betterAuth({
       image: {
         type: "string",
         required: false,
+      },
+      onboarded: {
+        type: "boolean",
+        defaultValue: false,
       },
       role: {
         type: "string",

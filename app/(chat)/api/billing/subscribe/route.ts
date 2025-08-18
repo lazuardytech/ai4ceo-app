@@ -1,7 +1,7 @@
 import { getCurrentUser } from '@/lib/auth-guard';
 import { ChatSDKError } from '@/lib/errors';
 import { createSubscription } from '@/lib/db/queries';
-import { generateUUID } from '@/lib/utils';
+import { generateCUID } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   if (!plan)
     return new ChatSDKError('bad_request:api', 'Unknown plan').toResponse();
 
-  const externalId = `sub_${generateUUID()}`;
+  const externalId = `sub_${generateCUID()}`;
 
   const secretKey = process.env.XENDIT_SECRET_KEY;
   const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';

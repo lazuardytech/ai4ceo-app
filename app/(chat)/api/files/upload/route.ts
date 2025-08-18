@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 import { getCurrentUser } from '@/lib/auth-guard';
-import { generateUUID } from '@/lib/utils';
+import { generateCUID } from '@/lib/utils';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { userFile } from '@/lib/db/schema';
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const key = `uploads/${Date.now()}-${generateUUID()}-${filename}`;
+    const key = `uploads/${Date.now()}-${generateCUID()}-${filename}`;
 
     try {
       await client.send(

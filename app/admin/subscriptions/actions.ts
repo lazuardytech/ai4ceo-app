@@ -23,7 +23,7 @@ export type ActionState<T extends string = string> =
   };
 
 const schema = z.object({
-  userId: z.string().uuid(),
+  userId: z.string().cuid2(),
   planId: z.string().min(1),
   status: z.enum(['pending', 'active', 'canceled', 'expired', 'failed']),
   currentPeriodEnd: z

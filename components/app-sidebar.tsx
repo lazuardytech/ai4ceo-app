@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { toast } from './toast';
 import Image from 'next/image';
 
 export type MinimalUser = {
@@ -50,8 +51,28 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
                   variant="ghost"
                   type="button"
                   className="p-2 h-fit"
-                  onClick={() => {
+                  onClick={async () => {
                     setOpenMobile(false);
+                    try {
+                      const res = await fetch('/api/billing/status');
+                      if (res.ok) {
+                        const data = (await res.json()) as { hasActiveSubscription: boolean };
+                        if (!data.hasActiveSubscription) {
+                          toast({
+                            type: 'error',
+                            description: 'You need an active plan to start a new chat.',
+                          });
+                          router.push('/billing');
+                          return;
+                        }
+                      } else {
+                        toast({ type: 'error', description: 'Unable to verify plan status.' });
+                        return;
+                      }
+                    } catch {
+                      toast({ type: 'error', description: 'Unable to verify plan status.' });
+                      return;
+                    }
                     router.push('/');
                     router.refresh();
                   }}

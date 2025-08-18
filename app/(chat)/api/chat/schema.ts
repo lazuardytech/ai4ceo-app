@@ -15,9 +15,9 @@ const filePartSchema = z.object({
 const partSchema = z.union([textPartSchema, filePartSchema]);
 
 export const postRequestBodySchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().cuid2(),
   message: z.object({
-    id: z.string().uuid(),
+    id: z.string().cuid2(),
     role: z.enum(['user']),
     parts: z.array(partSchema),
   }),
@@ -27,7 +27,7 @@ export const postRequestBodySchema = z.object({
     'chat-model-reasoning',
   ]),
   selectedVisibilityType: z.enum(['public', 'private']),
-  selectedAgentIds: z.array(z.string().uuid()).optional().default([]),
+  selectedAgentIds: z.array(z.string().cuid2()).optional().default([]),
   selectedProviderPreference: z
     .enum(['balance', 'groq', 'openrouter'])
     .optional()

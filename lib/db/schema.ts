@@ -4,22 +4,22 @@ import {
   varchar,
   timestamp,
   json,
-  uuid,
   text,
   primaryKey,
   foreignKey,
   boolean,
 } from 'drizzle-orm/pg-core';
+import { cuid2 } from 'drizzle-cuid2/postgres';
 
 export const user = pgTable('User', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: cuid2('id').defaultRandom().primaryKey(),
   email: varchar('email', { length: 64 }).notNull().unique(),
-  password: varchar('password', { length: 64 }),
   name: varchar('name', { length: 128 }),
   image: text('image'),
   bio: text('bio'),
   timezone: varchar('timezone', { length: 64 }),
   locale: varchar('locale', { length: 16 }),
+  onboarded: boolean('onboarded').notNull().default(false),
   role: varchar('role', { enum: ['user', 'admin', 'superadmin'] })
     .notNull()
     .default('user'),
@@ -37,14 +37,14 @@ export const user = pgTable('User', {
 export type User = InferSelectModel<typeof user>;
 
 export const session = pgTable("Session", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  id: cuid2("id").primaryKey().notNull().defaultRandom(),
   expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  userId: uuid("user_id")
+  userId: cuid2("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
@@ -52,10 +52,10 @@ export const session = pgTable("Session", {
 export type Session = InferSelectModel<typeof session>;
 
 export const account = pgTable("Account", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  id: cuid2("id").primaryKey().notNull().defaultRandom(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
-  userId: uuid("user_id")
+  userId: cuid2("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
@@ -72,7 +72,7 @@ export const account = pgTable("Account", {
 export type Account = InferSelectModel<typeof account>;
 
 export const verification = pgTable("Verification", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  id: cuid2("id").primaryKey().notNull().defaultRandom(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -87,10 +87,10 @@ export const verification = pgTable("Verification", {
 export type Verification = InferSelectModel<typeof verification>;
 
 export const chat = pgTable('Chat', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: cuid2('id').defaultRandom().primaryKey(),
   createdAt: timestamp('createdAt').notNull(),
   title: text('title').notNull(),
-  userId: uuid('userId')
+  userId: cuid2('userId')
     .notNull()
     .references(() => user.id),
   visibility: varchar('visibility', { enum: ['public', 'private'] })
@@ -103,8 +103,8 @@ export type Chat = InferSelectModel<typeof chat>;
 // DEPRECATED: The following schema is deprecated and will be removed in the future.
 // Read the migration guide at https://chat-sdk.dev/docs/migration-guides/message-parts
 export const messageDeprecated = pgTable('Message', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  chatId: uuid('chatId')
+  id: cuid2('id').defaultRandom().primaryKey(),
+  chatId: cuid2('chatId')
     .notNull()
     .references(() => chat.id),
   role: varchar('role').notNull(),
@@ -115,8 +115,8 @@ export const messageDeprecated = pgTable('Message', {
 export type MessageDeprecated = InferSelectModel<typeof messageDeprecated>;
 
 export const message = pgTable('Message_v2', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  chatId: uuid('chatId')
+  id: cuid2('id').defaultRandom().primaryKey(),
+  chatId: cuid2('chatId')
     .notNull()
     .references(() => chat.id),
   role: varchar('role').notNull(),
@@ -132,10 +132,10 @@ export type DBMessage = InferSelectModel<typeof message>;
 export const voteDeprecated = pgTable(
   'Vote',
   {
-    chatId: uuid('chatId')
+    chatId: cuid2('chatId')
       .notNull()
       .references(() => chat.id),
-    messageId: uuid('messageId')
+    messageId: cuid2('messageId')
       .notNull()
       .references(() => messageDeprecated.id),
     isUpvoted: boolean('isUpvoted').notNull(),
@@ -152,10 +152,10 @@ export type VoteDeprecated = InferSelectModel<typeof voteDeprecated>;
 export const vote = pgTable(
   'Vote_v2',
   {
-    chatId: uuid('chatId')
+    chatId: cuid2('chatId')
       .notNull()
       .references(() => chat.id),
-    messageId: uuid('messageId')
+    messageId: cuid2('messageId')
       .notNull()
       .references(() => message.id),
     isUpvoted: boolean('isUpvoted').notNull(),
@@ -172,14 +172,14 @@ export type Vote = InferSelectModel<typeof vote>;
 export const document = pgTable(
   'Document',
   {
-    id: uuid('id').notNull().defaultRandom(),
+    id: cuid2('id').notNull().defaultRandom(),
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
     kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet'] })
       .notNull()
       .default('text'),
-    userId: uuid('userId')
+    userId: cuid2('userId')
       .notNull()
       .references(() => user.id),
   },
@@ -195,14 +195,14 @@ export type Document = InferSelectModel<typeof document>;
 export const suggestion = pgTable(
   'Suggestion',
   {
-    id: uuid('id').notNull().defaultRandom(),
-    documentId: uuid('documentId').notNull(),
+    id: cuid2('id').notNull().defaultRandom(),
+    documentId: cuid2('documentId').notNull(),
     documentCreatedAt: timestamp('documentCreatedAt').notNull(),
     originalText: text('originalText').notNull(),
     suggestedText: text('suggestedText').notNull(),
     description: text('description'),
     isResolved: boolean('isResolved').notNull().default(false),
-    userId: uuid('userId')
+    userId: cuid2('userId')
       .notNull()
       .references(() => user.id),
     createdAt: timestamp('createdAt').notNull(),
@@ -221,8 +221,8 @@ export type Suggestion = InferSelectModel<typeof suggestion>;
 export const stream = pgTable(
   'Stream',
   {
-    id: uuid('id').notNull().defaultRandom(),
-    chatId: uuid('chatId').notNull(),
+    id: cuid2('id').notNull().defaultRandom(),
+    chatId: cuid2('chatId').notNull(),
     createdAt: timestamp('createdAt').notNull(),
   },
   (table) => ({
@@ -238,7 +238,7 @@ export type Stream = InferSelectModel<typeof stream>;
 
 // Experts / Agents
 export const agent = pgTable('Agent', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: cuid2('id').defaultRandom().primaryKey(),
   slug: varchar('slug', { length: 64 }).notNull(),
   name: varchar('name', { length: 64 }).notNull(),
   description: text('description'),
@@ -255,8 +255,8 @@ export type Agent = InferSelectModel<typeof agent>;
 export const agentKnowledge = pgTable(
   'AgentKnowledge',
   {
-    id: uuid('id').notNull().defaultRandom(),
-    agentId: uuid('agentId')
+    id: cuid2('id').notNull().defaultRandom(),
+    agentId: cuid2('agentId')
       .notNull()
       .references(() => agent.id),
     title: varchar('title', { length: 128 }).notNull(),
@@ -275,10 +275,10 @@ export type AgentKnowledge = InferSelectModel<typeof agentKnowledge>;
 export const chatAgent = pgTable(
   'ChatAgent',
   {
-    chatId: uuid('chatId')
+    chatId: cuid2('chatId')
       .notNull()
       .references(() => chat.id),
-    agentId: uuid('agentId')
+    agentId: cuid2('agentId')
       .notNull()
       .references(() => agent.id),
   },
@@ -290,8 +290,8 @@ export const chatAgent = pgTable(
 export type ChatAgent = InferSelectModel<typeof chatAgent>;
 
 export const subscription = pgTable('Subscription', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  userId: uuid('userId')
+  id: cuid2('id').defaultRandom().primaryKey(),
+  userId: cuid2('userId')
     .notNull()
     .references(() => user.id),
   planId: varchar('planId', { length: 64 }).notNull(),
@@ -318,7 +318,7 @@ export const setting = pgTable('Setting', {
 export type Setting = InferSelectModel<typeof setting>;
 
 export const voucher = pgTable('Voucher', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: cuid2('id').defaultRandom().primaryKey(),
   code: varchar('code', { length: 64 }).notNull().unique(),
   type: varchar('type', { enum: ['discount', 'free_subscription'] }).notNull(),
   discountType: varchar('discountType', { enum: ['percentage', 'fixed'] }),
@@ -339,14 +339,14 @@ export const voucher = pgTable('Voucher', {
 export type Voucher = InferSelectModel<typeof voucher>;
 
 export const voucherUsage = pgTable('VoucherUsage', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  voucherId: uuid('voucherId')
+  id: cuid2('id').defaultRandom().primaryKey(),
+  voucherId: cuid2('voucherId')
     .notNull()
     .references(() => voucher.id),
-  userId: uuid('userId')
+  userId: cuid2('userId')
     .notNull()
     .references(() => user.id),
-  subscriptionId: uuid('subscriptionId').references(() => subscription.id),
+  subscriptionId: cuid2('subscriptionId').references(() => subscription.id),
   usedAt: timestamp('usedAt').notNull(),
   createdAt: timestamp('createdAt').notNull(),
 });
@@ -354,8 +354,8 @@ export const voucherUsage = pgTable('VoucherUsage', {
 export type VoucherUsage = InferSelectModel<typeof voucherUsage>;
 
 export const userFile = pgTable('UserFile', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  userId: uuid('userId')
+  id: cuid2('id').defaultRandom().primaryKey(),
+  userId: cuid2('userId')
     .notNull()
     .references(() => user.id),
   name: text('name').notNull(),
@@ -372,8 +372,8 @@ export type UserFile = InferSelectModel<typeof userFile>;
 
 // Referral System Tables
 export const referral = pgTable('Referral', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  userId: uuid('userId')
+  id: cuid2('id').defaultRandom().primaryKey(),
+  userId: cuid2('userId')
     .notNull()
     .references(() => user.id),
   referralCode: varchar('referralCode', { length: 32 }).notNull().unique(),
@@ -390,8 +390,8 @@ export const referral = pgTable('Referral', {
 export type Referral = InferSelectModel<typeof referral>;
 
 export const referralTransaction = pgTable('ReferralTransaction', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  referralId: uuid('referralId')
+  id: cuid2('id').defaultRandom().primaryKey(),
+  referralId: cuid2('referralId')
     .notNull()
     .references(() => referral.id),
   type: varchar('type', {
@@ -399,20 +399,20 @@ export const referralTransaction = pgTable('ReferralTransaction', {
   }).notNull(),
   amount: varchar('amount', { length: 16 }).notNull(),
   description: text('description').notNull(),
-  relatedUserId: uuid('relatedUserId').references(() => user.id), // The referred user
-  subscriptionId: uuid('subscriptionId').references(() => subscription.id), // If related to subscription
+  relatedUserId: cuid2('relatedUserId').references(() => user.id), // The referred user
+  subscriptionId: cuid2('subscriptionId').references(() => subscription.id), // If related to subscription
   createdAt: timestamp('createdAt').notNull().defaultNow(),
 });
 
 export type ReferralTransaction = InferSelectModel<typeof referralTransaction>;
 
 export const referralUsage = pgTable('ReferralUsage', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: cuid2('id').defaultRandom().primaryKey(),
   referralCode: varchar('referralCode', { length: 32 }).notNull(),
-  referrerId: uuid('referrerId')
+  referrerId: cuid2('referrerId')
     .notNull()
     .references(() => user.id),
-  referredUserId: uuid('referredUserId')
+  referredUserId: cuid2('referredUserId')
     .notNull()
     .references(() => user.id),
   bonusAmount: varchar('bonusAmount', { length: 16 }).notNull(),
@@ -426,7 +426,7 @@ export const referralUsage = pgTable('ReferralUsage', {
 export type ReferralUsage = InferSelectModel<typeof referralUsage>;
 
 export const referralConfig = pgTable('ReferralConfig', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: cuid2('id').defaultRandom().primaryKey(),
   benefitType: varchar('benefitType', {
     enum: ['free_subscription', 'discount_percentage', 'bonus_credits'],
   })

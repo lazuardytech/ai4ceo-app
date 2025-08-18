@@ -1,6 +1,6 @@
 {
-  "id": "7a44fc7e-e4eb-4749-a114-8d18b548b074",
-  "prevId": "b3f36690-870d-4277-8ee5-a922890a0893",
+  "id": "ec8abd50-2190-4c3f-940e-9132da4ccb02",
+  "prevId": "ff44c900-4755-433c-842c-ae8d540bf689",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -10,10 +10,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "account_id": {
           "name": "account_id",
@@ -29,7 +28,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -113,10 +112,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "slug": {
           "name": "slug",
@@ -188,14 +186,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "agentId": {
           "name": "agentId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -263,10 +260,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "createdAt": {
           "name": "createdAt",
@@ -282,7 +278,7 @@
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -319,13 +315,13 @@
       "columns": {
         "chatId": {
           "name": "chatId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
         "agentId": {
           "name": "agentId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         }
@@ -376,10 +372,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "createdAt": {
           "name": "createdAt",
@@ -408,7 +403,7 @@
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         }
@@ -446,14 +441,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "chatId": {
           "name": "chatId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -507,14 +501,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "chatId": {
           "name": "chatId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -562,14 +555,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -655,10 +647,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "benefitType": {
           "name": "benefitType",
@@ -724,14 +715,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "referralId": {
           "name": "referralId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -755,13 +745,13 @@
         },
         "relatedUserId": {
           "name": "relatedUserId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": false
         },
         "subscriptionId": {
           "name": "subscriptionId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": false
         },
@@ -824,10 +814,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "referralCode": {
           "name": "referralCode",
@@ -837,13 +826,13 @@
         },
         "referrerId": {
           "name": "referrerId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
         "referredUserId": {
           "name": "referredUserId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -912,10 +901,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "expires_at": {
           "name": "expires_at",
@@ -955,7 +943,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         }
@@ -1021,14 +1009,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "chatId": {
           "name": "chatId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1071,14 +1058,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1151,14 +1137,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "documentId": {
           "name": "documentId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1195,7 +1180,7 @@
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1253,22 +1238,15 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "email": {
           "name": "email",
           "type": "varchar(64)",
           "primaryKey": false,
           "notNull": true
-        },
-        "password": {
-          "name": "password",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false
         },
         "name": {
           "name": "name",
@@ -1299,6 +1277,13 @@
           "type": "varchar(16)",
           "primaryKey": false,
           "notNull": false
+        },
+        "onboarded": {
+          "name": "onboarded",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "role": {
           "name": "role",
@@ -1345,14 +1330,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1433,10 +1417,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "identifier": {
           "name": "identifier",
@@ -1480,13 +1463,13 @@
       "columns": {
         "chatId": {
           "name": "chatId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
         "messageId": {
           "name": "messageId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1543,13 +1526,13 @@
       "columns": {
         "chatId": {
           "name": "chatId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
         "messageId": {
           "name": "messageId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1606,10 +1589,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "code": {
           "name": "code",
@@ -1711,26 +1693,25 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "voucherId": {
           "name": "voucherId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": true
         },
         "subscriptionId": {
           "name": "subscriptionId",
-          "type": "uuid",
+          "type": "varchar(24)",
           "primaryKey": false,
           "notNull": false
         },

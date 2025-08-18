@@ -10,6 +10,8 @@ import type { DBMessage, Document } from '@/lib/db/schema';
 import { ChatSDKError, type ErrorCode } from './errors';
 import type { ChatMessage, ChatTools, CustomUIDataTypes } from './types';
 import { formatISO } from 'date-fns';
+import { createId } from '@paralleldrive/cuid2';
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -55,12 +57,8 @@ export function getLocalStorage(key: string) {
   return [];
 }
 
-export function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+export function generateCUID(): string {
+  return createId();
 }
 
 type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
@@ -111,7 +109,7 @@ export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
         agentName = meta.agentName;
         agentSlug = meta.agentSlug;
       }
-    } catch {}
+    } catch { }
 
     return {
       id: message.id,
@@ -182,8 +180,7 @@ export async function generateUniqueReferralCode(
     }
   }
 
-  throw new ChatSDKError(
-    'referral:code_generation_failed',
+  throw new Error(
     'Failed to generate unique referral code after maximum retries',
   );
 }

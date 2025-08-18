@@ -1,19 +1,19 @@
-import { config } from 'dotenv';
+// import { config } from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { user } from '../lib/db/schema';
-import { eq } from 'drizzle-orm';
 
 import { auth } from '@/lib/auth';
 import { reset } from "drizzle-seed";
 import * as schema from "@/lib/db/schema";
 
-config({ path: '.env.local' });
+import '@/lib/env-config'
+
+const connection = postgres(process.env.POSTGRES_URL!, { max: 1 });
+export const db = drizzle(connection);
 
 async function main() {
   if (!process.env.POSTGRES_URL) throw new Error('POSTGRES_URL missing');
 
-  const db = drizzle(postgres(process.env.POSTGRES_URL, { max: 1 }));
   await reset(db, schema);
 
   const seeding = [

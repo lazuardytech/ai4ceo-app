@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { SidebarToggle } from '@/components/sidebar-toggle';
 import {
   Dialog,
   DialogClose,
@@ -33,6 +34,8 @@ type Profile = {
   timezone?: string | null;
   locale?: string | null;
   role?: 'user' | 'admin' | 'superadmin';
+  botTraits?: string[];
+  onboarded?: boolean;
 };
 
 export default function ProfilePage() {
@@ -50,6 +53,7 @@ export default function ProfilePage() {
   const [imageUrl, setImageUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [traits, setTraits] = useState<string[]>([]);
 
   const displayName = useMemo(() => {
     if (!profile) return '';
@@ -73,6 +77,7 @@ export default function ProfilePage() {
         throw new Error(data?.message || data?.error || 'Failed to load profile');
       }
       setProfile(data as Profile);
+      if (Array.isArray((data as any).botTraits)) setTraits((data as any).botTraits);
     } catch (err: any) {
       toast.error(err?.message || 'Failed to load profile');
     } finally {
@@ -93,6 +98,7 @@ export default function ProfilePage() {
     setLocale(profile.locale || '');
     setImageUrl(profile.image || '');
     setFile(null);
+    setTraits(profile.botTraits || []);
     if (filePreview) {
       URL.revokeObjectURL(filePreview);
       setFilePreview(null);
@@ -151,6 +157,7 @@ export default function ProfilePage() {
         };
         // Allow empty string to clear custom avatar
         payload.imageUrl = imageUrl ?? '';
+        payload.botTraits = traits;
 
         const res = await fetch('/api/profile', {
           method: 'PATCH',
@@ -163,7 +170,7 @@ export default function ProfilePage() {
       }
 
       if (updated) {
-        setProfile(updated);
+        setProfile({ ...(updated as any), botTraits: traits });
         toast.success('Profile updated');
       } else {
         toast.success('Saved');
@@ -179,6 +186,9 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-3xl p-4 sm:p-6 md:p-8 space-y-6">
+      <div className="px-2 -mt-2">
+        <SidebarToggle />
+      </div>
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">Profile</h1>
         <p className="text-sm text-muted-foreground">
@@ -362,6 +372,37 @@ export default function ProfilePage() {
               Add a short bio and avatar so others can recognize your account more easily.
             </div>
           )}
+          <div className="grid gap-2">
+            <div className="text-sm font-medium">Preferred Bot Traits</div>
+            <div className="text-xs text-muted-foreground">Pick the assistant traits you prefer. These influence tone and style.</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                { id: 'friendly', label: 'Friendly' },
+                { id: 'concise', label: 'Concise' },
+                { id: 'curious', label: 'Curious' },
+                { id: 'empathetic', label: 'Empathetic' },
+                { id: 'direct', label: 'Direct' },
+                { id: 'supportive', label: 'Supportive' },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`text-left rounded border p-3 hover:bg-accent ${
+                    traits.includes(t.id) ? 'border-primary' : 'border-muted'
+                  }`}
+                  onClick={() =>
+                    setTraits((prev) =>
+                      prev.includes(t.id)
+                        ? prev.filter((x) => x !== t.id)
+                        : [...prev, t.id],
+                    )
+                  }
+                >
+                  <div className="font-medium">{t.label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {loading && (

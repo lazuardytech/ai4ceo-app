@@ -2,7 +2,7 @@ import { cookies, headers } from 'next/headers';
 
 import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import { generateUUID } from '@/lib/utils';
+import { generateCUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { redirect } from 'next/navigation';
 import { getActiveSubscriptionByUserId } from '@/lib/db/queries';
@@ -13,13 +13,21 @@ export default async function Page() {
     headers: await headers()
   });
 
-  const active = await getActiveSubscriptionByUserId({ userId: session?.user.id! });
+  if (!session?.user) {
+    redirect('/login');
+  }
+
+  if (!session.user.onboarded) {
+    redirect('/onboarding');
+  }
+
+  const active = await getActiveSubscriptionByUserId({ userId: session.user.id! });
   console.log(active, 'ini active')
   if (!active) {
     redirect('/billing');
   }
 
-  const id = generateUUID();
+  const id = generateCUID();
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model-small');
@@ -34,7 +42,7 @@ export default async function Page() {
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType="private"
           isReadonly={false}
-          session={{ user: { ...session?.user, type: 'regular' } }}
+          session={{ user: { ...session.user, type: 'regular' } }}
           autoResume={false}
         />
         <DataStreamHandler />
@@ -51,7 +59,7 @@ export default async function Page() {
         initialChatModel={modelIdFromCookie.value}
         initialVisibilityType="private"
         isReadonly={false}
-        session={{ user: { ...session?.user, type: 'regular' } }}
+        session={{ user: { ...session.user, type: 'regular' } }}
         autoResume={false}
       />
       <DataStreamHandler />

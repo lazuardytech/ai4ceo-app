@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS "Account" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
 	"provider_id" text NOT NULL,
-	"user_id" uuid NOT NULL,
+	"user_id" varchar(24) NOT NULL,
 	"access_token" text,
 	"refresh_token" text,
 	"id_token" text,
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "Account" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Agent" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"slug" varchar(64) NOT NULL,
 	"name" varchar(64) NOT NULL,
 	"description" text,
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS "Agent" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "AgentKnowledge" (
-	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
-	"agentId" uuid NOT NULL,
+	"id" varchar(24) NOT NULL,
+	"agentId" varchar(24) NOT NULL,
 	"title" varchar(128) NOT NULL,
 	"content" text NOT NULL,
 	"tags" text,
@@ -39,32 +39,32 @@ CREATE TABLE IF NOT EXISTS "AgentKnowledge" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Chat" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"createdAt" timestamp NOT NULL,
 	"title" text NOT NULL,
-	"userId" uuid NOT NULL,
+	"userId" varchar(24) NOT NULL,
 	"visibility" varchar DEFAULT 'private' NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "ChatAgent" (
-	"chatId" uuid NOT NULL,
-	"agentId" uuid NOT NULL,
+	"chatId" varchar(24) NOT NULL,
+	"agentId" varchar(24) NOT NULL,
 	CONSTRAINT "ChatAgent_chatId_agentId_pk" PRIMARY KEY("chatId","agentId")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Document" (
-	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
+	"id" varchar(24) NOT NULL,
 	"createdAt" timestamp NOT NULL,
 	"title" text NOT NULL,
 	"content" text,
 	"text" varchar DEFAULT 'text' NOT NULL,
-	"userId" uuid NOT NULL,
+	"userId" varchar(24) NOT NULL,
 	CONSTRAINT "Document_id_createdAt_pk" PRIMARY KEY("id","createdAt")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Message_v2" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"chatId" uuid NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"chatId" varchar(24) NOT NULL,
 	"role" varchar NOT NULL,
 	"parts" json NOT NULL,
 	"attachments" json NOT NULL,
@@ -72,16 +72,16 @@ CREATE TABLE IF NOT EXISTS "Message_v2" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Message" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"chatId" uuid NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"chatId" varchar(24) NOT NULL,
 	"role" varchar NOT NULL,
 	"content" json NOT NULL,
 	"createdAt" timestamp NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Referral" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"userId" uuid NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"userId" varchar(24) NOT NULL,
 	"referralCode" varchar(32) NOT NULL,
 	"bonusBalance" varchar(16) DEFAULT '0' NOT NULL,
 	"totalEarned" varchar(16) DEFAULT '0' NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS "Referral" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "ReferralConfig" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"benefitType" varchar DEFAULT 'bonus_credits' NOT NULL,
 	"benefitValue" varchar(16) NOT NULL,
 	"planId" varchar(64),
@@ -105,21 +105,21 @@ CREATE TABLE IF NOT EXISTS "ReferralConfig" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "ReferralTransaction" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"referralId" uuid NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"referralId" varchar(24) NOT NULL,
 	"type" varchar NOT NULL,
 	"amount" varchar(16) NOT NULL,
 	"description" text NOT NULL,
-	"relatedUserId" uuid,
-	"subscriptionId" uuid,
+	"relatedUserId" varchar(24),
+	"subscriptionId" varchar(24),
 	"createdAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "ReferralUsage" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"referralCode" varchar(32) NOT NULL,
-	"referrerId" uuid NOT NULL,
-	"referredUserId" uuid NOT NULL,
+	"referrerId" varchar(24) NOT NULL,
+	"referredUserId" varchar(24) NOT NULL,
 	"bonusAmount" varchar(16) NOT NULL,
 	"status" varchar DEFAULT 'pending' NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
@@ -127,14 +127,14 @@ CREATE TABLE IF NOT EXISTS "ReferralUsage" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Session" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"expires_at" timestamp NOT NULL,
 	"token" text NOT NULL,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL,
 	"ip_address" text,
 	"user_agent" text,
-	"user_id" uuid NOT NULL,
+	"user_id" varchar(24) NOT NULL,
 	CONSTRAINT "Session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
@@ -145,15 +145,15 @@ CREATE TABLE IF NOT EXISTS "Setting" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Stream" (
-	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
-	"chatId" uuid NOT NULL,
+	"id" varchar(24) NOT NULL,
+	"chatId" varchar(24) NOT NULL,
 	"createdAt" timestamp NOT NULL,
 	CONSTRAINT "Stream_id_pk" PRIMARY KEY("id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Subscription" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"userId" uuid NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"userId" varchar(24) NOT NULL,
 	"planId" varchar(64) NOT NULL,
 	"status" varchar DEFAULT 'pending' NOT NULL,
 	"externalId" varchar(128),
@@ -164,20 +164,20 @@ CREATE TABLE IF NOT EXISTS "Subscription" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Suggestion" (
-	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
-	"documentId" uuid NOT NULL,
+	"id" varchar(24) NOT NULL,
+	"documentId" varchar(24) NOT NULL,
 	"documentCreatedAt" timestamp NOT NULL,
 	"originalText" text NOT NULL,
 	"suggestedText" text NOT NULL,
 	"description" text,
 	"isResolved" boolean DEFAULT false NOT NULL,
-	"userId" uuid NOT NULL,
+	"userId" varchar(24) NOT NULL,
 	"createdAt" timestamp NOT NULL,
 	CONSTRAINT "Suggestion_id_pk" PRIMARY KEY("id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "User" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"email" varchar(64) NOT NULL,
 	"password" varchar(64),
 	"name" varchar(128),
@@ -185,6 +185,7 @@ CREATE TABLE IF NOT EXISTS "User" (
 	"bio" text,
 	"timezone" varchar(64),
 	"locale" varchar(16),
+	"onboarded" boolean DEFAULT false NOT NULL,
 	"role" varchar DEFAULT 'user' NOT NULL,
 	"email_verified" boolean NOT NULL,
 	"created_at" timestamp NOT NULL,
@@ -193,8 +194,8 @@ CREATE TABLE IF NOT EXISTS "User" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "UserFile" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"userId" uuid NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"userId" varchar(24) NOT NULL,
 	"name" text NOT NULL,
 	"url" text NOT NULL,
 	"contentType" varchar(128),
@@ -206,7 +207,7 @@ CREATE TABLE IF NOT EXISTS "UserFile" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Verification" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
 	"expires_at" timestamp NOT NULL,
@@ -215,21 +216,21 @@ CREATE TABLE IF NOT EXISTS "Verification" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Vote_v2" (
-	"chatId" uuid NOT NULL,
-	"messageId" uuid NOT NULL,
+	"chatId" varchar(24) NOT NULL,
+	"messageId" varchar(24) NOT NULL,
 	"isUpvoted" boolean NOT NULL,
 	CONSTRAINT "Vote_v2_chatId_messageId_pk" PRIMARY KEY("chatId","messageId")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Vote" (
-	"chatId" uuid NOT NULL,
-	"messageId" uuid NOT NULL,
+	"chatId" varchar(24) NOT NULL,
+	"messageId" varchar(24) NOT NULL,
 	"isUpvoted" boolean NOT NULL,
 	CONSTRAINT "Vote_chatId_messageId_pk" PRIMARY KEY("chatId","messageId")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Voucher" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"code" varchar(64) NOT NULL,
 	"type" varchar NOT NULL,
 	"discountType" varchar,
@@ -247,10 +248,10 @@ CREATE TABLE IF NOT EXISTS "Voucher" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "VoucherUsage" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"voucherId" uuid NOT NULL,
-	"userId" uuid NOT NULL,
-	"subscriptionId" uuid,
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"voucherId" varchar(24) NOT NULL,
+	"userId" varchar(24) NOT NULL,
+	"subscriptionId" varchar(24),
 	"usedAt" timestamp NOT NULL,
 	"createdAt" timestamp NOT NULL
 );
