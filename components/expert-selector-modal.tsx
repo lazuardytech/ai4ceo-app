@@ -148,7 +148,7 @@ export function ExpertSelectorModal({
               );
             })}
           </div>
-          <DialogFooter className="justify-between">
+          <DialogFooter className="justify-between items-center">
             <div className="text-xs text-muted-foreground">
               {selectedCount > 0 ? `${selectedCount} selected` : 'No experts selected'}
             </div>

@@ -203,7 +203,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
 
   return (
     <>
-      <SidebarGroup>
+      <SidebarGroup className='border-y'>
         <SidebarGroupContent>
           <SidebarMenu>
             {paginatedChatHistories &&
@@ -328,7 +328,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
             }}
           />
 
-          {hasReachedEnd ? (
+          {/*{hasReachedEnd ? (
             <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2 mt-8">
               You have reached the end of your chat history.
             </div>
@@ -339,7 +339,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
               </div>
               <div>Loading Chats...</div>
             </div>
-          )}
+          )}*/}
         </SidebarGroupContent>
       </SidebarGroup>
 

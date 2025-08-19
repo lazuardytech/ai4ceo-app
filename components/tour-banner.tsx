@@ -42,7 +42,7 @@ export function TourBanner({ visible }: Props) {
   if (!show) return null;
 
   return (
-    <div className="sticky top-0 z-30 w-full mb-1">
+    <div className="sticky top-0 z-30 w-full mb-1 border-b">
       <Alert className="rounded-none relative flex items-center justify-between border-none bg-muted-foreground/5 text-foreground p-3">
         <div className='flex flex-col min-w-0'>
           <AlertTitle className='text-sm'>Take a quick tour?</AlertTitle>

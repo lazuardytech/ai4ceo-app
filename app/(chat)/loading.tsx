@@ -3,14 +3,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function Loading() {
   return (
     <div className="flex h-dvh">
-      <aside className="hidden md:flex w-64 flex-col border-r p-3 gap-3">
+      {/*<aside className="hidden md:flex w-64 flex-col border-r p-3 gap-3">
         <Skeleton className="h-9 w-40" />
         <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-6 w-full" />
           ))}
         </div>
-      </aside>
+      </aside>*/}
       <main className="flex-1 flex flex-col">
         <header className="border-b p-4">
           <div className="flex items-center justify-between">
@@ -38,4 +38,3 @@ export default function Loading() {
     </div>
   );
 }
-

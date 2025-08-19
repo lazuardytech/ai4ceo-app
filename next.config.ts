@@ -11,6 +11,9 @@ const nextConfig = {
       },
     ],
   },
-} as any as NextConfig;
+  devIndicators: {
+    position: 'bottom-right',
+  }
+} as NextConfig;
 
 export default nextConfig;

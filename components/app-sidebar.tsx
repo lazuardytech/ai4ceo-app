@@ -35,7 +35,7 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
   if (pathname === '/onboarding' || pathname === '/billing' || pathname === '/pricing') return null;
 
   return (
-    <Sidebar className="group-data-[side=left]:border-r-0">
+    <Sidebar className="group-data-[side=left]:border-r">
       <SidebarHeader>
         <SidebarMenu>
           <div className="flex flex-row justify-between items-center">
