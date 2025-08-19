@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { ChatSDKError } from '@/lib/errors';
 import { createVoucher, updateVoucher, deleteVoucher } from '@/lib/db/queries';
 import { auth } from '@/lib/auth';
-import { getSession } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 
 export type ActionState<T extends string = string> =

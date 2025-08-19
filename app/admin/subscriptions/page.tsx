@@ -1,7 +1,6 @@
 import { auth } from '@/lib/auth';
 
 import { AdminSubscriptionsPanel } from '@/components/admin/subscriptions-panel.client';
-import { getSession } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 
 export default async function AdminSubscriptionsPage() {

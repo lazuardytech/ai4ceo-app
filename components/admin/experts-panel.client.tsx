@@ -1,6 +1,6 @@
 'use client';
 
-import { JSX, useMemo, useState } from 'react';
+import { type JSX, useMemo, useState } from 'react';
 import type { Agent } from '@/lib/db/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -169,10 +169,10 @@ export function ExpertsPanel({ initialAgents }: { initialAgents: Agent[] }) {
               <IconSelector value={icon} onChange={setIcon} />
             </div>
             <div className="flex flex-wrap items-center gap-6 pt-1">
-              <label className="flex items-center gap-2 text-sm">
+              <label htmlFor='activeSwitch' className="flex items-center gap-2 text-sm">
                 <Switch checked={isActive} onCheckedChange={setIsActive} /> Active
               </label>
-              <label className="flex items-center gap-2 text-sm">
+              <label htmlFor='ragSwitch' className="flex items-center gap-2 text-sm">
                 <Switch checked={ragEnabled} onCheckedChange={setRagEnabled} /> RAG Enabled
               </label>
             </div>
@@ -272,10 +272,10 @@ export function ExpertsPanel({ initialAgents }: { initialAgents: Agent[] }) {
               <IconSelector value={icon} onChange={setIcon} />
             </div>
             <div className="flex flex-wrap items-center gap-6 pt-1">
-              <label className="flex items-center gap-2 text-sm">
+              <label htmlFor='activeSwitch' className="flex items-center gap-2 text-sm">
                 <Switch checked={isActive} onCheckedChange={setIsActive} /> Active
               </label>
-              <label className="flex items-center gap-2 text-sm">
+              <label htmlFor='ragSwitch' className="flex items-center gap-2 text-sm">
                 <Switch checked={ragEnabled} onCheckedChange={setRagEnabled} /> RAG Enabled
               </label>
             </div>

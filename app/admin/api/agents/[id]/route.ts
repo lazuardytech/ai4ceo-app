@@ -1,5 +1,4 @@
 import { auth } from '@/lib/auth';
-import { getSession } from '@/lib/auth-client';
 import { deleteAgent, updateAgent } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import { headers } from 'next/headers';
@@ -20,8 +19,8 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   } else {
     const form = await request.formData();
     body = Object.fromEntries(form.entries());
-    body.isActive = form.get('isActive') ? true : false;
-    body.ragEnabled = form.get('ragEnabled') ? true : false;
+    body.isActive = !!form.get('isActive');
+    body.ragEnabled = !!form.get('ragEnabled');
     isForm = true;
   }
   const updated = await updateAgent({ id: params.id, ...body });
@@ -65,9 +64,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     });
   }
   const body: any = Object.fromEntries(form.entries());
-  body.isActive = form.get('isActive') ? true : false;
-  body.ragEnabled = form.get('ragEnabled') ? true : false;
-  delete body._method;
+  body.isActive = !!form.get('isActive');
+  body.ragEnabled = !!form.get('ragEnabled');
+  body._method = undefined;
   await updateAgent({ id: params.id, ...body });
   return new Response(null, {
     status: 303,

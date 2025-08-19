@@ -26,7 +26,7 @@ export function ReferralStats({
   className,
 }: ReferralStatsProps) {
   const formatCurrency = (amount: string) => {
-    const value = parseFloat(amount);
+    const value = Number.parseFloat(amount);
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
@@ -109,15 +109,15 @@ export function ReferralStats({
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-start gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
+            <div className="size-2 rounded-full bg-blue-500 mt-2 shrink-0" />
             <p>Share your referral code with friends</p>
           </div>
           <div className="flex items-start gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0" />
+            <div className="size-2 rounded-full bg-green-500 mt-2 shrink-0" />
             <p>When they sign up, both of you receive benefits</p>
           </div>
           <div className="flex items-start gap-2">
-            <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 shrink-0" />
+            <div className="size-2 rounded-full bg-purple-500 mt-2 shrink-0" />
             <p>Use your bonus balance for subscription discounts</p>
           </div>
         </CardContent>

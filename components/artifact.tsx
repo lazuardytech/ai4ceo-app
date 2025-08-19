@@ -67,6 +67,10 @@ function PureArtifact({
   votes,
   isReadonly,
   selectedVisibilityType,
+  selectedAgentIds,
+  onChangeSelectedAgentIds,
+  isReasoningActive,
+  onExpertsActivated,
 }: {
   chatId: string;
   input: string;
@@ -82,6 +86,10 @@ function PureArtifact({
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
+  selectedAgentIds: string[];
+  onChangeSelectedAgentIds: (ids: string[]) => void;
+  isReasoningActive: boolean;
+  onExpertsActivated: () => void;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -336,6 +344,10 @@ function PureArtifact({
                     className="bg-background dark:bg-muted"
                     setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
+                    selectedAgentIds={selectedAgentIds}
+                    onChangeSelectedAgentIds={onChangeSelectedAgentIds}
+                    isReasoningActive={isReasoningActive}
+                    onExpertsActivated={onExpertsActivated}
                   />
                 </form>
               </div>

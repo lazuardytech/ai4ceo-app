@@ -6,7 +6,6 @@ import {
   stepCountIs,
   streamText,
 } from 'ai';
-import type { UserType } from '@/lib/ai/entitlements';
 import { getCurrentUser } from '@/lib/auth-guard';
 import { type RequestHints, buildSystemPrompt } from '@/lib/ai/prompts';
 import {

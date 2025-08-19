@@ -3,7 +3,6 @@
 import useSWR from 'swr';
 import { useEffect, useMemo, useState } from 'react';
 import { fetcher } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,

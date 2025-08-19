@@ -73,13 +73,14 @@ export function ReferralDashboard() {
         return `Refer friends and both of you get a free subscription!`;
       case 'discount_percentage':
         return `Refer friends and both of you get ${config.discountPercentage}% discount on subscriptions!`;
-      case 'bonus_credits':
+      case 'bonus_credits': {
         const amount = new Intl.NumberFormat('id-ID', {
           style: 'currency',
           currency: 'IDR',
           minimumFractionDigits: 0,
-        }).format(parseFloat(config.benefitValue));
+        }).format(Number.parseFloat(config.benefitValue));
         return `Refer friends and earn ${amount} in bonus credits!`;
+      }
       default:
         return 'Refer friends and earn rewards!';
     }

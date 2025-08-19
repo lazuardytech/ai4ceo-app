@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth-guard';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { and, desc, eq, inArray, ilike, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { userFile, chat, message } from '@/lib/db/schema';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
@@ -185,7 +185,7 @@ export async function DELETE(request: Request) {
         .where(
           and(
             inArray(message.chatId, chatIds),
-            sql`CAST(${message.parts} AS TEXT) ILIKE ${'%' + file.url + '%'}`
+            sql`CAST(${message.parts} AS TEXT) ILIKE ${`%${file.url}%`}`
           ),
         );
 

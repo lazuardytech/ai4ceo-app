@@ -6,6 +6,7 @@ import {
   useMotionValue,
   useTransform,
 } from 'framer-motion';
+import type React from 'react';
 import {
   type Dispatch,
   memo,
@@ -317,16 +318,20 @@ const PureToolbar = ({
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   artifactKind: ArtifactKind;
 }) => {
-  const toolbarRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useOnClickOutside(toolbarRef, () => {
-    setIsToolbarVisible(false);
-    setSelectedTool(null);
-  });
+  // Cast to RefObject<HTMLElement> to satisfy usehooks-ts type
+  useOnClickOutside<HTMLDivElement>(
+    (toolbarRef as unknown as React.RefObject<HTMLDivElement>),
+    () => {
+      setIsToolbarVisible(false);
+      setSelectedTool(null);
+    },
+  );
 
   const startCloseTimer = () => {
     if (timeoutRef.current) {
@@ -382,19 +387,19 @@ const PureToolbar = ({
           isToolbarVisible
             ? selectedTool === 'adjust-reading-level'
               ? {
-                  opacity: 1,
-                  y: 0,
-                  height: 6 * 43,
-                  transition: { delay: 0 },
-                  scale: 0.95,
-                }
+                opacity: 1,
+                y: 0,
+                height: 6 * 43,
+                transition: { delay: 0 },
+                scale: 0.95,
+              }
               : {
-                  opacity: 1,
-                  y: 0,
-                  height: toolsByArtifactKind.length * 50,
-                  transition: { delay: 0 },
-                  scale: 1,
-                }
+                opacity: 1,
+                y: 0,
+                height: toolsByArtifactKind.length * 50,
+                transition: { delay: 0 },
+                scale: 1,
+              }
             : { opacity: 1, y: 0, height: 54, transition: { delay: 0 } }
         }
         exit={{ opacity: 0, y: -20, transition: { duration: 0.1 } }}

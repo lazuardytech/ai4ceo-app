@@ -114,7 +114,7 @@ export function CommandMenu(props: { user?: { role?: MinimalUserRole } }) {
           <CommandGroup heading="Chats">
             {results.map((c) => (
               <CommandItem key={c.id} value={c.title} onSelect={() => router.push(`/chat/${c.id}`)}>
-                <span className="truncate max-w-[24rem]">{c.title}</span>
+                <span className="truncate max-w-96">{c.title}</span>
               </CommandItem>
             ))}
           </CommandGroup>

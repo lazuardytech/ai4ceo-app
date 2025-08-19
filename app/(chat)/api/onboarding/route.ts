@@ -3,7 +3,6 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq } from "drizzle-orm";
 import { setting as settingTable, user as userTable } from "@/lib/db/schema";
-import { getSession } from "@/lib/auth-client";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 

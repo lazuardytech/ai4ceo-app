@@ -10,7 +10,6 @@ import {
   getLatestSubscriptionByUserId,
   updateSubscriptionAdmin,
 } from '@/lib/db/queries';
-import { getSession } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 
 export type ActionState<T extends string = string> =

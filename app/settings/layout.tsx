@@ -1,7 +1,6 @@
 import { requireAuth } from '@/lib/auth-guard';
 import { getActiveSubscriptionByUserId, getMonthlyMessageCountByUserId, getSettings } from '@/lib/db/queries';
 import Link from 'next/link';
-import Image from 'next/image';
 import { SettingsNav } from '@/components/settings-nav';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { SettingsSidebarHeader } from '@/components/settings-sidebar-header';

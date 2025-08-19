@@ -134,29 +134,12 @@ export function getTextFromMessage(message: ChatMessage): string {
 
 // Referral Code Generation Utilities
 
-export function generateReferralCode(length: number = 8): string {
+export function generateReferralCode(length = 8): string {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
 
-  // Use crypto.getRandomValues for cryptographically secure random generation
-  if (typeof window !== 'undefined' && window.crypto) {
-    const array = new Uint8Array(length);
-    window.crypto.getRandomValues(array);
-    for (let i = 0; i < length; i++) {
-      result += characters[array[i] % characters.length];
-    }
-  } else if (typeof require !== 'undefined') {
-    // Node.js environment
-    const crypto = require('crypto');
-    const array = crypto.randomBytes(length);
-    for (let i = 0; i < length; i++) {
-      result += characters[array[i] % characters.length];
-    }
-  } else {
-    // Fallback to Math.random (less secure)
-    for (let i = 0; i < length; i++) {
-      result += characters[Math.floor(Math.random() * characters.length)];
-    }
+  for (let i = 0; i < length; i++) {
+    result += characters[Math.floor(Math.random() * characters.length)];
   }
 
   return result;
@@ -170,7 +153,7 @@ export function validateReferralCodeFormat(code: string): boolean {
 
 export async function generateUniqueReferralCode(
   checkUniqueness: (code: string) => Promise<boolean>,
-  maxRetries: number = 10,
+  maxRetries = 10,
 ): Promise<string> {
   for (let i = 0; i < maxRetries; i++) {
     const code = generateReferralCode(8);

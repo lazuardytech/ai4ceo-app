@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
@@ -11,7 +11,7 @@ import { toast } from '@/components/toast';
 import { signUp } from '@/lib/auth-client';
 // import { auth } from '@/lib/auth';
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const searchParams = useSearchParams();
 
   const [email, setEmail] = useState('');
@@ -69,5 +69,13 @@ export default function RegisterPage() {
         </AuthForm>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+      <RegisterPageContent />
+    </Suspense>
   );
 }

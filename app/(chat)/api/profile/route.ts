@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth-guard';
 import { ChatSDKError } from '@/lib/errors';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { user as userTable, setting as settingTable } from '@/lib/db/schema';
 import { z } from 'zod';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';

@@ -1,6 +1,5 @@
 import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
-import { auth } from "./auth";
 
 // Use a relative baseURL on the server so the incoming request cookies
 // are forwarded with SSR fetches. On the client, same-origin is also fine.

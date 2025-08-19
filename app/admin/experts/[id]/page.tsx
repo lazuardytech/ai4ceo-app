@@ -13,7 +13,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { getSession } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 
 export default async function AdminExpertKnowledgePage(props: { params: Promise<{ id: string }> }) {
@@ -52,7 +51,7 @@ export default async function AdminExpertKnowledgePage(props: { params: Promise<
               <AlertDialogHeader>
                 <AlertDialogTitle>Ingest document?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will chunk the document and add it to this expert's knowledge. Pinecone index will be updated if configured.
+                  This will chunk the document and add it to this expert&apos;s knowledge. Pinecone index will be updated if configured.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

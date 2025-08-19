@@ -4,9 +4,8 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 import { getCurrentUser } from '@/lib/auth-guard';
 import { generateCUID } from '@/lib/utils';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { userFile } from '@/lib/db/schema';
+import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
@@ -105,8 +104,6 @@ export async function POST(request: Request) {
 
       // Persist file metadata to UserFile table
       try {
-        const sql = postgres(process.env.POSTGRES_URL!);
-        const db = drizzle(sql);
         await db.insert(userFile).values({
           userId: user.id,
           name: filename,

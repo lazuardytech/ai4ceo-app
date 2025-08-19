@@ -2,8 +2,7 @@ import { auth } from '@/lib/auth';
 import { listAgents } from '@/lib/db/queries';
 import { ToastOnQuery } from '@/components/admin/toast-on-query.client';
 import { UnsavedGuard } from '@/components/admin/unsaved-guard.client';
-import ExpertsPanel from '@/components/admin/experts-panel.client';
-import { getSession } from '@/lib/auth-client';
+import { ExpertsPanel } from '@/components/admin/experts-panel.client';
 import { headers } from 'next/headers';
 
 export default async function AdminExpertsPage() {

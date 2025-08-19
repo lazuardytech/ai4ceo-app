@@ -53,7 +53,7 @@ const PurePreviewMessage = ({
     // Fallback: parse first text chunk like "[Tech Expert] ..."
     const firstText = message.parts.find((p: any) => p.type === 'text');
     const txt = (firstText as any)?.text as string | undefined;
-    if (txt && txt.startsWith('[')) {
+    if (txt?.startsWith('[')) {
       const end = txt.indexOf(']');
       if (end > 1 && end < 80) return txt.slice(1, end);
     }

@@ -2,8 +2,6 @@ import { betterAuth, generateId } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db";
 import { user, session, account, verification } from "./db/schema";
-import { customSession } from "better-auth/plugins";
-import { findUserRoles } from "./db/queries";
 import { nextCookies } from "better-auth/next-js";
 import { generateCUID } from "./utils";
 
@@ -26,6 +24,9 @@ export const auth = betterAuth({
     additionalFields: {
       name: {
         type: "string",
+        required: false,
+        defaultValue: null,
+        input: false
       },
       image: {
         type: "string",
@@ -43,16 +44,6 @@ export const auth = betterAuth({
     }
   },
   plugins: [
-    // customSession(async ({ user, session }) => {
-    //   const userRoles = await findUserRoles({ id: session.userId });
-    //   return {
-    //     user: {
-    //       ...user,
-    //       role: userRoles
-    //     },
-    //     session,
-    //   };
-    // }),
     nextCookies(),
   ],
 });

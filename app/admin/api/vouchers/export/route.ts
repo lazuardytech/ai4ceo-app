@@ -1,5 +1,4 @@
 import { auth } from '@/lib/auth';
-import { getSession } from '@/lib/auth-client';
 import { listVouchersPaged } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import { headers } from 'next/headers';

@@ -26,7 +26,7 @@ function persistSelection(ids: string[]) {
   try {
     const value = encodeURIComponent(JSON.stringify(ids ?? []));
     document.cookie = `selected-experts=${value}; Path=/; Max-Age=31536000; SameSite=Lax`;
-  } catch {}
+  } catch { }
 }
 
 type Expert = { id: string; slug: string; name: string; description?: string | null };
@@ -50,7 +50,7 @@ export function ExpertSelector({
   const [localSelected, setLocalSelected] = useState<string[]>(selectedAgentIds);
   useEffect(() => {
     setLocalSelected(selectedAgentIds);
-  }, [selectedAgentIds.join(',')]);
+  }, [selectedAgentIds]);
 
   const { data } = useSWR<Expert[]>('/api/experts', fetcher);
   const experts = data ?? [];
@@ -92,39 +92,39 @@ export function ExpertSelector({
             return (
               <DropdownMenuCheckboxItem
                 key={e.id}
-              checked={checked}
-              onCheckedChange={(next) => {
-                const set = new Set(localSelected);
-                if (next) set.add(e.id);
-                else set.delete(e.id);
-                const nextArr = Array.from(set);
-                setLocalSelected(nextArr);
-                // Persist selection cookie and bubble up
-                persistSelection(nextArr);
-                onChange(nextArr);
-                // Save to server for this chat
-                try {
-                  fetch(`/api/chat/experts?chatId=${encodeURIComponent(chatId)}`,
-                    { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ agentIds: nextArr }) },
-                  );
-                } catch {}
-                // If experts were just activated (transition from none -> some), auto-switch model to Reasoning
-                if (!localSelected.length && nextArr.length > 0) {
+                checked={checked}
+                onCheckedChange={(next) => {
+                  const set = new Set(localSelected);
+                  if (next) set.add(e.id);
+                  else set.delete(e.id);
+                  const nextArr = Array.from(set);
+                  setLocalSelected(nextArr);
+                  // Persist selection cookie and bubble up
+                  persistSelection(nextArr);
+                  onChange(nextArr);
+                  // Save to server for this chat
                   try {
-                    document.cookie = `chat-model-small=chat-model-reasoning; Path=/; Max-Age=31536000; SameSite=Lax`;
-                  } catch {}
-                  onExpertsActivated?.();
-                }
-              }}
-            >
-              <div className="flex flex-col items-start">
-                <div>{e.name}</div>
-                {e.description ? (
-                  <div className="text-xs text-muted-foreground">{e.description}</div>
-                ) : null}
-              </div>
-            </DropdownMenuCheckboxItem>
-          );
+                    fetch(`/api/chat/experts?chatId=${encodeURIComponent(chatId)}`,
+                      { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ agentIds: nextArr }) },
+                    );
+                  } catch { }
+                  // If experts were just activated (transition from none -> some), auto-switch model to Reasoning
+                  if (!localSelected.length && nextArr.length > 0) {
+                    try {
+                      document.cookie = `chat-model-small=chat-model-reasoning; Path=/; Max-Age=31536000; SameSite=Lax`;
+                    } catch { }
+                    onExpertsActivated?.();
+                  }
+                }}
+              >
+                <div className="flex flex-col items-start">
+                  <div>{e.name}</div>
+                  {e.description ? (
+                    <div className="text-xs text-muted-foreground">{e.description}</div>
+                  ) : null}
+                </div>
+              </DropdownMenuCheckboxItem>
+            );
           })}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -145,7 +145,7 @@ export function ExpertSelector({
               onClick={() => {
                 try {
                   document.cookie = `chat-model-small=chat-model-reasoning; Path=/; Max-Age=31536000; SameSite=Lax`;
-                } catch {}
+                } catch { }
                 onExpertsActivated?.();
                 setConfirmOpen(false);
                 setOpen(true);

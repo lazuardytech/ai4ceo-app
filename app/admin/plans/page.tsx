@@ -1,6 +1,5 @@
 import { auth } from '@/lib/auth';
 import { getSettings } from '@/lib/db/queries';
-import { getSession } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 
 export default async function AdminPlansPage() {

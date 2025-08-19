@@ -36,7 +36,7 @@ export function UnsavedGuard({ selector = 'form' }: { selector?: string }) {
       const t = e.target as HTMLElement | null;
       if (!t) return;
       const anchor = t.closest('a') as HTMLAnchorElement | null;
-      if (anchor && anchor.href && anchor.target !== '_blank' && !anchor.download) {
+      if (anchor?.href && anchor.target !== '_blank' && !anchor.download) {
         e.preventDefault();
         setPendingHref(anchor.href);
         setOpen(true);

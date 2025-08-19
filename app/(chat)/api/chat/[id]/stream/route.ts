@@ -9,7 +9,6 @@ import type { ChatMessage } from '@/lib/types';
 import { createUIMessageStream, JsonToSseTransformStream } from 'ai';
 import { getStreamContext } from '../../route';
 import { differenceInSeconds } from 'date-fns';
-import { getSession } from '@/lib/auth-client';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 

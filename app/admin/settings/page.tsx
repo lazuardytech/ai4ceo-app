@@ -1,5 +1,4 @@
 import { auth } from '@/lib/auth';
-import { getSession } from '@/lib/auth-client';
 import { getSettings } from '@/lib/db/queries';
 import { headers } from 'next/headers';
 

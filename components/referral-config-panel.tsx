@@ -126,7 +126,7 @@ export function ReferralConfigPanel() {
   };
 
   const formatCurrency = (amount: string) => {
-    const value = parseFloat(amount || '0');
+    const value = Number.parseFloat(amount || '0');
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',

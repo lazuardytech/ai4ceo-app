@@ -1,6 +1,5 @@
 import { auth } from '@/lib/auth';
 import type { ArtifactKind } from '@/components/artifact';
-import { getSession } from '@/lib/auth-client';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,

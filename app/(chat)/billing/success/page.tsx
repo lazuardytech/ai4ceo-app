@@ -1,27 +1,35 @@
+"use client";
+
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
+type ConfirmRes = { ok: boolean; status?: string; error?: string };
 
-export default async function BillingSuccessPage({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
-  const extParam = searchParams?.ext;
-  const externalId = Array.isArray(extParam) ? extParam[0] : extParam;
+export default function BillingSuccessPage() {
+  const searchParams = useSearchParams();
+  const ext = searchParams.get('ext');
+  const [confirmed, setConfirmed] = useState<ConfirmRes | null>(null);
 
-  let confirmed: { ok: boolean; status?: string; error?: string } | null = null;
-  if (externalId) {
-    try {
-      const res = await fetch(`/api/billing/confirm?ext=${encodeURIComponent(externalId)}`, {
-        method: 'GET',
-        cache: 'no-store',
-      });
-      if (res.ok) {
-        confirmed = await res.json();
-      } else {
-        confirmed = { ok: false, error: 'Failed to confirm payment' };
+  const externalId = useMemo(() => (ext ? String(ext) : ''), [ext]);
+
+  useEffect(() => {
+    let ignore = false;
+    async function confirm() {
+      if (!externalId) return;
+      try {
+        const res = await fetch(`/api/billing/confirm?ext=${encodeURIComponent(externalId)}`, { cache: 'no-store' });
+        const data = (await res.json()) as ConfirmRes;
+        if (!ignore) setConfirmed(res.ok ? data : { ok: false, error: 'Failed to confirm payment' });
+      } catch {
+        if (!ignore) setConfirmed({ ok: false, error: 'Failed to confirm payment' });
       }
-    } catch (e) {
-      confirmed = { ok: false, error: 'Failed to confirm payment' };
     }
-  }
+    confirm();
+    return () => {
+      ignore = true;
+    };
+  }, [externalId]);
 
   return (
     <div className="mx-auto max-w-2xl p-6 space-y-4">

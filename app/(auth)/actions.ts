@@ -86,7 +86,7 @@ export const register = async (
     const [newUser] = await getUser(validatedData.email);
 
     // Apply referral code if provided
-    if (validatedData.referralCode && validatedData.referralCode.trim()) {
+    if (validatedData.referralCode?.trim()) {
       try {
         const config = await getReferralConfig();
         let bonusAmount = '0';

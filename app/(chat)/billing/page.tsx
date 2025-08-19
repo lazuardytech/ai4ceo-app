@@ -1,7 +1,6 @@
 import { getCurrentUser } from '@/lib/auth-guard';
 import { getActiveSubscriptionByUserId, getSettings } from '@/lib/db/queries';
 import Link from 'next/link';
-import { BillingSubscribeClient } from '@/components/billing-subscribe.client';
 import { VoucherApplication } from '@/components/voucher-application';
 import { Badge } from '@/components/ui/badge';
 

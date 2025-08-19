@@ -1,7 +1,6 @@
 import { auth } from '@/lib/auth';
 import { ChatSDKError } from '@/lib/errors';
 import { listSubscriptionsPaged } from '@/lib/db/queries';
-import { getSession } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 
 export async function GET(request: Request) {

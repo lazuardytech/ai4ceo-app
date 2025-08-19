@@ -6,11 +6,8 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { and, eq, gt } from 'drizzle-orm';
 
-import { getSessionCookie } from 'better-auth/cookies';
-
 import { db } from './db';
 import { session, user as userTable } from './db/schema';
-import { getSession, useSession } from './auth-client';
 import { auth } from './auth';
 
 export type CurrentUser = {

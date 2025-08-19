@@ -24,9 +24,8 @@ export function buildExpertSystemPrompt({
   const template = getTemplateForAgent(agent);
 
   const prior = (previousAssistant ?? []).length
-    ? `\n\nYour previous replies in this conversation (for continuity):\n${previousAssistant
-        .map((t, i) => `- Prev ${i + 1}: ${t.substring(0, 400)}`)
-        .join('\n')}`
+    ? `\n\nYour previous replies in this conversation (for continuity):\n
+    ${previousAssistant?.map((t, i) => `- Prev ${i + 1}: ${t.substring(0, 400)}`).join('\n')}`
     : '';
 
   const format = `\n\nResponse Requirements:\n- Start with: [${agent.name}]\n- Follow this structure strictly:\n${template}\n- Use concise bullets. Keep examples minimal.`;

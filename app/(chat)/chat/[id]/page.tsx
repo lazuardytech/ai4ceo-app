@@ -3,11 +3,10 @@ import { notFound, redirect } from 'next/navigation';
 
 import { requireAuth } from '@/lib/auth-guard';
 import { Chat } from '@/components/chat';
-import { getAgentIdsByChatId, getChatById, getMessagesByChatId } from '@/lib/db/queries';
+import { getActiveSubscriptionByUserId, getAgentIdsByChatId, getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { convertToUIMessages } from '@/lib/utils';
-import { getActiveSubscriptionByUserId } from '@/lib/db/queries';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;

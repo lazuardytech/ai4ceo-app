@@ -6,7 +6,6 @@ import {
   createSubscription,
   updateSubscriptionStatus,
 } from '@/lib/db/queries';
-import { getSession } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 
 export async function POST(request: Request) {

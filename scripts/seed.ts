@@ -1,15 +1,7 @@
-// import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-
 import { auth } from '@/lib/auth';
 import { reset } from "drizzle-seed";
 import * as schema from "@/lib/db/schema";
-
-import '@/lib/env-config'
-
-const connection = postgres(process.env.POSTGRES_URL!, { max: 1 });
-export const db = drizzle(connection);
+import { db } from '@/lib/db';
 
 async function main() {
   if (!process.env.POSTGRES_URL) throw new Error('POSTGRES_URL missing');
@@ -32,22 +24,6 @@ async function main() {
   ];
 
   for (const s of seeding) {
-    // const [existing] = await db
-    //   .select()
-    //   .from(user)
-    //   .where(eq(user.email, s.email))
-    //   .limit(1);
-    // if (existing) {
-    //   await db
-    //     .update(user)
-    //     .set({ role: s.role })
-    //     .where(eq(user.id, existing.id));
-    //   console.log(`Updated role for ${s.email} -> ${s.role}`);
-    // } else {
-
-    // await db
-    //   .insert(user)
-    //   .values({ email: s.email, password: hashedPassword, role: s.role });
     const res = await auth.api.signUpEmail({
       body: {
         email: s.email,

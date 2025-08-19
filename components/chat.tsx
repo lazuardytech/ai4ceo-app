@@ -203,6 +203,10 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
+        selectedAgentIds={selectedAgentIds}
+        onChangeSelectedAgentIds={setSelectedAgentIds}
+        isReasoningActive={selectedChatModelId === 'chat-model-reasoning'}
+        onExpertsActivated={() => setSelectedChatModelId('chat-model-reasoning')}
       />
     </>
   );

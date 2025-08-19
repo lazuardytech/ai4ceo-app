@@ -1,6 +1,5 @@
 import { getSettings } from '@/lib/db/queries';
 import { BillingSubscribeClient } from '@/components/billing-subscribe.client';
-import { Suspense } from 'react';
 
 type Plan = {
   id: string;
@@ -15,7 +14,7 @@ type Plan = {
 function formatPrice(amount: number, currency?: string) {
   // Assume amount in major for display if currency is IDR (no cents)
   if (!currency || currency.toUpperCase() === 'IDR') return `IDR ${amount.toLocaleString()}`;
-  return `${currency.toUpperCase()} ${amount/100}`;
+  return `${currency.toUpperCase()} ${amount / 100}`;
 }
 
 export default async function PricingPage() {
@@ -56,8 +55,8 @@ export default async function PricingPage() {
             </div>
             {Array.isArray(p.features) && p.features.length > 0 && (
               <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-                {p.features.map((f, i) => (
-                  <li key={i}>• {f}</li>
+                {p.features.map((f) => (
+                  <li key={`${f}`}>• {f}</li>
                 ))}
               </ul>
             )}
@@ -88,8 +87,8 @@ export default async function PricingPage() {
               </div>
               {Array.isArray(p.features) && p.features.length > 0 && (
                 <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-                  {p.features.map((f, i) => (
-                    <li key={i}>• {f}</li>
+                  {p.features.map((f) => (
+                    <li key={`${f}`}>• {f}</li>
                   ))}
                 </ul>
               )}
@@ -103,4 +102,3 @@ export default async function PricingPage() {
     </div>
   );
 }
-

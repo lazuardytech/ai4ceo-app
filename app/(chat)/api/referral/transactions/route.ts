@@ -1,5 +1,4 @@
 import { auth } from '@/lib/auth';
-import { getSession } from '@/lib/auth-client';
 import { getReferralTransactions } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import { headers } from 'next/headers';
@@ -14,8 +13,8 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const page = Number.parseInt(searchParams.get('page') || '1', 10);
+    const limit = Number.parseInt(searchParams.get('limit') || '10', 10);
 
     // Validate pagination parameters
     if (page < 1 || limit < 1 || limit > 100) {

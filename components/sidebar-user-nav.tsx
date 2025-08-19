@@ -20,7 +20,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { toast } from './toast';
 import { LoaderIcon } from './icons';
-import { guestRegex } from '@/lib/constants';
 import { authClient } from '@/lib/auth-client';
 import type { MinimalUser } from './app-sidebar';
 

@@ -51,7 +51,7 @@ export function TransactionHistory({ className }: TransactionHistoryProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTransactions = async (page: number = 1) => {
+  const fetchTransactions = async (page = 1) => {
     setIsLoading(true);
     setError(null);
 
@@ -82,7 +82,7 @@ export function TransactionHistory({ className }: TransactionHistoryProps) {
   };
 
   const formatAmount = (amount: string, type: string) => {
-    const value = parseFloat(amount);
+    const value = Number.parseFloat(amount);
     const formatted = new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',

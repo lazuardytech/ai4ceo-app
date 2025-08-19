@@ -1,5 +1,4 @@
 import { auth } from '@/lib/auth';
-import { getSession } from '@/lib/auth-client';
 import {
   createAgent,
   listAgents,
@@ -18,7 +17,7 @@ export async function GET(request: Request) {
   const q = searchParams.get('q');
   const isActiveParam = searchParams.get('isActive');
   const isActive =
-    isActiveParam === null ? null : isActiveParam === 'true' ? true : false;
+    isActiveParam === null ? null : isActiveParam  === 'true';
   const limit = Number(searchParams.get('limit') ?? '100');
   const offset = Number(searchParams.get('offset') ?? '0');
   const result = await listAgents({ q, isActive, limit, offset });
@@ -40,8 +39,8 @@ export async function POST(request: Request) {
   } else {
     const form = await request.formData();
     payload = Object.fromEntries(form.entries());
-    payload.isActive = form.get('isActive') ? true : false;
-    payload.ragEnabled = form.get('ragEnabled') ? true : false;
+    payload.isActive = !!form.get('isActive');
+    payload.ragEnabled = !!form.get('ragEnabled');
     isForm = true;
   }
   const { slug, name, description, icon, prePrompt, personality, isActive, ragEnabled } = payload ?? {};

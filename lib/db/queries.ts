@@ -43,18 +43,17 @@ import {
   referralConfig,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
-import { generateCUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
 import { computeHashedEmbedding, cosine } from '@/lib/ai/vector';
 import { pineconeConfigured, pineconeDelete, pineconeQuery, pineconeUpsert } from '@/lib/ai/pinecone';
+import { auth } from '../auth';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
@@ -73,31 +72,19 @@ export async function createUser(email: string, password: string) {
   const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db
-      .insert(user)
-      .values({ email, password: hashedPassword, role: 'user' });
+    // return await db
+    //   .insert(user)
+    //   .values({ email, password: hashedPassword, role: 'user' });
+    await auth.api.signUpEmail({
+      body: {
+        name: email.split('@')[0] || 'User',
+        email: email,
+        password: password,
+        role: 'user',
+      }
+    })
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create user');
-  }
-}
-
-export async function createGuestUser() {
-  const email = `guest-${Date.now()}`;
-  const password = generateHashedPassword(generateCUID());
-
-  try {
-    return await db
-      .insert(user)
-      .values({ email, password, role: 'user' })
-      .returning({
-        id: user.id,
-        email: user.email,
-      });
-  } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to create guest user',
-    );
   }
 }
 
@@ -1923,13 +1910,13 @@ export async function applyReferralCode({
 
     // Update referrer's statistics
     const newBonusBalance = (
-      parseFloat(referrerReferral.bonusBalance) + parseFloat(bonusAmount)
+      Number.parseFloat(referrerReferral.bonusBalance) + Number.parseFloat(bonusAmount)
     ).toString();
     const newTotalEarned = (
-      parseFloat(referrerReferral.totalEarned) + parseFloat(bonusAmount)
+      Number.parseFloat(referrerReferral.totalEarned) + Number.parseFloat(bonusAmount)
     ).toString();
     const newTotalReferrals = (
-      parseInt(referrerReferral.totalReferrals) + 1
+      Number.parseInt(referrerReferral.totalReferrals) + 1
     ).toString();
 
     await updateReferralBalance({

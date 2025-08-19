@@ -1,10 +1,9 @@
 import { getCurrentUser } from '@/lib/auth-guard';
 import { ChatSDKError } from '@/lib/errors';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { chat } from '@/lib/db/schema';
-import { and, eq, ilike, desc } from 'drizzle-orm';
+import { and, eq, ilike, desc, } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
+import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser();
@@ -18,9 +17,6 @@ export async function GET(request: NextRequest) {
     return Response.json({ chats: [] });
   }
 
-  const sql = postgres(process.env.POSTGRES_URL!);
-  const db = drizzle(sql);
-
   try {
     const rows = await db
       .select()
@@ -32,8 +28,5 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     console.error('GET /api/history/search error', e);
     return new ChatSDKError('bad_request:api').toResponse();
-  } finally {
-    await sql.end({ timeout: 1 });
   }
 }
-

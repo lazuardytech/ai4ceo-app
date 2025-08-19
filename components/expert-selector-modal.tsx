@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from 'swr';
-import { useEffect, useState } from 'react';
+import { type JSX, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn, fetcher } from '@/lib/utils';
 import {
@@ -31,7 +31,7 @@ function persistSelection(ids: string[]) {
   try {
     const value = encodeURIComponent(JSON.stringify(ids ?? []));
     document.cookie = `selected-experts=${value}; Path=/; Max-Age=31536000; SameSite=Lax`;
-  } catch {}
+  } catch { }
 }
 
 export function ExpertSelectorModal({
@@ -47,21 +47,21 @@ export function ExpertSelectorModal({
   onChange: (ids: string[]) => void;
   onExpertsActivated?: () => void;
   isReasoningActive?: boolean;
-} & React.ComponentProps<typeof Button>) {
+} & Omit<React.ComponentProps<typeof Button>, 'onChange'>) {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [localSelected, setLocalSelected] = useState<string[]>(selectedAgentIds);
 
   useEffect(() => {
     setLocalSelected(selectedAgentIds);
-  }, [selectedAgentIds.join(',')]);
+  }, [selectedAgentIds]);
 
   const { data } = useSWR<Expert[]>('/api/experts', fetcher);
   const experts = data ?? [];
 
   const IconMap: Record<string, JSX.Element> = {
     bot: <BotIcon />,
-    box: <BoxIcon />,
+    box: <BoxIcon size={16} />,
     file: <FileIcon />,
     info: <InfoIcon />,
     home: <HomeIcon size={16} />,
@@ -90,11 +90,11 @@ export function ExpertSelectorModal({
       fetch(`/api/chat/experts?chatId=${encodeURIComponent(chatId)}`,
         { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ agentIds: nextArr }) },
       );
-    } catch {}
+    } catch { }
     if (!selectedAgentIds.length && nextArr.length > 0) {
       try {
         document.cookie = `chat-model-small=chat-model-reasoning; Path=/; Max-Age=31536000; SameSite=Lax`;
-      } catch {}
+      } catch { }
       onExpertsActivated?.();
     }
   };
@@ -164,7 +164,7 @@ export function ExpertSelectorModal({
                     fetch(`/api/chat/experts?chatId=${encodeURIComponent(chatId)}`,
                       { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ agentIds: [] }) },
                     );
-                  } catch {}
+                  } catch { }
                 }}
               >
                 Clear all
@@ -190,7 +190,7 @@ export function ExpertSelectorModal({
               onClick={() => {
                 try {
                   document.cookie = `chat-model-small=chat-model-reasoning; Path=/; Max-Age=31536000; SameSite=Lax`;
-                } catch {}
+                } catch { }
                 onExpertsActivated?.();
                 setConfirmOpen(false);
                 setOpen(true);

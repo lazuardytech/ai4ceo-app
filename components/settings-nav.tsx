@@ -31,7 +31,7 @@ export function SettingsNav() {
                 )}
               >
                 <span className="inline-flex items-center gap-2">
-                  <n.Icon />
+                  <n.Icon size={16} />
                   {n.label}
                 </span>
               </Link>

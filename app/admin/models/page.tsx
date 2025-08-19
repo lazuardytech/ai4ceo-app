@@ -1,6 +1,5 @@
 import { auth } from '@/lib/auth';
 import AdminModelsPanel from '@/components/admin/models-panel.client';
-import { getSession } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 
 export default async function AdminModelsPage() {
