@@ -91,41 +91,6 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu className='p-2'>
-          <Link
-            href="/profile"
-            onClick={() => setOpenMobile(false)}
-            className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
-          >
-            Profile
-          </Link>
-          <Link
-            href="/files"
-            onClick={() => setOpenMobile(false)}
-            className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
-          >
-            Files
-          </Link>
-          <Link
-            href="/usage"
-            onClick={() => setOpenMobile(false)}
-            className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
-          >
-            Usage
-          </Link>
-          <Link
-            href="/billing"
-            onClick={() => setOpenMobile(false)}
-            className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
-          >
-            Billing
-          </Link>
-          <Link
-            href="/referral"
-            onClick={() => setOpenMobile(false)}
-            className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
-          >
-            Referral
-          </Link>
           {user?.role === 'superadmin' && (
             <Link
               href="/admin"

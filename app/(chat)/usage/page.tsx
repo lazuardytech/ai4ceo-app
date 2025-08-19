@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { SidebarToggle } from '@/components/sidebar-toggle';
 
 type UsageResponse = {
   used: number;
@@ -103,9 +102,6 @@ export default function UsagePage() {
 
   return (
     <div className="mx-auto max-w-3xl p-4 sm:p-6 md:p-8 space-y-6">
-      <div className="px-2 -mt-2">
-        <SidebarToggle />
-      </div>
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">Usage</h1>
         <p className="text-sm text-muted-foreground">

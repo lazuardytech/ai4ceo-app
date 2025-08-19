@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { SidebarToggle } from '@/components/sidebar-toggle';
 import {
   Dialog,
   DialogClose,
@@ -186,9 +185,6 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-3xl p-4 sm:p-6 md:p-8 space-y-6">
-      <div className="px-2 -mt-2">
-        <SidebarToggle />
-      </div>
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">Profile</h1>
         <p className="text-sm text-muted-foreground">

@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -69,6 +70,32 @@ export function SidebarUserNav({ user }: { user: MinimalUser }) {
             side="top"
             className="w-[--radix-popper-anchor-width]"
           >
+            <DropdownMenuLabel className="text-xs">
+              Signed in as {data?.user?.email ?? user?.email}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onSelect={() => router.push('/settings/profile')}
+            >
+              Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onSelect={() => router.push('/settings/profile')}>
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onSelect={() => router.push('/settings/usage')}>
+              Usage
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onSelect={() => router.push('/settings/billing')}>
+              Billing
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onSelect={() => router.push('/settings/files')}>
+              Files
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onSelect={() => router.push('/settings/referral')}>
+              Referral
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               data-testid="user-nav-item-theme"
               className="cursor-pointer"

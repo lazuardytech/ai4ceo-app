@@ -244,12 +244,12 @@ export async function POST(request: Request) {
     if (expertModeEnabled && selectedAgents.length > 0) {
       // Compute once: userText for this turn
       const userText = extractText(message.parts as any);
-      const baseForExperts = buildSystemPrompt({
-        selectedChatModel,
-        requestHints,
-        regularOverride: settings?.regularPromptOverride,
-        artifactsOverride: settings?.artifactsPromptOverride,
-      });
+        const baseForExperts = buildSystemPrompt({
+          selectedChatModel,
+          requestHints,
+          regularOverride: settings?.regularPromptOverride,
+          artifactsOverride: settings?.artifactsPromptOverride,
+        });
       const list: typeof expertRuns = [];
       for (const a of selectedAgents) {
         const kb = await retrieveAgentContext({ agentId: a.id, query: userText, limit: 5 });

@@ -359,6 +359,25 @@ export const LoaderIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
+export const ChartIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M1 1.5H2.5H14.5V3H2.5V14.5H1V1.5ZM6 6.5H4.5V13H6V6.5ZM9.25 4.5H7.75V13H9.25V4.5ZM12.5 8H11V13H12.5V8Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
 export const UploadIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
