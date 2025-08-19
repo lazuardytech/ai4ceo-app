@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 import { useNextStep } from 'nextstepjs';
 import { toast } from 'sonner';
 
@@ -44,7 +43,7 @@ export function TourBanner({ visible }: Props) {
 
   return (
     <div className="sticky top-0 z-30 w-full mb-1">
-      <Alert className="rounded-none relative flex items-center justify-between border-none bg-foreground/5 text-foreground p-3">
+      <Alert className="rounded-none relative flex items-center justify-between border-none bg-muted-foreground/5 text-foreground p-3">
         <div className='flex flex-col min-w-0'>
           <AlertTitle className='text-sm'>Take a quick tour?</AlertTitle>
           <AlertDescription className='text-muted-foreground text-xs truncate'>
@@ -52,8 +51,8 @@ export function TourBanner({ visible }: Props) {
           </AlertDescription>
         </div>
         <div className="flex gap-2 items-center shrink-0">
-          <Button size="sm" variant="outline" onClick={onStart}>Start Tour</Button>
           <Button size="sm" variant="ghost" onClick={onClose}>Maybe later</Button>
+          <Button size="sm" variant="outline" onClick={onStart}>Start Tour</Button>
         </div>
       </Alert>
     </div>

@@ -106,8 +106,8 @@ export function ExpertSelectorModal({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button
-            variant="ghost"
-            className={cn('rounded-md p-[7px] h-fit', className, !isReasoningActive && 'opacity-80')}
+            variant="outline"
+            className={cn('rounded-full !px-4 p-[7px] h-fit', className, !isReasoningActive && 'opacity-80')}
             aria-disabled={!isReasoningActive}
           >
             {selectedCount > 0 ? `${selectedCount} Experts` : 'Experts'}
