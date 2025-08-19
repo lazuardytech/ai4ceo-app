@@ -89,7 +89,7 @@ export default async function BillingPage() {
       {/* Support Information */}
       <div className="text-sm text-muted-foreground space-y-2">
         <p>
-          After payment, you`&apos;`ll be redirected to a confirmation page.
+          After payment, you&apos;ll be redirected to a confirmation page.
           You can revisit this page anytime to see your updated subscription
           status.
         </p>
