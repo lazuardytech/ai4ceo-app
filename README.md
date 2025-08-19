@@ -60,3 +60,10 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
+
+## Billing (Xendit)
+
+- Set env vars: `XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN`, and `APP_BASE_URL`.
+- Configure Xendit Invoice webhook to `POST <APP_BASE_URL>/api/billing/webhook` with the same callback token.
+- Users are redirected to `/billing/success` or `/billing/failed` after checkout.
+- If webhooks are delayed or not configured, the success page calls `/api/billing/confirm` to verify and activate the subscription.

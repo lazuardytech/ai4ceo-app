@@ -2,20 +2,16 @@ import Link from 'next/link';
 
 export default function BillingFailedPage() {
   return (
-    <div className="mx-auto max-w-xl p-6 space-y-4">
-      <h1 className="text-xl font-semibold">Payment Failed</h1>
+    <div className="mx-auto max-w-2xl p-6 space-y-4">
+      <h1 className="text-xl font-semibold">Payment Failed or Canceled</h1>
       <p className="text-sm text-muted-foreground">
-        The payment did not complete. You can try again or contact support if
-        the issue persists.
+        Your payment did not complete. You can try again from the pricing page or contact support if you need help.
       </p>
-      <div className="flex gap-4">
-        <Link href="/billing" className="underline text-sm">
-          Back to Billing
-        </Link>
-        <Link href="/" className="underline text-sm">
-          Home
-        </Link>
+      <div className="pt-2 space-x-4">
+        <Link href="/pricing" className="underline text-sm">Back to Pricing</Link>
+        <Link href="/settings/billing" className="underline text-sm">Go to Billing</Link>
       </div>
     </div>
   );
 }
+
