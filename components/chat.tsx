@@ -41,6 +41,7 @@ export function Chat({
   session,
   autoResume,
   initialSelectedAgentIds = [],
+  heightOffset = 0,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -50,6 +51,7 @@ export function Chat({
   session: UserSession;
   autoResume: boolean;
   initialSelectedAgentIds?: string[];
+  heightOffset?: number;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -142,7 +144,10 @@ export function Chat({
 
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
+      <div
+        className="flex flex-col min-w-0 bg-background"
+        style={{ height: heightOffset ? `calc(100dvh - ${heightOffset}px)` : '100dvh' }}
+      >
         <ChatHeader
           chatId={id}
           selectedModelId={selectedChatModelId}
@@ -165,7 +170,7 @@ export function Chat({
           isArtifactVisible={isArtifactVisible}
         />
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+        <form className="flex mx-auto px-4 gap-2 w-full md:max-w-3xl">
           {!isReadonly && (
             <MultimodalInput
               chatId={id}

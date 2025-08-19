@@ -17,6 +17,7 @@ export type CurrentUser = {
   image?: string | null;
   role: 'user' | 'admin' | 'superadmin';
   onboarded?: boolean;
+  tour?: boolean;
 };
 
 async function findUserBySessionToken(token: string) {

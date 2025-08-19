@@ -2,11 +2,13 @@ import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import { NextStepProvider, NextStep } from 'nextstepjs';
 
 import './globals.css';
+import TourProvider from '@/components/providers/tour-provider';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
+  metadataBase: new URL('https://app.ai4.ceo'),
   title: 'AI4CEO Companion',
   description: 'AI4CEO Companion is a chat application that helps you manage your business with AI.',
   icons: {
@@ -82,12 +84,14 @@ export default async function RootLayout({
       <body className="antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-          <Toaster position="top-center" />
-          {children}
+          <TourProvider>
+            <Toaster position="top-center" />
+            {children}
+          </TourProvider>
         </ThemeProvider>
       </body>
     </html>

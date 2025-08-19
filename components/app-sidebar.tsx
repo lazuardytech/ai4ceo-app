@@ -46,8 +46,9 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
               }}
               className="flex flex-row gap-3 items-center"
             >
-              <Image src="/images/logo.svg" width={100} height={50} alt="Logo" />
-              {/*<span className="text-lg font-semibold p-2 hover:bg-muted rounded-md cursor-pointer"></span>*/}
+              <span className="text-lg font-semibold p-2 hover:bg-muted rounded-md cursor-pointer">
+                <Image src="/images/logo.svg" width={100} height={50} alt="Logo" />
+              </span>
             </Link>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -90,8 +91,8 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu className='p-2'>
-          {user?.role === 'superadmin' && (
+        {user?.role === 'superadmin' && (
+          <SidebarMenu className='p-2'>
             <Link
               href="/admin"
               onClick={() => setOpenMobile(false)}
@@ -99,8 +100,8 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
             >
               Admin
             </Link>
-          )}
-        </SidebarMenu>
+          </SidebarMenu>
+        )}
         <SidebarHistory user={user} />
       </SidebarContent>
       <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>

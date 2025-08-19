@@ -20,6 +20,8 @@ export const user = pgTable('User', {
   timezone: varchar('timezone', { length: 64 }),
   locale: varchar('locale', { length: 16 }),
   onboarded: boolean('onboarded').notNull().default(false),
+  // whether the user has completed or dismissed the product tour
+  tour: boolean('tour').notNull().default(false),
   role: varchar('role', { enum: ['user', 'admin', 'superadmin'] })
     .notNull()
     .default('user'),

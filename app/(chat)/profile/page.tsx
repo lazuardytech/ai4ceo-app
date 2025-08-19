@@ -411,6 +411,36 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* App Tour controls */}
+      <div className="rounded-xl border">
+        <div className="p-4 sm:p-6 space-y-3">
+          <div>
+            <h2 className="text-lg font-medium">App Tour</h2>
+            <p className="text-sm text-muted-foreground">Restart the guided tour if you want to see it again.</p>
+          </div>
+          <div>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/tour', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tour: false }),
+                  });
+                  if (!res.ok) throw new Error('Failed to reset tour');
+                  toast.success('Tour reset. It will show on home.');
+                } catch (e: any) {
+                  toast.error(e?.message || 'Failed to reset tour');
+                }
+              }}
+            >
+              Restart Tour
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

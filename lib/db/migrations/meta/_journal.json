@@ -22,6 +22,20 @@
       "when": 1755543833660,
       "tag": "0002_flowery_joseph",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1755600000000,
+      "tag": "0003_add_user_tour",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1755594855131,
+      "tag": "0004_deep_talisman",
+      "breakpoints": true
     }
   ]
 }

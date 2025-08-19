@@ -15,6 +15,14 @@ export const authClient = createAuthClient({
         role: {
           type: "string",
         },
+        onboarded: {
+          type: "boolean",
+          default: false,
+        },
+        tour: {
+          type: "boolean",
+          default: false,
+        },
       },
     }),
   ],

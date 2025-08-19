@@ -36,6 +36,10 @@ export const auth = betterAuth({
         type: "boolean",
         defaultValue: false,
       },
+      tour: {
+        type: "boolean",
+        defaultValue: false,
+      },
       role: {
         type: "string",
         values: ["user", "admin", "superadmin"],

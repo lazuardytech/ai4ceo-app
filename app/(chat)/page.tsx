@@ -1,6 +1,7 @@
 import { cookies, headers } from 'next/headers';
 
 import { Chat } from '@/components/chat';
+import { ChatPageShell } from '@/components/chat-page-shell';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateCUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
@@ -46,35 +47,16 @@ export default async function Page() {
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model-small');
 
-  if (!modelIdFromCookie) {
-    return (
-      <>
-        <Chat
-          key={id}
-          id={id}
-          initialMessages={[]}
-          initialChatModel={DEFAULT_CHAT_MODEL}
-          initialVisibilityType="private"
-          isReadonly={false}
-          session={chatSession as any}
-          autoResume={false}
-        />
-        <DataStreamHandler />
-      </>
-    );
-  }
+  const initialModel = modelIdFromCookie ? modelIdFromCookie.value : DEFAULT_CHAT_MODEL;
+  const showBanner = !((session.user as any).tour);
 
   return (
     <>
-      <Chat
-        key={id}
+      <ChatPageShell
+        showBanner={showBanner}
         id={id}
-        initialMessages={[]}
-        initialChatModel={modelIdFromCookie.value}
-        initialVisibilityType="private"
-        isReadonly={false}
+        initialModel={initialModel}
         session={chatSession as any}
-        autoResume={false}
       />
       <DataStreamHandler />
     </>
