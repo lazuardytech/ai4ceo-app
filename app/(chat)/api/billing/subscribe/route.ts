@@ -1,20 +1,16 @@
 import { getCurrentUser } from '@/lib/auth-guard';
 import { ChatSDKError } from '@/lib/errors';
-import { createSubscription } from '@/lib/db/queries';
+import { createSubscription, getSettings } from '@/lib/db/queries';
 import { generateCUID } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 
-// Simple plan config. Extend as needed.
-const PLANS: Record<
-  string,
-  { amount: number; description: string; currency?: string }
-> = {
-  premium_monthly: {
-    amount: 99000,
-    description: 'Premium Monthly Subscription',
-    currency: 'IDR',
-  },
+// Fallback static plan if admin settings are missing
+const FALLBACK_PLANS: Record<string, { amount: number; description: string; currency?: string }>= {
+  premium_monthly: { amount: 99000, description: 'Premium Monthly Subscription', currency: 'IDR' },
+  basic_monthly: { amount: 49000, description: 'Basic Monthly Subscription', currency: 'IDR' },
+  basic_annual: { amount: 490000, description: 'Basic Annual Subscription', currency: 'IDR' },
+  premium_annual: { amount: 990000, description: 'Premium Annual Subscription', currency: 'IDR' },
 };
 
 export async function POST(request: Request) {
@@ -29,7 +25,19 @@ export async function POST(request: Request) {
   }
 
   const planId = body.planId || 'premium_monthly';
-  const plan = PLANS[planId];
+  let plan = FALLBACK_PLANS[planId];
+  // Try find in admin-configured settings
+  try {
+    const settings = await getSettings();
+    const pricing = (settings?.pricingPlans as any) || {};
+    const lookup = new Map<string, any>();
+    for (const bucket of ['monthly','annual']) {
+      const arr = Array.isArray(pricing[bucket]) ? pricing[bucket] : [];
+      for (const p of arr) lookup.set(p.id, p);
+    }
+    const p = lookup.get(planId);
+    if (p) plan = { amount: Number(p.price), description: p.name, currency: p.currency || 'IDR' };
+  } catch {}
   if (!plan)
     return new ChatSDKError('bad_request:api', 'Unknown plan').toResponse();
 

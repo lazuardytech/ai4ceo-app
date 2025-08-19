@@ -31,8 +31,8 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
 
-  // Hide sidebar during onboarding flow
-  if (pathname === '/onboarding') return null;
+  // Hide sidebar during onboarding, billing, and pricing pages
+  if (pathname === '/onboarding' || pathname === '/billing' || pathname === '/pricing') return null;
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0">

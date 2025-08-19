@@ -1,5 +1,5 @@
 import { getCurrentUser } from '@/lib/auth-guard';
-import { getActiveSubscriptionByUserId } from '@/lib/db/queries';
+import { getActiveSubscriptionByUserId, getSettings } from '@/lib/db/queries';
 import Link from 'next/link';
 import { BillingSubscribeClient } from '@/components/billing-subscribe.client';
 import { VoucherApplication } from '@/components/voucher-application';
@@ -16,9 +16,10 @@ export default async function BillingPage() {
     );
   }
 
-  const active = await getActiveSubscriptionByUserId({
-    userId: user.id,
-  });
+  const [active, settings] = await Promise.all([
+    getActiveSubscriptionByUserId({ userId: user.id }),
+    getSettings(),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl p-6 space-y-6">
@@ -79,20 +80,10 @@ export default async function BillingPage() {
       {/* Voucher Application */}
       <VoucherApplication refreshOnApplied />
 
-      {/* Subscription Plans */}
       {!active && (
-        <div className="rounded-xl border p-4 space-y-3">
-          <div>
-            <h2 className="font-medium">Premium (Monthly)</h2>
-            <p className="text-sm text-muted-foreground">IDR 99,000 / month</p>
-            <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-              <li>• Higher monthly message limits</li>
-              <li>• Priority support</li>
-              <li>• Access to advanced AI models</li>
-              <li>• Document processing</li>
-            </ul>
-          </div>
-          <BillingSubscribeClient planId="premium_monthly" />
+        <div className="rounded-xl border p-4 space-y-2">
+          <div className="text-sm">Looking for plans?</div>
+          <Link className="underline text-sm" href="/pricing">View Pricing</Link>
         </div>
       )}
 
