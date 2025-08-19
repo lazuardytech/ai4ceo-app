@@ -1,5 +1,5 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
@@ -28,7 +28,11 @@ export type MinimalUser = {
 
 export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
+
+  // Hide sidebar during onboarding flow
+  if (pathname === '/onboarding') return null;
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0">

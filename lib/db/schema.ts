@@ -242,6 +242,7 @@ export const agent = pgTable('Agent', {
   slug: varchar('slug', { length: 64 }).notNull(),
   name: varchar('name', { length: 64 }).notNull(),
   description: text('description'),
+  icon: varchar('icon', { length: 64 }),
   prePrompt: text('prePrompt').notNull(),
   personality: text('personality').notNull(),
   isActive: boolean('isActive').notNull().default(true),

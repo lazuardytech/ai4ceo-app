@@ -118,7 +118,6 @@ export function AdminSubscriptionsPanel() {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left sticky top-0">
             <tr>
-              <th className="p-2">User ID</th>
               <th className="p-2">Email</th>
               <th className="p-2">Role</th>
               <th className="p-2">Subscription Status</th>
@@ -133,34 +132,29 @@ export function AdminSubscriptionsPanel() {
                 key={u.userId}
                 className={`border-t ${i % 2 ? 'bg-muted/20' : ''}`}
               >
-                <td className="p-2 align-top font-mono text-xs">
-                  {u.userId.slice(0, 8)}...
-                </td>
                 <td className="p-2 align-top">{u.userEmail}</td>
                 <td className="p-2 align-top">
                   <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      u.userRole === 'superadmin'
-                        ? 'bg-purple-100 text-purple-800'
-                        : u.userRole === 'admin'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                    }`}
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${u.userRole === 'superadmin'
+                      ? 'bg-purple-100 text-purple-800'
+                      : u.userRole === 'admin'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-gray-100 text-gray-800'
+                      }`}
                   >
                     {u.userRole}
                   </span>
                 </td>
                 <td className="p-2 align-top">
                   <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      u.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : u.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : u.status === 'expired' || u.status === 'canceled'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                    }`}
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${u.status === 'active'
+                      ? 'bg-green-100 text-green-800'
+                      : u.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : u.status === 'expired' || u.status === 'canceled'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
                   >
                     {u.status || 'Free User'}
                   </span>
@@ -251,8 +245,8 @@ export function AdminSubscriptionsPanel() {
                     defaultValue={
                       editing.currentPeriodEnd
                         ? new Date(editing.currentPeriodEnd)
-                            .toISOString()
-                            .slice(0, 16)
+                          .toISOString()
+                          .slice(0, 16)
                         : ''
                     }
                   />

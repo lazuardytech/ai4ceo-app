@@ -150,17 +150,6 @@ export async function POST(request: Request) {
     }
 
     const settings = await getSettings();
-    const reasoningRequiresSubscription =
-      settings?.reasoningRequiresSubscription ?? true;
-    if (
-      selectedChatModel === 'chat-model-reasoning' &&
-      reasoningRequiresSubscription
-    ) {
-      const active = await getActiveSubscriptionByUserId({
-        userId: user.id,
-      });
-      if (!active) return new ChatSDKError('forbidden:auth').toResponse();
-    }
 
     const messagesFromDb = await getMessagesByChatId({ id });
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];

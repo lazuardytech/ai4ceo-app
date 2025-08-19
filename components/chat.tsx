@@ -179,6 +179,10 @@ export function Chat({
               setMessages={setMessages}
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
+              selectedAgentIds={selectedAgentIds}
+              onChangeSelectedAgentIds={setSelectedAgentIds}
+              isReasoningActive={selectedChatModelId === 'chat-model-reasoning'}
+              onExpertsActivated={() => setSelectedChatModelId('chat-model-reasoning')}
             />
           )}
         </form>

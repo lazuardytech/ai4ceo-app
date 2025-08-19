@@ -93,16 +93,7 @@ function PureChatHeader({
         />
       )}
 
-      {!isReadonly && (
-        <ExpertSelector
-          chatId={chatId}
-          selectedAgentIds={selectedAgentIds}
-          onChange={(id) => onChangeSelectedAgentIds(id as string[])}
-          isReasoningActive={selectedModelId === 'chat-model-reasoning'}
-          onExpertsActivated={() => onChangeModel('chat-model-reasoning')}
-          className="order-1 md:order-2"
-        />
-      )}
+      {/* Expert selection moved to prompt input modal */}
 
       {!isReadonly && (
         <VisibilitySelector

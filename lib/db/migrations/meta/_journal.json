@@ -15,6 +15,13 @@
       "when": 1755524341079,
       "tag": "0001_flat_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1755543833660,
+      "tag": "0002_flowery_joseph",
+      "breakpoints": true
     }
   ]
 }

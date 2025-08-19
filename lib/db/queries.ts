@@ -48,6 +48,7 @@ import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
 import { computeHashedEmbedding, cosine } from '@/lib/ai/vector';
+import { pineconeConfigured, pineconeDelete, pineconeQuery, pineconeUpsert } from '@/lib/ai/pinecone';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -874,6 +875,7 @@ export async function createAgent({
   slug,
   name,
   description,
+  icon,
   prePrompt,
   personality,
   isActive = true,
@@ -882,6 +884,7 @@ export async function createAgent({
   slug: string;
   name: string;
   description?: string | null;
+  icon?: string | null;
   prePrompt: string;
   personality: string;
   isActive?: boolean;
@@ -895,6 +898,7 @@ export async function createAgent({
         slug,
         name,
         description: description ?? null,
+        icon: icon ?? null,
         prePrompt,
         personality,
         isActive,
@@ -913,6 +917,7 @@ export async function updateAgent({
   id,
   name,
   description,
+  icon,
   prePrompt,
   personality,
   isActive,
@@ -921,6 +926,7 @@ export async function updateAgent({
   id: string;
   name?: string;
   description?: string | null;
+  icon?: string | null;
   prePrompt?: string;
   personality?: string;
   isActive?: boolean;
@@ -932,6 +938,7 @@ export async function updateAgent({
       .set({
         name: name as any,
         description: (description as any) ?? undefined,
+        icon: (icon as any) ?? undefined,
         prePrompt: prePrompt as any,
         personality: personality as any,
         isActive: isActive as any,
@@ -1015,6 +1022,23 @@ export async function addAgentKnowledge({
       .insert(agentKnowledge)
       .values({ agentId, title, content, tags: tags ?? null, vector })
       .returning();
+    // Upsert to Pinecone if configured
+    try {
+      if (pineconeConfigured()) {
+        await pineconeUpsert({
+          namespace: agentId,
+          vectors: [
+            {
+              id: row.id,
+              values: vector,
+              metadata: { title, content, tags: tags ?? null },
+            },
+          ],
+        });
+      }
+    } catch (e) {
+      console.warn('Pinecone upsert failed:', e);
+    }
     return row;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to add knowledge');
@@ -1027,6 +1051,15 @@ export async function deleteAgentKnowledge({ id }: { id: string }) {
       .delete(agentKnowledge)
       .where(eq(agentKnowledge.id, id))
       .returning();
+    if (row) {
+      try {
+        if (pineconeConfigured()) {
+          await pineconeDelete({ namespace: row.agentId as any, ids: [row.id as any] });
+        }
+      } catch (e) {
+        console.warn('Pinecone delete failed:', e);
+      }
+    }
     return row;
   } catch (error) {
     throw new ChatSDKError(
@@ -1126,14 +1159,28 @@ export async function retrieveAgentContext({
 }) {
   try {
     const queryVec = computeHashedEmbedding(query || '');
-    // Pull a reasonable window to score; then rank.
+    if (pineconeConfigured()) {
+      try {
+        const res = await pineconeQuery({ namespace: agentId, vector: queryVec, topK: limit });
+        const items = (res.matches || []).map((m) => ({
+          id: m.id,
+          agentId,
+          title: m.metadata?.title || 'Context',
+          content: m.metadata?.content || '',
+          tags: m.metadata?.tags || null,
+        })) as any[];
+        return items;
+      } catch (e) {
+        console.warn('Pinecone query failed, falling back to local:', e);
+      }
+    }
+    // Fallback to local vector search
     const rows = await db
       .select()
       .from(agentKnowledge)
       .where(eq(agentKnowledge.agentId, agentId))
       .orderBy(desc(agentKnowledge.createdAt))
       .limit(500);
-
     const ranked = rows
       .map((r: any) => ({
         row: r,
@@ -1144,8 +1191,7 @@ export async function retrieveAgentContext({
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
       .map((r) => r.row);
-
-    return ranked;
+    return ranked as any;
   } catch (error) {
     // soft-fail: no context
     return [];

@@ -65,7 +65,6 @@ export async function requireAuth(): Promise<CurrentUser> {
 
   if (data?.session?.token) {
     const user = await findUserBySessionToken(data.session.token);
-    console.log('fullUser', user)
     if (user) return user as CurrentUser;
   }
 

@@ -40,6 +40,34 @@ export default async function AdminExpertKnowledgePage(props: { params: Promise<
       <h1 className="text-xl font-semibold">Knowledge: {agent.name}</h1>
 
       <div className="rounded-xl border p-4 space-y-3">
+        <h2 className="font-medium">Ingest Document</h2>
+        <form id="upload-knowledge-form" method="post" action={`/admin/api/agents/${agent.id}/knowledge/upload`} encType="multipart/form-data" className="grid gap-2">
+          <input className="border rounded px-2 py-1 text-sm" name="tags" placeholder="tags (comma-separated)" />
+          <input className="border rounded px-2 py-1 text-sm" name="file" type="file" accept=".txt, .pdf, text/plain, application/pdf" required />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="border rounded px-3 py-1 text-sm hover:bg-muted w-fit" type="button">Upload</button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Ingest document?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will chunk the document and add it to this expert's knowledge. Pinecone index will be updated if configured.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => (document.getElementById('upload-knowledge-form') as HTMLFormElement | null)?.requestSubmit()}>
+                  Upload
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <div className="text-xs text-muted-foreground">Allowed: .txt, .pdf</div>
+        </form>
+      </div>
+
+      <div className="rounded-xl border p-4 space-y-3">
         <h2 className="font-medium">Add Knowledge Item</h2>
         <form id="add-knowledge-form" method="post" action={`/admin/api/agents/${agent.id}/knowledge`} className="grid gap-2">
           <input className="border rounded px-2 py-1 text-sm" name="title" placeholder="title" required />

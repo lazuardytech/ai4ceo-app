@@ -11,11 +11,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { chatModels } from '@/lib/ai/models';
-import { cn, fetcher } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import useSWR from 'swr';
 
 export function ModelSelector({
   session,
@@ -46,13 +45,7 @@ export function ModelSelector({
     [optimisticModelId, availableChatModels],
   );
 
-  const { data: billingStatus } = useSWR<{
-    hasActiveSubscription: boolean;
-    reasoningRequiresSubscription: boolean;
-  }>('/api/billing/status', fetcher);
-
-  const requiresSub = billingStatus?.reasoningRequiresSubscription ?? true;
-  const hasActive = billingStatus?.hasActiveSubscription ?? false;
+  // No gating by plan at model level; selection always enabled
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -75,8 +68,7 @@ export function ModelSelector({
       <DropdownMenuContent align="start" className="min-w-[300px]">
         {availableChatModels.map((chatModel) => {
           const { id } = chatModel;
-          const isReasoning = id === 'chat-model-reasoning';
-          const disabled = isReasoning && requiresSub && !hasActive;
+          const disabled = false;
 
           return (
             <DropdownMenuItem
@@ -103,9 +95,7 @@ export function ModelSelector({
                 <div className="flex flex-col gap-1 items-start">
                   <div>{chatModel.name}</div>
                   <div className="text-xs text-muted-foreground">
-                    {disabled
-                      ? 'Requires active subscription'
-                      : chatModel.description}
+                    {chatModel.description}
                   </div>
                 </div>
 

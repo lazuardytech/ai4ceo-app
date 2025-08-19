@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { chatModels } from '@/lib/ai/models';
+import { BotIcon, BoxIcon, FileIcon, InfoIcon, HomeIcon, GPSIcon } from '@/components/icons';
 
 type OpenRouterModel = { id: string; name: string; description?: string };
 type GroqModel = { id: string; name: string };
@@ -174,10 +175,10 @@ export default function AdminModelsPanel() {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <div>
+      <div className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle>Model Management</CardTitle>
+          <span>Model Management</span>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => { refreshModels(); refreshGroq(); }}>
               Refresh Lists
@@ -213,27 +214,53 @@ export default function AdminModelsPanel() {
             {banner}
           </div>
         )}
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="rounded border p-3 space-y-2">
+      </div>
+      <div className="space-y-5">
+        <div className="rounded border p-3 space-y-3">
           <div className="font-medium">Default Provider Preference</div>
-          <div className="grid grid-cols-4 items-center gap-3">
-            <Label className="text-right">Preference</Label>
-            <Select value={providerPref} onValueChange={(v) => setProviderPref(v as any)}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select provider preference" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="balance">Load Balance</SelectItem>
-                <SelectItem value="groq">Groq Only</SelectItem>
-                <SelectItem value="openrouter">OpenRouter Only</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { id: 'balance', label: 'Load Balance', Icon: HomeIcon },
+              { id: 'groq', label: 'Groq Only', Icon: BoxIcon },
+              { id: 'openrouter', label: 'OpenRouter Only', Icon: GPSIcon },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                data-active={providerPref === (opt.id as any)}
+                onClick={() => setProviderPref(opt.id as any)}
+                className="rounded-md border p-3 text-left flex items-start gap-3 transition-colors hover:border-foreground/30 hover:bg-accent/40 data-[active=true]:border-foreground data-[active=true]:bg-accent/60"
+                aria-pressed={providerPref === (opt.id as any)}
+              >
+                <div className="mt-0.5 text-foreground">
+                  <opt.Icon size={16} />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium">{opt.label}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {opt.id === 'balance' && 'Use both providers, balanced.'}
+                    {opt.id === 'groq' && 'Use Groq when available.'}
+                    {opt.id === 'openrouter' && 'Use OpenRouter when available.'}
+                  </div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="rounded border p-3 space-y-2">
-          <div className="font-medium">OpenRouter Mappings</div>
+        <div className="rounded border p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="font-medium">OpenRouter Mappings</div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setOverridesOR(DEFAULT_MODEL_MAP)}
+              >
+                Reset to Defaults
+              </Button>
+            </div>
+          </div>
           {loadingModels && (
             <div className="text-sm text-muted-foreground">Loading models…</div>
           )}
@@ -242,36 +269,73 @@ export default function AdminModelsPanel() {
               No models found or OpenRouter key missing.
             </div>
           )}
-          {managedIds.map((id) => (
-            <div key={id} className="grid grid-cols-4 items-center gap-3">
-              <Label className="text-right">{friendlyName(id)}</Label>
-              <Select
-                value={
-                  overridesOR[id] && modelOptions.some((o) => o.value === overridesOR[id])
-                    ? overridesOR[id]
-                    : modelOptions.some((o) => o.value === DEFAULT_MODEL_MAP[id])
-                      ? DEFAULT_MODEL_MAP[id]
-                      : ''
-                }
-                onValueChange={(v) => setOverridesOR((prev) => ({ ...prev, [id]: v }))}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select OpenRouter model" />
-                </SelectTrigger>
-                <SelectContent className="max-h-80">
-                  {modelOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {managedIds.map((id) => {
+              const currentValue =
+                overridesOR[id] && modelOptions.some((o) => o.value === overridesOR[id])
+                  ? overridesOR[id]
+                  : modelOptions.some((o) => o.value === DEFAULT_MODEL_MAP[id])
+                    ? DEFAULT_MODEL_MAP[id]
+                    : '';
+              const Icon =
+                id === 'chat-model-small'
+                  ? BotIcon
+                  : id === 'chat-model-large'
+                    ? BoxIcon
+                    : id === 'chat-model-reasoning'
+                      ? InfoIcon
+                      : id === 'title-model'
+                        ? FileIcon
+                        : id === 'artifact-model'
+                          ? BoxIcon
+                          : BotIcon;
+              return (
+                <div key={id} className="rounded-md border p-3 flex gap-3 items-start">
+                  <div className="mt-0.5 text-foreground">
+                    <Icon size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium">{friendlyName(id)}</div>
+                    <div className="mt-2">
+                      <Label className="sr-only" htmlFor={`or-${id}`}>
+                        {friendlyName(id)} (OpenRouter)
+                      </Label>
+                      <Select
+                        value={currentValue}
+                        onValueChange={(v) => setOverridesOR((prev) => ({ ...prev, [id]: v }))}
+                      >
+                        <SelectTrigger id={`or-${id}`} className="w-full">
+                          <SelectValue placeholder="Select OpenRouter model" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-80">
+                          {modelOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="rounded border p-3 space-y-2">
-          <div className="font-medium">Groq Mappings</div>
+        <div className="rounded border p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="font-medium">Groq Mappings</div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setOverridesGroq({})}
+              >
+                Clear All
+              </Button>
+            </div>
+          </div>
           {loadingGroq && (
             <div className="text-sm text-muted-foreground">Loading models…</div>
           )}
@@ -280,28 +344,54 @@ export default function AdminModelsPanel() {
               No models found or Groq key missing.
             </div>
           )}
-          {managedIds.map((id) => (
-            <div key={id} className="grid grid-cols-4 items-center gap-3">
-              <Label className="text-right">{friendlyName(id)}</Label>
-              <Select
-                value={overridesGroq[id] || ''}
-                onValueChange={(v) => setOverridesGroq((prev) => ({ ...prev, [id]: v }))}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select Groq model" />
-                </SelectTrigger>
-                <SelectContent className="max-h-80">
-                  {groqOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {managedIds.map((id) => {
+              const Icon =
+                id === 'chat-model-small'
+                  ? BotIcon
+                  : id === 'chat-model-large'
+                    ? BoxIcon
+                    : id === 'chat-model-reasoning'
+                      ? InfoIcon
+                      : id === 'title-model'
+                        ? FileIcon
+                        : id === 'artifact-model'
+                          ? BoxIcon
+                          : BotIcon;
+              return (
+                <div key={id} className="rounded-md border p-3 flex gap-3 items-start">
+                  <div className="mt-0.5 text-foreground">
+                    <Icon size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium">{friendlyName(id)}</div>
+                    <div className="mt-2">
+                      <Label className="sr-only" htmlFor={`groq-${id}`}>
+                        {friendlyName(id)} (Groq)
+                      </Label>
+                      <Select
+                        value={overridesGroq[id] || ''}
+                        onValueChange={(v) => setOverridesGroq((prev) => ({ ...prev, [id]: v }))}
+                      >
+                        <SelectTrigger id={`groq-${id}`} className="w-full">
+                          <SelectValue placeholder="Select Groq model" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-80">
+                          {groqOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

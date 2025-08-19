@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     payload.ragEnabled = form.get('ragEnabled') ? true : false;
     isForm = true;
   }
-  const { slug, name, description, prePrompt, personality, isActive, ragEnabled } = payload ?? {};
+  const { slug, name, description, icon, prePrompt, personality, isActive, ragEnabled } = payload ?? {};
   if (!slug || !name || !prePrompt || !personality) {
     return new ChatSDKError('bad_request:api', 'Missing required fields').toResponse();
   }
@@ -52,6 +52,7 @@ export async function POST(request: Request) {
     slug,
     name,
     description: description ?? null,
+    icon: icon ?? null,
     prePrompt,
     personality,
     isActive: typeof isActive === 'boolean' ? isActive : true,

@@ -1,0 +1,1 @@
+ALTER TABLE "Agent" ADD COLUMN "icon" varchar(64);

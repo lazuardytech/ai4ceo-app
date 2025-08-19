@@ -32,7 +32,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Defer all role/onboarding checks to route-level logic (edge-safe)
+  // If authenticated but not onboarded, force onboarding and block other routes
+  try {
+    const user = (session as any)?.user;
+    const isOnboarding = pathname === '/onboarding';
+    if (user && user.onboarded === false && !isOnboarding) {
+      return NextResponse.redirect(new URL('/onboarding', request.url));
+    }
+  } catch {}
+
+  // Defer other checks to route-level logic
   return NextResponse.next();
 }
 

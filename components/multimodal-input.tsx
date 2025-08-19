@@ -29,6 +29,8 @@ import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
 
+import { ExpertSelectorModal } from '@/components/expert-selector-modal';
+
 function PureMultimodalInput({
   chatId,
   input,
@@ -42,6 +44,10 @@ function PureMultimodalInput({
   sendMessage,
   className,
   selectedVisibilityType,
+  selectedAgentIds,
+  onChangeSelectedAgentIds,
+  isReasoningActive,
+  onExpertsActivated,
 }: {
   chatId: string;
   input: string;
@@ -55,6 +61,10 @@ function PureMultimodalInput({
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   className?: string;
   selectedVisibilityType: VisibilityType;
+  selectedAgentIds: string[];
+  onChangeSelectedAgentIds: (ids: string[]) => void;
+  isReasoningActive: boolean;
+  onExpertsActivated: () => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -305,8 +315,15 @@ function PureMultimodalInput({
         }}
       />
 
-      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start gap-1">
         <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        <ExpertSelectorModal
+          chatId={chatId}
+          selectedAgentIds={selectedAgentIds}
+          onChange={onChangeSelectedAgentIds}
+          isReasoningActive={isReasoningActive}
+          onExpertsActivated={onExpertsActivated}
+        />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
