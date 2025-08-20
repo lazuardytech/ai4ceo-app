@@ -1,5 +1,6 @@
 import { requireSuperadmin } from '@/lib/auth-guard';
 import { AdminNav } from '@/components/admin-nav';
+import type { Metadata } from 'next';
 
 export default async function AdminLayout({
   children,
@@ -34,3 +35,13 @@ export default async function AdminLayout({
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Admin',
+  openGraph: {
+    images: [{ url: '/opengraph-image?title=Admin' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image?title=Admin' }],
+  },
+};

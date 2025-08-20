@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import type { Metadata } from 'next';
 
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -37,3 +38,12 @@ export default async function Layout({
     </>
   );
 }
+
+export const metadata: Metadata = {
+  openGraph: {
+    images: [{ url: '/opengraph-image?title=Chat' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image?title=Chat' }],
+  },
+};

@@ -3,6 +3,7 @@ import { getActiveSubscriptionByUserId, getSettings } from '@/lib/db/queries';
 import Link from 'next/link';
 import { VoucherApplication } from '@/components/voucher-application';
 import { Badge } from '@/components/ui/badge';
+import type { Metadata } from 'next';
 
 export default async function BillingPage() {
   const user = await getCurrentUser();
@@ -109,3 +110,13 @@ export default async function BillingPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Billing',
+  openGraph: {
+    images: [{ url: '/opengraph-image?title=Billing' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image?title=Billing' }],
+  },
+};

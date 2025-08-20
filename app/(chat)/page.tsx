@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers';
+import type { Metadata } from 'next';
 import { ChatPageShell } from '@/components/chat-page-shell';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateCUID } from '@/lib/utils';
@@ -60,3 +61,13 @@ export default async function Page() {
     </>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Chat',
+  openGraph: {
+    images: [{ url: '/opengraph-image?title=Chat' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image?title=Chat' }],
+  },
+};

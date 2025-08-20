@@ -1,5 +1,6 @@
 import { getSettings } from '@/lib/db/queries';
 import { BillingSubscribeClient } from '@/components/billing-subscribe.client';
+import type { Metadata } from 'next';
 
 type Plan = {
   id: string;
@@ -102,3 +103,13 @@ export default async function PricingPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Pricing',
+  openGraph: {
+    images: [{ url: '/opengraph-image?title=Pricing' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image?title=Pricing' }],
+  },
+};

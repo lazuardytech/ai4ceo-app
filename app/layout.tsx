@@ -10,6 +10,13 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://app.ai4.ceo'),
   title: 'AI4CEO Companion',
   description: 'AI4CEO Companion is a chat application that helps you manage your business with AI.',
+  openGraph: {
+    images: [{ url: '/opengraph-image' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image' }],
+    card: 'summary_large_image',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },

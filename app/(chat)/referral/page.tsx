@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { ReferralDashboard } from '@/components/referral-dashboard';
 import { headers } from 'next/headers';
+import type { Metadata } from 'next';
 
 export default async function ReferralPage() {
   const session = await auth.api.getSession({
@@ -20,3 +21,13 @@ export default async function ReferralPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Referral',
+  openGraph: {
+    images: [{ url: '/opengraph-image?title=Referral' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image?title=Referral' }],
+  },
+};

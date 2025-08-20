@@ -7,6 +7,25 @@ import { getActiveSubscriptionByUserId, getAgentIdsByChatId, getChatById, getMes
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { convertToUIMessages } from '@/lib/utils';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(
+  { params }: { params: { id: string } },
+): Promise<Metadata> {
+  const { id } = params;
+  const chat = await getChatById({ id });
+  const title = chat?.title?.trim() || 'Chat';
+  const encoded = encodeURIComponent(title);
+  return {
+    title,
+    openGraph: {
+      images: [{ url: `/opengraph-image?title=${encoded}` }],
+    },
+    twitter: {
+      images: [{ url: `/opengraph-image?title=${encoded}` }],
+    },
+  };
+}
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;

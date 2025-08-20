@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { OnboardingForm } from "@/components/onboarding-form";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import type { Metadata } from 'next';
 
 export default async function OnboardingPage() {
   const session = await auth.api.getSession({
@@ -23,3 +24,13 @@ export default async function OnboardingPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Onboarding',
+  openGraph: {
+    images: [{ url: '/opengraph-image?title=Onboarding' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image?title=Onboarding' }],
+  },
+};

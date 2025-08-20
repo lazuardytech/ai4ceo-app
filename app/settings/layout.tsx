@@ -1,4 +1,5 @@
 import { requireAuth } from '@/lib/auth-guard';
+import type { Metadata } from 'next';
 import { getActiveSubscriptionByUserId, getMonthlyMessageCountByUserId, getSettings } from '@/lib/db/queries';
 import Link from 'next/link';
 import { SettingsNav } from '@/components/settings-nav';
@@ -60,3 +61,13 @@ export default async function SettingsLayout({ children }: { children: React.Rea
     </SidebarProvider>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Settings',
+  openGraph: {
+    images: [{ url: '/opengraph-image?title=Settings' }],
+  },
+  twitter: {
+    images: [{ url: '/opengraph-image?title=Settings' }],
+  },
+};
