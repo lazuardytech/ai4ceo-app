@@ -25,9 +25,9 @@ export default async function ReferralPage() {
 export const metadata: Metadata = {
   title: 'Referral',
   openGraph: {
-    images: [{ url: '/opengraph-image?title=Referral' }],
+    images: [{ url: '/og?title=Referral&subtitle=Invite%20friends%20and%20earn%20rewards&emoji=%F0%9F%8E%81&theme=brand' }],
   },
   twitter: {
-    images: [{ url: '/opengraph-image?title=Referral' }],
+    images: [{ url: '/og?title=Referral&subtitle=Invite%20friends%20and%20earn%20rewards&emoji=%F0%9F%8E%81&theme=brand' }],
   },
 };

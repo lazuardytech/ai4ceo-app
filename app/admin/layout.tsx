@@ -39,9 +39,9 @@ export default async function AdminLayout({
 export const metadata: Metadata = {
   title: 'Admin',
   openGraph: {
-    images: [{ url: '/opengraph-image?title=Admin' }],
+    images: [{ url: '/og?title=Admin&subtitle=Superadmin%20dashboard&emoji=%F0%9F%9B%A0%EF%B8%8F&theme=black' }],
   },
   twitter: {
-    images: [{ url: '/opengraph-image?title=Admin' }],
+    images: [{ url: '/og?title=Admin&subtitle=Superadmin%20dashboard&emoji=%F0%9F%9B%A0%EF%B8%8F&theme=black' }],
   },
 };

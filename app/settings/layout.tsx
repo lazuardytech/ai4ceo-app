@@ -65,9 +65,9 @@ export default async function SettingsLayout({ children }: { children: React.Rea
 export const metadata: Metadata = {
   title: 'Settings',
   openGraph: {
-    images: [{ url: '/opengraph-image?title=Settings' }],
+    images: [{ url: '/og?title=Settings&subtitle=Manage%20account%20and%20preferences&emoji=%E2%9A%99%EF%B8%8F&theme=brand' }],
   },
   twitter: {
-    images: [{ url: '/opengraph-image?title=Settings' }],
+    images: [{ url: '/og?title=Settings&subtitle=Manage%20account%20and%20preferences&emoji=%E2%9A%99%EF%B8%8F&theme=brand' }],
   },
 };

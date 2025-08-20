@@ -41,9 +41,9 @@ export default async function Layout({
 
 export const metadata: Metadata = {
   openGraph: {
-    images: [{ url: '/opengraph-image?title=Chat' }],
+    images: [{ url: '/og?title=Chat&theme=brand' }],
   },
   twitter: {
-    images: [{ url: '/opengraph-image?title=Chat' }],
+    images: [{ url: '/og?title=Chat&theme=brand' }],
   },
 };

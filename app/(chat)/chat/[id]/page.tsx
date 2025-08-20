@@ -19,10 +19,10 @@ export async function generateMetadata(
   return {
     title,
     openGraph: {
-      images: [{ url: `/opengraph-image?title=${encoded}` }],
+      images: [{ url: `/og?title=${encoded}&theme=brand` }],
     },
     twitter: {
-      images: [{ url: `/opengraph-image?title=${encoded}` }],
+      images: [{ url: `/og?title=${encoded}&theme=brand` }],
     },
   };
 }

@@ -28,9 +28,9 @@ export default async function OnboardingPage() {
 export const metadata: Metadata = {
   title: 'Onboarding',
   openGraph: {
-    images: [{ url: '/opengraph-image?title=Onboarding' }],
+    images: [{ url: '/og?title=Onboarding&subtitle=Set%20up%20your%20workspace&emoji=%E2%9C%A8&theme=brand' }],
   },
   twitter: {
-    images: [{ url: '/opengraph-image?title=Onboarding' }],
+    images: [{ url: '/og?title=Onboarding&subtitle=Set%20up%20your%20workspace&emoji=%E2%9C%A8&theme=brand' }],
   },
 };

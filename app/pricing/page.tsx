@@ -107,9 +107,9 @@ export default async function PricingPage() {
 export const metadata: Metadata = {
   title: 'Pricing',
   openGraph: {
-    images: [{ url: '/opengraph-image?title=Pricing' }],
+    images: [{ url: '/og?title=Pricing&subtitle=Flexible%20plans%20for%20every%20team&emoji=%F0%9F%92%BC&theme=brand' }],
   },
   twitter: {
-    images: [{ url: '/opengraph-image?title=Pricing' }],
+    images: [{ url: '/og?title=Pricing&subtitle=Flexible%20plans%20for%20every%20team&emoji=%F0%9F%92%BC&theme=brand' }],
   },
 };

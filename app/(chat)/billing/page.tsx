@@ -114,9 +114,9 @@ export default async function BillingPage() {
 export const metadata: Metadata = {
   title: 'Billing',
   openGraph: {
-    images: [{ url: '/opengraph-image?title=Billing' }],
+    images: [{ url: '/og?title=Billing&subtitle=Manage%20your%20subscription&emoji=%F0%9F%92%B3&theme=brand' }],
   },
   twitter: {
-    images: [{ url: '/opengraph-image?title=Billing' }],
+    images: [{ url: '/og?title=Billing&subtitle=Manage%20your%20subscription&emoji=%F0%9F%92%B3&theme=brand' }],
   },
 };

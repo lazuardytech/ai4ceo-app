@@ -65,9 +65,9 @@ export default async function Page() {
 export const metadata: Metadata = {
   title: 'Chat',
   openGraph: {
-    images: [{ url: '/opengraph-image?title=Chat' }],
+    images: [{ url: '/og?title=Chat' }],
   },
   twitter: {
-    images: [{ url: '/opengraph-image?title=Chat' }],
+    images: [{ url: '/og?title=Chat' }],
   },
 };
