@@ -8,7 +8,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const { searchParams } = new URL(request.url);
@@ -24,7 +24,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const contentType = request.headers.get('content-type') || '';

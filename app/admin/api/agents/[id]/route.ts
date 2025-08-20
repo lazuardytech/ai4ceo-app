@@ -8,7 +8,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const contentType = request.headers.get('content-type') || '';
@@ -38,7 +38,7 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const deleted = await deleteAgent({ id: params.id });
@@ -51,7 +51,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const form = await request.formData();

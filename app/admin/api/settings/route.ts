@@ -7,7 +7,7 @@ export async function GET() {
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const settings = await getSettings();
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const form = await request.formData();

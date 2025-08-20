@@ -628,7 +628,7 @@ export async function updateUserRole({
   role,
 }: {
   userId: string;
-  role: 'user' | 'admin' | 'superadmin';
+  role: 'user' | 'admin';
 }) {
   try {
     const [u] = await db

@@ -23,7 +23,7 @@ export type MinimalUser = {
   email: string;
   name?: string | null;
   image?: string | null;
-  role?: 'user' | 'admin' | 'superadmin';
+  role?: 'user' | 'admin';
 };
 
 export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
@@ -90,21 +90,37 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
           </div>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        {user?.role === 'superadmin' && (
+
+      <SidebarContent className='flex flex-col justify-between border-y'>
+        <SidebarHistory user={user} />
+
+        <div>
+          {user?.role === 'admin' && (
+            <SidebarMenu className='p-2'>
+              <Link
+                href="/admin"
+                onClick={() => setOpenMobile(false)}
+                className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
+              >
+                Admin
+              </Link>
+            </SidebarMenu>
+          )}
           <SidebarMenu className='p-2'>
             <Link
-              href="/admin"
+              href="/settings"
               onClick={() => setOpenMobile(false)}
               className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
             >
-              Admin
+              Settings
             </Link>
           </SidebarMenu>
-        )}
-        <SidebarHistory user={user} />
+        </div>
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+
+      <SidebarFooter>
+        {user && <SidebarUserNav user={user} />}
+      </SidebarFooter>
     </Sidebar>
   );
 }

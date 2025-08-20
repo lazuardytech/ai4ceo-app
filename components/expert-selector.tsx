@@ -70,6 +70,7 @@ export function ExpertSelector({
     <>
       <DropdownMenu open={open} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger
+          id="expert-selector-trigger"
           asChild
           className={cn(
             'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',

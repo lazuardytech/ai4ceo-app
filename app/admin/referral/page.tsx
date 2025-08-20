@@ -12,7 +12,7 @@ export default async function AdminReferralPage() {
     redirect('/login');
   }
 
-  if (session.user.role !== 'superadmin') {
+  if (session.user.role !== 'admin') {
     redirect('/');
   }
 

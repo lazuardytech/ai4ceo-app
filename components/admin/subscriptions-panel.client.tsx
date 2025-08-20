@@ -135,7 +135,7 @@ export function AdminSubscriptionsPanel() {
                 <td className="p-2 align-top">{u.userEmail}</td>
                 <td className="p-2 align-top">
                   <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${u.userRole === 'superadmin'
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${u.userRole === 'admin'
                       ? 'bg-purple-100 text-purple-800'
                       : u.userRole === 'admin'
                         ? 'bg-blue-100 text-blue-800'

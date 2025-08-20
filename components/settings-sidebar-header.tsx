@@ -26,7 +26,7 @@ export function SettingsSidebarHeader(props: {
         if (!res.ok) return; // fall back to initial
         const data = (await res.json()) as any;
         if (!cancelled) setProfile({ id: data.id, email: data.email, name: data.name, image: data.image });
-      } catch {}
+      } catch { }
     };
     load();
     return () => {
@@ -46,15 +46,14 @@ export function SettingsSidebarHeader(props: {
   }, [image, email, id]);
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative size-10 rounded-full overflow-hidden bg-muted">
-        <Image src={avatarSrc} alt={name || 'User avatar'} width={40} height={40} />
+    <div className="flex flex-col items-center gap-3">
+      <div className="relative size-40 rounded-full overflow-hidden bg-muted">
+        <Image src={avatarSrc} alt={name || 'User avatar'} width={160} height={160} />
       </div>
-      <div className="min-w-0">
-        <div className="text-sm font-medium truncate">{name}</div>
+      <div className="min-w-0 items-center text-center flex flex-col gap-1">
+        <div className="text-lg font-medium truncate">{name}</div>
         <div className="text-xs text-muted-foreground truncate">{email}</div>
       </div>
     </div>
   );
 }
-

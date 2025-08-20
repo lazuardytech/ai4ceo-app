@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
 

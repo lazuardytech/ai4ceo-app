@@ -8,7 +8,7 @@ export async function DELETE(_request: Request, context: { params: Promise<{ kid
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const deleted = await deleteAgentKnowledge({ id: params.kid });
@@ -20,7 +20,7 @@ export async function POST(request: Request, context: { params: Promise<{ kid: s
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const form = await request.formData();

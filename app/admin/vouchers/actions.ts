@@ -130,7 +130,7 @@ export async function createVoucherAction(
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return { ok: false, message: 'Unauthorized', tag: 'create' };
   }
 
@@ -204,7 +204,7 @@ export async function updateVoucherAction(
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return { ok: false, message: 'Unauthorized', tag: 'update' };
   }
 
@@ -250,7 +250,7 @@ export async function deleteVoucherAction(
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return { ok: false, message: 'Unauthorized', tag: 'delete' };
   }
 

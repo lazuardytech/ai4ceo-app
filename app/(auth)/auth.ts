@@ -13,11 +13,7 @@
 //   user: {
 //     id: string;
 //     email: string;
-//     name: string | null;
-//     image?: string | null;
-//     role: 'user' | 'admin' | 'superadmin';
-//     type: UserType;
-//   };
+
 // }
 
 // async function findUserBySessionToken(token: string) {

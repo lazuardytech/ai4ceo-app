@@ -8,7 +8,7 @@ type UserSession = {
   user: {
     id: string;
     email: string;
-    role: 'user' | 'admin' | 'superadmin';
+    role: 'user' | 'admin';
     name?: string | null;
     image?: string | null;
     type: 'guest' | 'regular';
@@ -79,4 +79,3 @@ export function ChatPageShell({
     </>
   );
 }
-

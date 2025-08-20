@@ -32,7 +32,7 @@ type Profile = {
   bio?: string | null;
   timezone?: string | null;
   locale?: string | null;
-  role?: 'user' | 'admin' | 'superadmin';
+  role?: 'user' | 'admin';
   botTraits?: string[];
   onboarded?: boolean;
 };
@@ -184,16 +184,16 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl p-4 sm:p-6 md:p-8 space-y-6">
-      <div className="space-y-2">
+    <div className="mx-auto max-w-3xl px-4 sm:px-6 md:px-8 space-y-3">
+      {/*<div className="space-y-2">
         <h1 className="text-2xl font-semibold">Profile</h1>
         <p className="text-sm text-muted-foreground">
           View and update your account details. Changes are saved per user.
         </p>
-      </div>
+      </div>*/}
 
       <div className="rounded-xl border">
-        <div className="p-4 sm:p-6 flex flex-col gap-4">
+        <div className="p-3 sm:p-4 flex flex-col gap-4">
           {/* Header: Avatar + Identity */}
           <div className="flex items-start gap-4">
             <div className="relative size-20">
@@ -368,37 +368,6 @@ export default function ProfilePage() {
               Add a short bio and avatar so others can recognize your account more easily.
             </div>
           )}
-          <div className="grid gap-2">
-            <div className="text-sm font-medium">Preferred Bot Traits</div>
-            <div className="text-xs text-muted-foreground">Pick the assistant traits you prefer. These influence tone and style.</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {[
-                { id: 'friendly', label: 'Friendly' },
-                { id: 'concise', label: 'Concise' },
-                { id: 'curious', label: 'Curious' },
-                { id: 'empathetic', label: 'Empathetic' },
-                { id: 'direct', label: 'Direct' },
-                { id: 'supportive', label: 'Supportive' },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`text-left rounded border p-3 hover:bg-accent ${
-                    traits.includes(t.id) ? 'border-primary' : 'border-muted'
-                  }`}
-                  onClick={() =>
-                    setTraits((prev) =>
-                      prev.includes(t.id)
-                        ? prev.filter((x) => x !== t.id)
-                        : [...prev, t.id],
-                    )
-                  }
-                >
-                  <div className="font-medium">{t.label}</div>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {loading && (
@@ -412,33 +381,65 @@ export default function ProfilePage() {
         )}
       </div>
 
+      <div className="grid gap-2 p-3 sm:p-4 rounded-xl border">
+        <div className='flex flex-col'>
+          <div className="font-medium">Preferred Bot Traits</div>
+          <div className="text-xs text-muted-foreground">Pick the assistant traits you prefer. These influence tone and style.</div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {[
+            { id: 'friendly', label: 'Friendly' },
+            { id: 'concise', label: 'Concise' },
+            { id: 'curious', label: 'Curious' },
+            { id: 'empathetic', label: 'Empathetic' },
+            { id: 'direct', label: 'Direct' },
+            { id: 'supportive', label: 'Supportive' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`text-left rounded border p-3 hover:bg-accent ${traits.includes(t.id) ? 'border-primary' : 'border-muted'
+                }`}
+              onClick={() =>
+                setTraits((prev) =>
+                  prev.includes(t.id)
+                    ? prev.filter((x) => x !== t.id)
+                    : [...prev, t.id],
+                )
+              }
+            >
+              <div className="font-medium">{t.label}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* App Tour controls */}
       <div className="rounded-xl border">
-        <div className="p-4 sm:p-6 space-y-3">
+        <div className="p-3 sm:p-4 flex justify-between items-center">
           <div>
-            <h2 className="text-lg font-medium">App Tour</h2>
+            <h2 className="font-medium">App Tour</h2>
             <p className="text-sm text-muted-foreground">Restart the guided tour if you want to see it again.</p>
           </div>
-          <div>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                try {
-                  const res = await fetch('/api/tour', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tour: false }),
-                  });
-                  if (!res.ok) throw new Error('Failed to reset tour');
-                  toast.success('Tour reset. It will show on home.');
-                } catch (e: any) {
-                  toast.error(e?.message || 'Failed to reset tour');
-                }
-              }}
-            >
-              Restart Tour
-            </Button>
-          </div>
+
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/tour', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ tour: false }),
+                });
+                if (!res.ok) throw new Error('Failed to reset tour');
+                toast.success('Tour reset. It will show on home.');
+              } catch (e: any) {
+                toast.error(e?.message || 'Failed to reset tour');
+              }
+            }}
+          >
+            Restart Tour
+          </Button>
         </div>
       </div>
     </div>

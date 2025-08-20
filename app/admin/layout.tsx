@@ -6,7 +6,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Enforce superadmin using Better Auth session cookie
+  // Enforce admin using Better Auth session cookie
   const user = await requireSuperadmin();
 
   const items = [

@@ -203,7 +203,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
 
   return (
     <>
-      <SidebarGroup className='border-y'>
+      <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
             {paginatedChatHistories &&

@@ -22,7 +22,7 @@ export const user = pgTable('User', {
   onboarded: boolean('onboarded').notNull().default(false),
   // whether the user has completed or dismissed the product tour
   tour: boolean('tour').notNull().default(false),
-  role: varchar('role', { enum: ['user', 'admin', 'superadmin'] })
+  role: varchar('role', { enum: ['user', 'admin'] })
     .notNull()
     .default('user'),
   emailVerified: boolean("email_verified")

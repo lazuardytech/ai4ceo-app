@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/command';
 import { FileIcon, HomeIcon, InvoiceIcon, UserIcon, BoxIcon } from './icons';
 
-type MinimalUserRole = 'user' | 'admin' | 'superadmin';
+type MinimalUserRole = 'user' | 'admin';
 
 export function CommandMenu(props: { user?: { role?: MinimalUserRole } }) {
   const router = useRouter();
@@ -78,7 +78,7 @@ export function CommandMenu(props: { user?: { role?: MinimalUserRole } }) {
       { label: 'Usage', path: '/usage', icon: BoxIcon },
       { label: 'Billing', path: '/billing', icon: InvoiceIcon },
       { label: 'Referral', path: '/referral', icon: BoxIcon },
-      ...(props.user?.role === 'superadmin'
+      ...(props.user?.role === 'admin'
         ? [{ label: 'Admin', path: '/admin', icon: BoxIcon }]
         : []),
     ],

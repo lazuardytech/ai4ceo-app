@@ -10,14 +10,8 @@ async function main() {
 
   const seeding = [
     {
-      name: 'Super Admin',
-      email: process.env.SEED_SUPERADMIN_EMAIL || 'superadmin@example.com',
-      password: process.env.SEED_SUPERADMIN_PASSWORD || 'superadmin123',
-      role: 'superadmin' as const,
-    },
-    {
       name: 'Admin',
-      email: process.env.SEED_ADMIN_EMAIL || 'admin@example.com',
+      email: process.env.SEED_ADMIN_EMAIL || 'admin@ai4.ceo',
       password: process.env.SEED_ADMIN_PASSWORD || 'admin12345',
       role: 'admin' as const,
     },

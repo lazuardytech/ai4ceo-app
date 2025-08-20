@@ -10,14 +10,14 @@ export async function GET(request: Request) {
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q');
   const isActiveParam = searchParams.get('isActive');
   const isActive =
-    isActiveParam === null ? null : isActiveParam  === 'true';
+    isActiveParam === null ? null : isActiveParam === 'true';
   const limit = Number(searchParams.get('limit') ?? '100');
   const offset = Number(searchParams.get('offset') ?? '0');
   const result = await listAgents({ q, isActive, limit, offset });
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   const session = await auth.api.getSession({
     headers: await headers()
   })
-  if (!session?.user || session.user.role !== 'superadmin') {
+  if (!session?.user || session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
   const contentType = request.headers.get('content-type') || '';

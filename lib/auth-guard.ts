@@ -15,7 +15,7 @@ export type CurrentUser = {
   email: string;
   name: string | null;
   image?: string | null;
-  role: 'user' | 'admin' | 'superadmin';
+  role: 'user' | 'admin';
   onboarded?: boolean;
   tour?: boolean;
 };
@@ -71,7 +71,7 @@ export async function requireAuth(): Promise<CurrentUser> {
 
 export async function requireSuperadmin(): Promise<CurrentUser> {
   const user = await requireAuth();
-  if (user.role !== 'superadmin') redirect('/');
+  if (user.role !== 'admin') redirect('/');
   return user;
 }
 

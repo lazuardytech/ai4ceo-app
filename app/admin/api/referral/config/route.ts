@@ -11,8 +11,8 @@ export async function GET() {
     return new ChatSDKError('unauthorized:auth').toResponse();
   }
 
-  // Check if user is superadmin
-  if (session.user.role !== 'superadmin') {
+  // Check if user is admin
+  if (session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
 
@@ -46,8 +46,8 @@ export async function PUT(request: Request) {
     return new ChatSDKError('unauthorized:auth').toResponse();
   }
 
-  // Check if user is superadmin
-  if (session.user.role !== 'superadmin') {
+  // Check if user is admin
+  if (session.user.role !== 'admin') {
     return new ChatSDKError('forbidden:auth').toResponse();
   }
 

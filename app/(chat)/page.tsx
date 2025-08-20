@@ -33,10 +33,10 @@ export default async function Page() {
     user: {
       id: session.user.id!,
       email: session.user.email!,
-      role: (['user', 'admin', 'superadmin'].includes(
+      role: (['user', 'admin'].includes(
         (session.user as any).role,
       )
-        ? ((session.user as any).role as 'user' | 'admin' | 'superadmin')
+        ? ((session.user as any).role as 'user' | 'admin')
         : 'user'),
       name: (session.user as any).name ?? null,
       image: (session.user as any).image ?? null,

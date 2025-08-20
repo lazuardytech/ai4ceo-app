@@ -8,7 +8,7 @@ import { toast } from '@/components/toast';
 interface UserRow {
   id: string;
   email: string | null;
-  role?: 'user' | 'admin' | 'superadmin';
+  role?: 'user' | 'admin';
 }
 
 export function AdminUsersPanel() {
@@ -109,9 +109,8 @@ export function AdminUsersPanel() {
                       className="border rounded px-2 py-1"
                       onChange={(e) => updateRole(u.id, e.target.value)}
                     >
-                      <option value="user">user</option>
-                      <option value="admin">admin</option>
-                      <option value="superadmin">superadmin</option>
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
                     </select>
                   </div>
                 </td>

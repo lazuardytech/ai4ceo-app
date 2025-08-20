@@ -46,7 +46,7 @@ export async function setUserSubscriptionAction(
   })
   if (
     !session?.user ||
-    (session.user.role !== 'superadmin' && session.user.role !== 'admin')
+    (session.user.role !== 'admin' && session.user.role !== 'admin')
   ) {
     return { ok: false, message: 'Unauthorized', tag: 'set' };
   }
