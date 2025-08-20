@@ -19,11 +19,10 @@ export function AdminNav({ items }: { items: AdminNavItem[] }) {
           <Link
             key={item.href}
             href={item.href}
-            className={`block rounded-md px-3 py-2 text-sm ${
-              active
-                ? 'bg-primary text-primary-foreground'
+            className={`block rounded-md px-3 py-2 text-sm ${active
+                ? 'bg-primary text-white'
                 : 'hover:bg-muted text-foreground'
-            }`}
+              }`}
           >
             {item.label}
           </Link>

@@ -26,6 +26,7 @@ import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { ChatItem } from './sidebar-history-item';
 import useSWRInfinite from 'swr/infinite';
+import { LoaderIcon } from './icons';
 
 type GroupedChats = {
   today: Chat[];
@@ -216,7 +217,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
                 return (
                   <div className="flex flex-col gap-6">
                     {groupedChats.today.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-2">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Today
                         </div>
@@ -236,7 +237,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
                     )}
 
                     {groupedChats.yesterday.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-1">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Yesterday
                         </div>
@@ -256,7 +257,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
                     )}
 
                     {groupedChats.lastWeek.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-1">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Last 7 days
                         </div>
@@ -276,7 +277,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
                     )}
 
                     {groupedChats.lastMonth.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-1">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Last 30 days
                         </div>
@@ -296,7 +297,7 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
                     )}
 
                     {groupedChats.older.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-1">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Older than last month
                         </div>
@@ -327,18 +328,18 @@ export function SidebarHistory({ user }: { user: MinimalUser | undefined }) {
             }}
           />
 
-          {/*{hasReachedEnd ? (
-            <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2 mt-8">
+          {hasReachedEnd ? (
+            <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2 mt-4">
               You have reached the end of your chat history.
             </div>
           ) : (
-            <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center mt-8">
+            <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center mt-4">
               <div className="animate-spin">
                 <LoaderIcon />
               </div>
               <div>Loading Chats...</div>
             </div>
-          )}*/}
+          )}
         </SidebarGroupContent>
       </SidebarGroup>
 

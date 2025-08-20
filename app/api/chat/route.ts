@@ -24,7 +24,7 @@ import {
   setChatAgents,
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateCUID } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
+
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
@@ -44,6 +44,7 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { buildExpertSystemPrompt } from '@/lib/ai/experts';
+import { generateTitleFromUserMessage } from '@/app/(chat)/actions';
 
 
 export const maxDuration = 60;
@@ -243,12 +244,12 @@ export async function POST(request: Request) {
     if (expertModeEnabled && selectedAgents.length > 0) {
       // Compute once: userText for this turn
       const userText = extractText(message.parts as any);
-        const baseForExperts = buildSystemPrompt({
-          selectedChatModel,
-          requestHints,
-          regularOverride: settings?.regularPromptOverride,
-          artifactsOverride: settings?.artifactsPromptOverride,
-        });
+      const baseForExperts = buildSystemPrompt({
+        selectedChatModel,
+        requestHints,
+        regularOverride: settings?.regularPromptOverride,
+        artifactsOverride: settings?.artifactsPromptOverride,
+      });
       const list: typeof expertRuns = [];
       for (const a of selectedAgents) {
         const kb = await retrieveAgentContext({ agentId: a.id, query: userText, limit: 5 });

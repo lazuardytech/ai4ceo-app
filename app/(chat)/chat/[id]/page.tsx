@@ -10,9 +10,9 @@ import { convertToUIMessages } from '@/lib/utils';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<Metadata> {
-  const { id } = params;
+  const { id } = await params;
   const chat = await getChatById({ id });
   const title = chat?.title?.trim() || 'Chat';
   const encoded = encodeURIComponent(title);

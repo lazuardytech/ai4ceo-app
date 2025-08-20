@@ -46,7 +46,7 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
               }}
               className="flex flex-row gap-3 items-center"
             >
-              <span className="text-lg font-semibold p-2 hover:bg-muted rounded-md cursor-pointer">
+              <span className="text-lg font-semibold p-2 hover:bg-sidebar-accent rounded-md cursor-pointer">
                 <Image src="/images/logo.svg" width={100} height={50} alt="Logo" />
               </span>
             </Link>
@@ -55,7 +55,7 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
                 <Button
                   variant="ghost"
                   type="button"
-                  className="p-2 h-fit"
+                  className="p-2 h-fit hover:bg-sidebar-accent"
                   onClick={async () => {
                     setOpenMobile(false);
                     try {
@@ -85,7 +85,7 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
                   <PlusIcon />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent align="end">New Chat</TooltipContent>
+              <TooltipContent className='text-white' align="end">New Chat</TooltipContent>
             </Tooltip>
           </div>
         </SidebarMenu>
@@ -100,7 +100,7 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
               <Link
                 href="/admin"
                 onClick={() => setOpenMobile(false)}
-                className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
+                className="flex items-center rounded-md p-2 text-sm hover:bg-sidebar-accent"
               >
                 Admin
               </Link>
@@ -108,9 +108,9 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
           )}
           <SidebarMenu className='p-2'>
             <Link
-              href="/settings"
+              href="/settings/profile"
               onClick={() => setOpenMobile(false)}
-              className="flex items-center rounded-md p-2 text-sm hover:bg-muted"
+              className="flex items-center rounded-md p-2 text-sm hover:bg-sidebar-accent"
             >
               Settings
             </Link>

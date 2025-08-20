@@ -29,7 +29,7 @@ export function SidebarToggle({
           <SidebarLeftIcon size={16} />
         </Button>
       </TooltipTrigger>
-      <TooltipContent align="start">Toggle Sidebar</TooltipContent>
+      <TooltipContent className='text-white' align="start">Toggle Sidebar</TooltipContent>
     </Tooltip>
   );
 }

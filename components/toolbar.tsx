@@ -91,7 +91,7 @@ const Tool = ({
       <TooltipTrigger asChild>
         <motion.div
           className={cx('p-3 rounded-full', {
-            'bg-primary text-primary-foreground!': selectedTool === description,
+            'bg-primary text-white!': selectedTool === description,
           })}
           onHoverStart={() => {
             setIsHovered(true);
@@ -190,7 +190,7 @@ const ReadingLevelSelector = ({
               className={cx(
                 'absolute bg-background p-3 border rounded-full flex flex-row items-center',
                 {
-                  'bg-primary text-primary-foreground': currentLevel !== 2,
+                  'bg-primary text-white': currentLevel !== 2,
                   'bg-background text-foreground': currentLevel === 2,
                 },
               )}

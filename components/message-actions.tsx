@@ -39,7 +39,7 @@ export function PureMessageActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="py-1 px-2 h-fit text-muted-foreground"
+              className="aspect-square size-8 h-fit text-muted-foreground"
               variant="outline"
               onClick={async () => {
                 const textFromParts = message.parts
@@ -60,14 +60,14 @@ export function PureMessageActions({
               <CopyIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Copy</TooltipContent>
+          <TooltipContent className="text-white">Copy</TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               data-testid="message-upvote"
-              className="py-1 px-2 h-fit text-muted-foreground pointer-events-auto!"
+              className="aspect-square size-8 h-fit text-muted-foreground pointer-events-auto!"
               disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
@@ -113,14 +113,14 @@ export function PureMessageActions({
               <ThumbUpIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Upvote Response</TooltipContent>
+          <TooltipContent className="text-white">Upvote Response</TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               data-testid="message-downvote"
-              className="py-1 px-2 h-fit text-muted-foreground pointer-events-auto!"
+              className="aspect-square size-8 h-fit text-muted-foreground pointer-events-auto!"
               variant="outline"
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
@@ -166,7 +166,7 @@ export function PureMessageActions({
               <ThumbDownIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Downvote Response</TooltipContent>
+          <TooltipContent className="text-white">Downvote Response</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>

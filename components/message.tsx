@@ -166,14 +166,14 @@ const PurePreviewMessage = ({
                               <PencilEditIcon />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Edit message</TooltipContent>
+                          <TooltipContent className="text-white">Edit message</TooltipContent>
                         </Tooltip>
                       )}
 
                       <div
                         data-testid="message-content"
                         className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                          'bg-primary text-background px-3 py-2 rounded-xl':
                             message.role === 'user',
                         })}
                       >

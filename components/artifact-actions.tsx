@@ -79,7 +79,7 @@ function PureArtifactActions({
               {action.label}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{action.description}</TooltipContent>
+          <TooltipContent className="text-white">{action.description}</TooltipContent>
         </Tooltip>
       ))}
     </div>
