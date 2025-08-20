@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth-guard';
 import { Chat } from '@/components/chat';
 import { getActiveSubscriptionByUserId, getAgentIdsByChatId, getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
+import { getDefaultChatModelId } from '@/lib/ai/models.server';
 import { convertToUIMessages } from '@/lib/utils';
 import type { Metadata } from 'next';
 
@@ -75,12 +75,13 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   if (!chatModelFromCookie) {
+    const defaultModel = await getDefaultChatModelId();
     return (
       <>
         <Chat
           id={chat.id}
           initialMessages={uiMessages}
-          initialChatModel={DEFAULT_CHAT_MODEL}
+          initialChatModel={defaultModel}
           initialVisibilityType={chat.visibility}
           isReadonly={user?.id !== chat.userId}
           session={{ user: { ...user, type: 'regular' } } as any}

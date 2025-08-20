@@ -1,6 +1,28 @@
+"use client";
+
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-export const Greeting = () => {
+export const Greeting = ({ name }: { name: string }) => {
+  const [subtitle, setSubtitle] = useState<string>('How can I help you today?');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/greeting', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = (await res.json()) as { subtitle?: string };
+        if (!cancelled && data?.subtitle) setSubtitle(data.subtitle);
+      } catch {
+        // ignore & keep default subtitle
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div
       key="overview"
@@ -11,9 +33,9 @@ export const Greeting = () => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.5 }}
-        className="text-2xl font-semibold"
+        className="text-2xl font-semibold font-serif"
       >
-        Hello there!
+        {`Hello, ${name}!`}
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -22,7 +44,7 @@ export const Greeting = () => {
         transition={{ delay: 0.6 }}
         className="text-2xl text-zinc-500"
       >
-        How can I help you today?
+        {subtitle}
       </motion.div>
     </div>
   );

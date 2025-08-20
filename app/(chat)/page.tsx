@@ -1,7 +1,7 @@
 import { cookies, headers } from 'next/headers';
 import type { Metadata } from 'next';
 import { ChatPageShell } from '@/components/chat-page-shell';
-import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
+import { getDefaultChatModelId } from '@/lib/ai/models.server';
 import { generateCUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { redirect } from 'next/navigation';
@@ -46,7 +46,8 @@ export default async function Page() {
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model-small');
 
-  const initialModel = modelIdFromCookie ? modelIdFromCookie.value : DEFAULT_CHAT_MODEL;
+  const defaultModel = await getDefaultChatModelId();
+  const initialModel = modelIdFromCookie ? modelIdFromCookie.value : defaultModel;
   const showBanner = !((session.user as any).tour);
 
   return (

@@ -1,6 +1,8 @@
 import { PreviewMessage, ThinkingMessage } from './message';
 import { Greeting } from './greeting';
 import { memo, useMemo, useState } from 'react';
+import useSWR from 'swr';
+import { fetcher } from '@/lib/utils';
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
@@ -18,6 +20,7 @@ interface MessagesProps {
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
+  session?: { user: { name?: string | null; email: string } };
 }
 
 function PureMessages({
@@ -28,6 +31,7 @@ function PureMessages({
   setMessages,
   regenerate,
   isReadonly,
+  session,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -64,6 +68,20 @@ function PureMessages({
     [onViewportLeave],
   );
 
+  const baseName = useMemo(() => {
+    const n = session?.user?.name?.trim();
+    if (n) return n;
+    const email = session?.user?.email || '';
+    return email ? email.split('@')[0] : 'there';
+  }, [session?.user?.name, session?.user?.email]);
+
+  const shouldFetchProfile = Boolean(session && (!session.user.name || !session.user.name.trim()));
+  const { data: profile } = useSWR<{ name?: string }>(
+    shouldFetchProfile ? '/api/profile' : null,
+    fetcher,
+  );
+  const displayName = (profile?.name && profile.name.trim()) || baseName;
+
   return (
     <div className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll relative">
       <div
@@ -78,7 +96,7 @@ function PureMessages({
         ref={messagesContainerRef}
         className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 relative"
       >
-        {messages.length === 0 && <Greeting />}
+        {messages.length === 0 && <Greeting name={displayName} />}
 
         {messages.map((message, index) => (
           <PreviewMessage

@@ -45,7 +45,7 @@ export function TourBanner({ visible }: Props) {
     <div className="sticky top-0 z-30 w-full mb-1 border-b">
       <Alert className="rounded-none relative flex items-center justify-between border-none bg-muted-foreground/5 text-foreground p-3">
         <div className='flex flex-col min-w-0'>
-          <AlertTitle className='text-sm'>Take a quick tour?</AlertTitle>
+          <AlertTitle className='text-lg'>Take a quick tour?</AlertTitle>
           <AlertDescription className='text-muted-foreground text-xs truncate'>
             Explore the app with a short guided tour. You can restart the tour any time from Settings.
           </AlertDescription>

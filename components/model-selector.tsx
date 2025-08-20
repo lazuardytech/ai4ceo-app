@@ -1,5 +1,6 @@
 'use client';
 
+import useSWR from 'swr';
 import { startTransition, useMemo, useOptimistic, useState } from 'react';
 
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
@@ -10,11 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { chatModels } from '@/lib/ai/models';
-import { cn } from '@/lib/utils';
+import type { ChatModel } from '@/lib/ai/models';
+import { cn, fetcher } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
 
 export function ModelSelector({
   session,
@@ -30,20 +30,14 @@ export function ModelSelector({
   const [optimisticModelId, setOptimisticModelId] =
     useOptimistic(selectedModelId);
 
-  const userType = session.user.type;
-  const { availableChatModelIds } = entitlementsByUserType[userType];
+  const { data } = useSWR<{ models: ChatModel[] }>('/api/models/chat', fetcher);
+  const availableChatModels = (data?.models ?? []) as ChatModel[];
+  const hasModels = availableChatModels.length > 0;
 
-  const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id),
-  );
-
-  const selectedChatModel = useMemo(
-    () =>
-      availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
-      ),
-    [optimisticModelId, availableChatModels],
-  );
+  const selectedChatModel = useMemo(() => {
+    if (!hasModels) return undefined;
+    return availableChatModels.find((m) => m.id === optimisticModelId) || availableChatModels[0];
+  }, [optimisticModelId, availableChatModels, hasModels]);
 
   // No gating by plan at model level; selection always enabled
 
@@ -61,12 +55,16 @@ export function ModelSelector({
           data-testid="model-selector"
           variant="outline"
           className="md:px-2 md:h-[34px]"
+          disabled={!hasModels}
         >
-          {selectedChatModel?.name}
+          {selectedChatModel?.name ?? 'Select Model'}
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[300px]">
+        {!hasModels && (
+          <DropdownMenuItem disabled> No models available </DropdownMenuItem>
+        )}
         {availableChatModels.map((chatModel) => {
           const { id } = chatModel;
           const disabled = false;

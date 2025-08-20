@@ -6,6 +6,7 @@ export interface ChatModel {
   description: string;
 }
 
+// Default set used as fallback and for initial UI when no settings exist
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model-small',
