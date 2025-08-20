@@ -293,7 +293,7 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'z-40 min-h-[24px] max-h-[calc(50dvh)] overflow-y-auto resize-none rounded-2xl !text-base bg-muted pb-16 dark:border-zinc-700 rounded-bl-none rounded-br-none border-b-0 focus-visible:ring-8 focus-visible:ring-primary/20 transition-all ring-0 !outline-none focus-visible:border-transparent',
+          'z-40 min-h-[24px] max-h-[calc(50dvh)] overflow-y-auto resize-none rounded-2xl text-base! bg-muted pb-16 dark:border-zinc-700 rounded-bl-none rounded-br-none border-b-0 focus-visible:ring-8 focus-visible:ring-primary/20 transition-all ring-0 outline-hidden! focus-visible:border-transparent',
           className,
         )}
         rows={2}
@@ -364,7 +364,7 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className="rounded-full p-[8px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
+      className="rounded-full p-[8px] h-fit dark:border-zinc-700 dark:hover:bg-zinc-900 hover:bg-zinc-200"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();

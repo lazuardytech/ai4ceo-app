@@ -88,7 +88,7 @@ export function ExpertsPanel({ initialAgents }: { initialAgents: Agent[] }) {
     return (
       <div className="flex gap-2">
         <Badge variant={a.isActive ? 'default' : 'secondary'}>{a.isActive ? 'Active' : 'Inactive'}</Badge>
-        <Badge variant={a.ragEnabled ? 'outline' : 'secondary'}>{a.ragEnabled ? 'RAG' : 'No RAG'}</Badge>
+        <Badge variant={a.ragEnabled ? 'outline-solid' : 'secondary'}>{a.ragEnabled ? 'RAG' : 'No RAG'}</Badge>
       </div>
     );
   }
@@ -323,7 +323,7 @@ export function ExpertsPanel({ initialAgents }: { initialAgents: Agent[] }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map((a) => (
-          <div key={a.id} className="p-4 border rounded-md shadow-sm hover:shadow transition-colors hover:border-foreground/30">
+          <div key={a.id} className="p-4 border rounded-md shadow-xs hover:shadow-sm transition-colors hover:border-foreground/30">
             <div className="pb-2 flex flex-row items-center justify-between">
               <span className="text-base flex items-center gap-2">
                 <AgentIcon a={a} />

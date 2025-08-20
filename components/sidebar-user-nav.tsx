@@ -73,7 +73,7 @@ export function SidebarUserNav({ user }: { user: MinimalUser }) {
           <DropdownMenuContent
             data-testid="user-nav-menu"
             side="top"
-            className="w-[--radix-popper-anchor-width]"
+            className="w-(--radix-popper-anchor-width)"
           >
             {/*<DropdownMenuLabel className="text-xs">
               Signed in as {data?.user?.email ?? user?.email}
