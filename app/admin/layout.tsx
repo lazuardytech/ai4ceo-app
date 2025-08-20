@@ -1,4 +1,4 @@
-import { requireSuperadmin } from '@/lib/auth-guard';
+import { requireAdmin } from '@/lib/auth-guard';
 import { AdminNav } from '@/components/admin-nav';
 import type { Metadata } from 'next';
 
@@ -8,7 +8,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   // Enforce admin using Better Auth session cookie
-  const user = await requireSuperadmin();
+  const user = await requireAdmin();
 
   const items = [
     { label: 'Overview', href: '/admin' },
@@ -27,7 +27,7 @@ export default async function AdminLayout({
       <aside className="md:sticky md:top-4 h-fit">
         <div className="mb-3">
           <h1 className="text-lg font-semibold">Admin</h1>
-          <p className="text-xs text-muted-foreground">Superadmin dashboard</p>
+          <p className="text-xs text-muted-foreground">Admin dashboard</p>
         </div>
         <AdminNav items={items} />
       </aside>
@@ -39,9 +39,9 @@ export default async function AdminLayout({
 export const metadata: Metadata = {
   title: 'Admin',
   openGraph: {
-    images: [{ url: '/og?title=Admin&subtitle=Superadmin%20dashboard&emoji=%F0%9F%9B%A0%EF%B8%8F&theme=black' }],
+    images: [{ url: '/og?title=Admin&subtitle=Admin%20dashboard&emoji=%F0%9F%9B%A0%EF%B8%8F&theme=black' }],
   },
   twitter: {
-    images: [{ url: '/og?title=Admin&subtitle=Superadmin%20dashboard&emoji=%F0%9F%9B%A0%EF%B8%8F&theme=black' }],
+    images: [{ url: '/og?title=Admin&subtitle=Admin%20dashboard&emoji=%F0%9F%9B%A0%EF%B8%8F&theme=black' }],
   },
 };

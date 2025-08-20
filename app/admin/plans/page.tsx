@@ -7,7 +7,7 @@ export default async function AdminPlansPage() {
     headers: await headers()
   })
   if (!session?.user || session.user.role !== 'admin') {
-    return <div className="p-6 text-sm text-red-500">Unauthorized: Superadmin only.</div>;
+    return <div className="p-6 text-sm text-red-500">Unauthorized: Admin only.</div>;
   }
 
   return (

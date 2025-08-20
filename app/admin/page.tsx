@@ -1,8 +1,8 @@
-import { requireSuperadmin } from '@/lib/auth-guard';
+import { requireAdmin } from '@/lib/auth-guard';
 import { listUsers, listSubscriptions } from '@/lib/db/queries';
 
 export default async function AdminHomePage() {
-  const user = await requireSuperadmin();
+  const user = await requireAdmin();
 
   const [users, subs] = await Promise.all([
     listUsers({ limit: 100 }),

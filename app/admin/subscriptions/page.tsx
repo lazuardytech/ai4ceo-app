@@ -10,7 +10,7 @@ export default async function AdminSubscriptionsPage() {
   if (!session?.user || session.user.role !== 'admin') {
     return (
       <div className="p-6 text-sm text-red-500">
-        Unauthorized: Superadmin only.
+        Unauthorized: Admin only.
       </div>
     );
   }

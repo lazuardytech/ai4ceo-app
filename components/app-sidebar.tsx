@@ -94,9 +94,9 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
       <SidebarContent className='flex flex-col justify-between border-y'>
         <SidebarHistory user={user} />
 
-        <div>
+        <div className='p-2 space-y-1'>
           {user?.role === 'admin' && (
-            <SidebarMenu className='p-2'>
+            <SidebarMenu>
               <Link
                 href="/admin"
                 onClick={() => setOpenMobile(false)}
@@ -106,7 +106,7 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
               </Link>
             </SidebarMenu>
           )}
-          <SidebarMenu className='p-2'>
+          <SidebarMenu>
             <Link
               href="/settings/profile"
               onClick={() => setOpenMobile(false)}

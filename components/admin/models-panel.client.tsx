@@ -216,7 +216,7 @@ export default function AdminModelsPanel() {
       </div>
       <div className="space-y-5">
         <div className="rounded border p-3 space-y-3">
-          <div className="font-medium">Default Provider Preference</div>
+          <div className="font-semibold font-serif text-lg">Default Provider Preference</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { id: 'balance', label: 'Load Balance', Icon: HomeIcon },
@@ -249,7 +249,7 @@ export default function AdminModelsPanel() {
 
         <div className="rounded border p-3 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="font-medium">OpenRouter Mappings</div>
+            <div className="font-semibold font-serif text-lg">OpenRouter Mappings</div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -324,7 +324,7 @@ export default function AdminModelsPanel() {
 
         <div className="rounded border p-3 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="font-medium">Groq Mappings</div>
+            <div className="font-semibold font-serif text-lg">Groq Mappings</div>
             <div className="flex gap-2">
               <Button
                 variant="outline"

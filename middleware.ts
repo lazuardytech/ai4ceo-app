@@ -27,10 +27,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If authenticated, keep users away from login/register
-  if (isLoginOrRegister && session) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
+  // Do not hard-redirect authenticated users away from auth pages in middleware.
+  // The auth pages or server routes will decide where to send the user.
+  // This avoids redirect loops when cookies are present but sessions are invalid.
 
   // If authenticated but not onboarded, force onboarding and block other routes
   try {

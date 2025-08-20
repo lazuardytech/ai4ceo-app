@@ -69,7 +69,7 @@ export async function requireAuth(): Promise<CurrentUser> {
   redirect('/login');
 }
 
-export async function requireSuperadmin(): Promise<CurrentUser> {
+export async function requireAdmin(): Promise<CurrentUser> {
   const user = await requireAuth();
   if (user.role !== 'admin') redirect('/');
   return user;
