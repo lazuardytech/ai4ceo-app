@@ -1,5 +1,5 @@
 {
-  "id": "ff44c900-4755-433c-842c-ae8d540bf689",
+  "id": "5822e7a6-8e2c-4044-9cd7-fa51034c9cc7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -131,6 +131,12 @@
         "description": {
           "name": "description",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "varchar(64)",
           "primaryKey": false,
           "notNull": false
         },
@@ -1248,12 +1254,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "password": {
-          "name": "password",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false
-        },
         "name": {
           "name": "name",
           "type": "varchar(128)",
@@ -1286,6 +1286,13 @@
         },
         "onboarded": {
           "name": "onboarded",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "tour": {
+          "name": "tour",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
