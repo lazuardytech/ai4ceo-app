@@ -88,7 +88,7 @@ export function ExpertsPanel({ initialAgents }: { initialAgents: Agent[] }) {
     return (
       <div className="flex gap-2">
         <Badge variant={a.isActive ? 'default' : 'secondary'}>{a.isActive ? 'Active' : 'Inactive'}</Badge>
-        <Badge variant={a.ragEnabled ? 'outline-solid' : 'secondary'}>{a.ragEnabled ? 'RAG' : 'No RAG'}</Badge>
+        <Badge variant={a.ragEnabled ? 'outline' : 'secondary'}>{a.ragEnabled ? 'RAG' : 'No RAG'}</Badge>
       </div>
     );
   }

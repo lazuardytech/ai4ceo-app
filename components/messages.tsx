@@ -80,7 +80,7 @@ function PureMessages({
     shouldFetchProfile ? '/api/profile' : null,
     fetcher,
   );
-  const displayName = (profile?.name && profile.name.trim()) || baseName;
+  const displayName = (profile?.name?.trim()) || baseName;
 
   return (
     <div className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll relative">

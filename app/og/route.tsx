@@ -6,7 +6,7 @@ const size = { width: 1200, height: 630 } as const;
 
 function clamp(text: string, max: number): string {
   if (text.length <= max) return text;
-  return text.slice(0, Math.max(0, max - 1)).trimEnd() + '…';
+  return `${text.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
 }
 
 function themeColors(variant?: string) {

@@ -27,7 +27,7 @@ function RegisterPageContent() {
     setEmail(email);
     setReferralCode(referral);
     const name = email?.split('@')[0] || 'User';
-    const res = await signUp.email({ email, password, name, role: 'user', callbackURL: '/onboarding' })
+    const res = await signUp.email({ email, password, name, role: 'user', callbackURL: '/onboarding', tour: false, onboarded: false })
       .then(() => {
         toast({ type: 'success', description: 'Account created successfully!' });
         setIsSuccessful(true);
