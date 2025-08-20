@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
 import { memo } from 'react';
+import useSWR from 'swr';
+import { fetcher } from '@/lib/utils';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
 import type { ChatMessage } from '@/lib/types';
@@ -18,27 +20,15 @@ function PureSuggestedActions({
   sendMessage,
   selectedVisibilityType,
 }: SuggestedActionsProps) {
-  const suggestedActions = [
-    {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
-    },
-    {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
-    },
-    {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
-    },
-    {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
-    },
+  const { data } = useSWR<{ items: { title: string; label: string; action: string }[] }>(
+    '/api/suggestions/actions',
+    fetcher,
+  );
+  const suggestedActions = data?.items ?? [
+    { title: 'Draft a plan to', label: 'enter a new market', action: 'Draft a 90-day GTM plan to enter a new market. Include KPIs and risks.' },
+    { title: 'Analyze our', label: 'unit economics', action: 'Analyze our unit economics and identify levers to improve gross margin.' },
+    { title: 'Outline a board', label: 'update structure', action: 'Outline a concise board update for this month with key metrics and risks.' },
+    { title: 'Design an org', label: 'structure for scale', action: 'Propose an org structure to scale from 10 to 30 people with roles and responsibilities.' },
   ];
 
   return (

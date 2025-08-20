@@ -115,7 +115,7 @@ export function ExpertSelectorModal({
         </DialogTrigger>
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
-            <DialogTitle>Select Experts</DialogTitle>
+            <DialogTitle className='text-lg'>Select Experts</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {experts.map((e) => {
@@ -137,7 +137,7 @@ export function ExpertSelectorModal({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <div className="font-medium truncate">{e.name}</div>
+                      <div className="font-medium truncate font-serif text-lg">{e.name}</div>
                       <Badge variant="outline" className="text-[10px] uppercase">{e.slug}</Badge>
                     </div>
                     {e.description ? (

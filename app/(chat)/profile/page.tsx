@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSWRConfig } from 'swr';
 import Image from 'next/image';
 import { toast } from 'sonner';
 
@@ -38,6 +39,7 @@ type Profile = {
 };
 
 export default function ProfilePage() {
+  const { mutate } = useSWRConfig();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -169,7 +171,10 @@ export default function ProfilePage() {
       }
 
       if (updated) {
-        setProfile({ ...(updated as any), botTraits: traits });
+        const merged = { ...(updated as any), botTraits: traits } as Profile;
+        setProfile(merged);
+        // Update global cache so greeting and other components reflect changes immediately
+        mutate('/api/profile', merged, { revalidate: false });
         toast.success('Profile updated');
       } else {
         toast.success('Saved');

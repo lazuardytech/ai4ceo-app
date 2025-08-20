@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
 async function main() {
   if (!process.env.POSTGRES_URL) throw new Error('POSTGRES_URL missing');
 
-  await reset(db, schema);
+  // await reset(db, schema);
 
   const seeding = [
     {
