@@ -5,7 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-geist);
+  --font-sans: var(--font-haskoy);
+  --font-serif: var(--font-instrument-serif);
   --font-mono: var(--font-geist-mono);
 
   --breakpoint-toast-mobile: 600px;
@@ -79,7 +80,8 @@
 }
 
 @theme {
-  --font-sans: var(--font-geist);
+  --font-sans: var(--font-haskoy);
+  --font-serif: var(--font-instrument-serif);
   --font-mono: var(--font-geist-mono);
 
   --breakpoint-toast-mobile: 600px;
@@ -286,7 +288,11 @@
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground font-sans;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-serif);
     }
 }
 
