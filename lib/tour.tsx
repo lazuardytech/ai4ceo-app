@@ -1,4 +1,4 @@
-import { Tour } from 'nextstepjs';
+import type { Tour } from 'nextstepjs';
 
 const steps: Tour[] = [
   {

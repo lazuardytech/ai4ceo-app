@@ -1,6 +1,4 @@
 import { cookies, headers } from 'next/headers';
-
-import { Chat } from '@/components/chat';
 import { ChatPageShell } from '@/components/chat-page-shell';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateCUID } from '@/lib/utils';

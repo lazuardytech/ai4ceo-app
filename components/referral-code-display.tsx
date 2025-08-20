@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Copy, CheckCircle, Gift } from 'lucide-react';
+import { Copy, CheckCircle, } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 

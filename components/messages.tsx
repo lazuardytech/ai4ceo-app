@@ -69,8 +69,7 @@ function PureMessages({
       <div
         id="gradient-chat"
         className={
-          'bg-gradient-to-t from-background to-transparent absolute inset-x-0 bottom-0 z-20 aspect-auto w-full h-52 pointer-events-none select-none transition-opacity duration-300 ' +
-          (isAtBottom ? 'opacity-0' : 'opacity-100')
+          `bg-gradient-to-t from-background to-transparent absolute inset-x-0 bottom-0 z-20 aspect-auto w-full h-52 pointer-events-none select-none transition-opacity duration-300 ${isAtBottom ? 'opacity-0' : 'opacity-100'}`
         }
         aria-hidden="true"
       />

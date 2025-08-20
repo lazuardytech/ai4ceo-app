@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, History, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { IconHistory } from '@tabler/icons-react';

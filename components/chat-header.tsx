@@ -11,7 +11,7 @@ import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { toast } from './toast';
-import { type VisibilityType, VisibilitySelector } from './visibility-selector';
+import type { VisibilityType, } from './visibility-selector';
 
 function PureChatHeader({
   chatId,

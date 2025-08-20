@@ -38,8 +38,8 @@ export function ChatPageShell({
       const el = bannerRef.current;
       let h = el.offsetHeight;
       const styles = window.getComputedStyle(el);
-      const mt = parseFloat(styles.marginTop || '0');
-      const mb = parseFloat(styles.marginBottom || '0');
+      const mt = Number.parseFloat(styles.marginTop || '0');
+      const mb = Number.parseFloat(styles.marginBottom || '0');
       h += mt + mb;
       setOffset(Math.max(0, Math.round(h)));
     }

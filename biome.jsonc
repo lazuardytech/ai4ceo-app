@@ -81,7 +81,8 @@
         "noNonNullAssertion": "off" // Stylistic opinion, we prefer explicit checks
       },
       "suspicious": {
-        "noExplicitAny": "off" // We trust Vercelians to use any only when necessary
+        "noExplicitAny": "off", // We trust Vercelians to use any only when necessary
+        "noArrayIndexKey": "off"
       },
       "nursery": {
         "noStaticElementInteractions": "warn",
