@@ -101,13 +101,13 @@ export default function UsagePage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-3xl p-4 sm:p-6 md:p-8 space-y-6">
-      <div className="space-y-2">
+    <div className="mx-auto max-w-3xl space-y-6">
+      {/*<div className="space-y-2">
         <h1 className="text-2xl font-semibold">Usage</h1>
         <p className="text-sm text-muted-foreground">
           Track your monthly message usage and plan limits.
         </p>
-      </div>
+      </div>*/}
 
       <div className="rounded-lg border bg-card text-card-foreground">
         <div className="px-4 py-3 border-b flex items-center justify-between gap-3">

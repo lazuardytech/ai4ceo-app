@@ -121,9 +121,9 @@ export default function FilesPage() {
   const deletedCount = useMemo(() => files.filter((f) => f.isDeleted).length, [files]);
 
   return (
-    <div className="mx-auto max-w-5xl p-4 sm:p-6 md:p-8 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Your files</h1>
+    <div className="mx-auto max-w-[800px] w-full space-y-3">
+      <div className="space-y-2 max-w-3xl w-full mx-auto">
+        {/*<h1 className="text-2xl font-semibold">Your files</h1>*/}
         <p className="text-sm text-muted-foreground">
           Manage your uploaded files and attachments.
           <br />
@@ -131,138 +131,139 @@ export default function FilesPage() {
           the threads. This may lead to unexpected behavior if you delete a file that is still being
           used in a thread.
         </p>
-      </div>
 
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="accent-primary"
-              checked={includeDeleted}
-              onChange={(e) => setIncludeDeleted(e.target.checked)}
-            />
-            Include deleted
-          </label>
-          <div className="text-xs text-muted-foreground">
-            Active: {activeCount} • Deleted: {deletedCount}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="accent-primary"
+                checked={includeDeleted}
+                onChange={(e) => setIncludeDeleted(e.target.checked)}
+              />
+              Include deleted
+            </label>
+            <div className="text-xs text-muted-foreground">
+              Active: {activeCount} • Deleted: {deletedCount}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => loadFiles()}
+              disabled={loading}
+              className="h-8 px-3"
+            >
+              Refresh
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => loadFiles()}
-            disabled={loading}
-            className="h-8 px-3"
-          >
-            Refresh
-          </Button>
-        </div>
-      </div>
 
-      <div className="rounded-lg border bg-card text-card-foreground">
-        <div className="px-4 py-3 border-b">
-          <div className="text-sm font-medium">Files</div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50">
-              <tr className="text-left">
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Size</th>
-                <th className="px-4 py-3 font-medium">Uploaded</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">
-                    Loading files…
-                  </td>
+        <div className="rounded-lg border bg-card text-card-foreground">
+          <div className="px-4 py-3 border-b">
+            <div className="text-sm font-medium">Files</div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr className="text-left">
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Type</th>
+                  <th className="px-4 py-3 font-medium">Size</th>
+                  <th className="px-4 py-3 font-medium">Uploaded</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
-              )}
-
-              {!loading && !anyFiles && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                    No files yet. Upload attachments from the chat input to see them here.
-                  </td>
-                </tr>
-              )}
-
-              {!loading &&
-                files.map((file) => (
-                  <tr
-                    key={file.id}
-                    className="border-t hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <a
-                          className="text-primary hover:underline break-all"
-                          href={file.url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {file.name}
-                        </a>
-                        <div className="text-xs text-muted-foreground break-all">{file.url}</div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">{file.contentType || '—'}</td>
-                    <td className="px-4 py-3">{humanSize(file.size)}</td>
-                    <td className="px-4 py-3">
-                      {file.createdAt ? new Date(file.createdAt).toLocaleString() : '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      {file.isDeleted ? (
-                        <span className="inline-flex items-center rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-xs">
-                          Deleted
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-xs">
-                          Active
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          className="h-8 px-2"
-                          onClick={() => copyUrl(file.url)}
-                        >
-                          Copy URL
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          className="h-8 px-2"
-                          onClick={() => onDelete(file)}
-                          disabled={file.isDeleted || deletingId === file.id}
-                          title={
-                            file.isDeleted
-                              ? 'Already deleted'
-                              : 'Delete file and remove references from your messages'
-                          }
-                        >
-                          {deletingId === file.id ? 'Deleting…' : 'Delete'}
-                        </Button>
-                      </div>
+              </thead>
+              <tbody>
+                {loading && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">
+                      Loading files…
                     </td>
                   </tr>
-                ))}
-            </tbody>
-          </table>
+                )}
+
+                {!loading && !anyFiles && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
+                      No files yet. Upload attachments from the chat input to see them here.
+                    </td>
+                  </tr>
+                )}
+
+                {!loading &&
+                  files.map((file) => (
+                    <tr
+                      key={file.id}
+                      className="border-t hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <a
+                            className="text-primary hover:underline break-all"
+                            href={file.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {file.name}
+                          </a>
+                          <div className="text-xs text-muted-foreground break-all">{file.url}</div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">{file.contentType || '—'}</td>
+                      <td className="px-4 py-3">{humanSize(file.size)}</td>
+                      <td className="px-4 py-3">
+                        {file.createdAt ? new Date(file.createdAt).toLocaleString() : '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {file.isDeleted ? (
+                          <span className="inline-flex items-center rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-xs">
+                            Deleted
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-xs">
+                            Active
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            className="h-8 px-2"
+                            onClick={() => copyUrl(file.url)}
+                          >
+                            Copy URL
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            className="h-8 px-2"
+                            onClick={() => onDelete(file)}
+                            disabled={file.isDeleted || deletingId === file.id}
+                            title={
+                              file.isDeleted
+                                ? 'Already deleted'
+                                : 'Delete file and remove references from your messages'
+                            }
+                          >
+                            {deletingId === file.id ? 'Deleting…' : 'Delete'}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="text-xs text-muted-foreground">
+          Tip: When you upload files from the chat input, they will appear here. Deleting a file will
+          remove it from any messages that reference it, but the threads will remain.
         </div>
       </div>
-
-      <div className="text-xs text-muted-foreground">
-        Tip: When you upload files from the chat input, they will appear here. Deleting a file will
-        remove it from any messages that reference it, but the threads will remain.
-      </div>
     </div>
+
   );
 }

@@ -4,16 +4,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Copy, CheckCircle, Gift } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface ReferralCodeDisplayProps {
   referralCode: string;
@@ -40,19 +34,18 @@ export function ReferralCodeDisplay({
   };
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Gift className="size-5" />
+    <div className={cn('border rounded-xl p-4 space-y-3', className)}>
+      <div>
+        <h2 className="flex items-center gap-2 font-medium">
           Your Referral Code
-        </CardTitle>
-        <CardDescription>
+        </h2>
+        <span className='text-sm text-muted-foreground'>
           Share this code with friends to earn rewards when they sign up.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </span>
+      </div>
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="referral-code">Referral Code</Label>
+          {/*<Label htmlFor="referral-code">Referral Code</Label>*/}
           <div className="flex gap-2">
             <Input
               id="referral-code"
@@ -89,7 +82,7 @@ export function ReferralCodeDisplay({
           <p>• Both you and your friend will receive benefits</p>
           <p>• Track your referral earnings in the history below</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,14 +1,8 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Wallet, TrendingUp, Gift } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { IconReplaceUser, IconTrendingUp, IconWallet } from '@tabler/icons-react';
 
 interface ReferralStatsProps {
   bonusBalance: string;
@@ -39,7 +33,7 @@ export function ReferralStats({
       title: 'Current Balance',
       value: formatCurrency(bonusBalance),
       description: 'Available bonus credits',
-      icon: Wallet,
+      icon: IconWallet,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
@@ -47,7 +41,7 @@ export function ReferralStats({
       title: 'Total Earned',
       value: formatCurrency(totalEarned),
       description: 'Lifetime referral earnings',
-      icon: TrendingUp,
+      icon: IconTrendingUp,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
@@ -55,19 +49,18 @@ export function ReferralStats({
       title: 'Total Referrals',
       value: totalReferrals,
       description: "Friends you've referred",
-      icon: Users,
+      icon: IconReplaceUser,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
     },
   ];
 
   return (
-    <div className={className}>
+    <div className={cn('border rounded-xl p-4', className)}>
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Gift className="size-5" />
-          <h3 className="text-lg font-semibold">Referral Statistics</h3>
-        </div>
+        <span className="flex items-center gap-2 font-medium">
+          Referral Statistics
+        </span>
         <Badge variant={isActive ? 'default' : 'secondary'}>
           {isActive ? 'Active' : 'Inactive'}
         </Badge>
@@ -77,8 +70,8 @@ export function ReferralStats({
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.title}>
-              <CardContent className="p-6">
+            <div key={stat.title} className="rounded-lg border bg-white transition-shadow">
+              <div className="p-4">
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-full ${stat.bgColor}`}>
                     <Icon className={`size-6 ${stat.color}`} />
@@ -88,26 +81,26 @@ export function ReferralStats({
                       {stat.title}
                     </p>
                     <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">
+                    {/*<p className="text-xs text-muted-foreground">
                       {stat.description}
-                    </p>
+                    </p>*/}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           );
         })}
       </div>
 
       {/* Additional info */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="text-base">How it works</CardTitle>
-          <CardDescription>
+      <div className="mt-4 space-y-2">
+        <div>
+          <h2 className="text-base font-medium">How it works</h2>
+          <span className='text-sm text-muted-foreground'>
             Earn rewards by referring friends to our platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          </span>
+        </div>
+        <div className="text-sm text-muted-foreground">
           <div className="flex items-start gap-2">
             <div className="size-2 rounded-full bg-blue-500 mt-2 shrink-0" />
             <p>Share your referral code with friends</p>
@@ -120,8 +113,8 @@ export function ReferralStats({
             <div className="size-2 rounded-full bg-purple-500 mt-2 shrink-0" />
             <p>Use your bonus balance for subscription discounts</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

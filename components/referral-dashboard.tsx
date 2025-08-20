@@ -109,14 +109,14 @@ export function ReferralDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 max-w-[800px] mx-auto w-full">
       {/* Header */}
-      <div className="text-center space-y-2">
+      {/*<div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">Referral Program</h1>
         <p className="text-lg text-muted-foreground">
           {getBenefitDescription()}
         </p>
-      </div>
+      </div>*/}
 
       {/* Referral Code Display */}
       <ReferralCodeDisplay referralCode={referralData.referralCode} />

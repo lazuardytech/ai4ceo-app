@@ -4,14 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Ticket, CheckCircle, XCircle } from 'lucide-react';
 
@@ -120,20 +112,18 @@ export function VoucherApplication({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Ticket className="size-5" />
+    <div className='border p-4 rounded-xl space-y-3'>
+      <div>
+        <span className="flex items-center gap-2 font-medium">
           Apply Voucher Code
-        </CardTitle>
-        <CardDescription>
+        </span>
+        <span className='text-sm'>
           Enter a discount code or free subscription voucher to apply to your
           account.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </span>
+      </div>
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="voucher-code">Voucher Code</Label>
           <div className="flex gap-2">
             <Input
               id="voucher-code"
@@ -271,7 +261,7 @@ export function VoucherApplication({
             purchase
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

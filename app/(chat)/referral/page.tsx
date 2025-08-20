@@ -14,7 +14,7 @@ export default async function ReferralPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
+      <main className="flex-1 container mx-auto max-w-3xl">
         <ReferralDashboard />
       </main>
     </div>

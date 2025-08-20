@@ -3,13 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
   Table,
   TableBody,
   TableCell,
@@ -20,6 +13,8 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, History, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { IconHistory } from '@tabler/icons-react';
 
 interface Transaction {
   id: string;
@@ -57,7 +52,7 @@ export function TransactionHistory({ className }: TransactionHistoryProps) {
 
     try {
       const response = await fetch(`/api/referral/transactions?page=${page}&limit=10`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch transactions');
       }
@@ -123,37 +118,35 @@ export function TransactionHistory({ className }: TransactionHistoryProps) {
 
   if (isLoading && transactions.length === 0) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="size-5" />
+      <div className={cn('border rounded-xl p-4', className)}>
+        <div>
+          <h2 className="flex items-center gap-2 font-medium">
             Transaction History
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <span className="text-sm text-muted-foreground">
             Track your referral earnings and bonus usage.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </span>
+        </div>
+        <div>
           <div className="flex items-center justify-center py-8">
             <Loader2 className="size-6 animate-spin" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <History className="size-5" />
+    <div className={cn('border rounded-xl p-4', className)}>
+      <div>
+        <h2 className="flex items-center gap-2 font-medium">
           Transaction History
-        </CardTitle>
-        <CardDescription>
+        </h2>
+        <span className="text-sm text-muted-foreground">
           Track your referral earnings and bonus usage.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </span>
+      </div>
+      <div className="space-y-4">
         {error && (
           <Alert className="border-red-200 bg-red-50">
             <AlertCircle className="size-4 text-red-600" />
@@ -165,8 +158,8 @@ export function TransactionHistory({ className }: TransactionHistoryProps) {
 
         {transactions.length === 0 && !isLoading ? (
           <div className="text-center py-8 text-muted-foreground">
-            <History className="size-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium">No transactions yet</p>
+            <IconHistory className="size-10 mx-auto mb-4 opacity-50" />
+            <p className="font-medium">No transactions yet</p>
             <p className="text-sm">Your referral activity will appear here</p>
           </div>
         ) : (
@@ -236,7 +229,7 @@ export function TransactionHistory({ className }: TransactionHistoryProps) {
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
