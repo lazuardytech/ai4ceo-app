@@ -1,12 +1,18 @@
 import { auth } from '@/lib/auth';
-import { reset } from "drizzle-seed";
-import * as schema from "@/lib/db/schema";
 import { db } from '@/lib/db';
+import { user as userTable } from '@/lib/db/schema';
 
 async function main() {
   if (!process.env.POSTGRES_URL) throw new Error('POSTGRES_URL missing');
 
-  await reset(db, schema);
+  // Skip if any user already exists
+  const existing = await db.select().from(userTable).limit(1);
+  if (existing.length > 0) {
+    console.log('Users already present; skipping seeding.');
+    process.exit(0);
+  }
+
+  // await reset(db, schema);
 
   const seeding = [
     {

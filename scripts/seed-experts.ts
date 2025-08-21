@@ -9,9 +9,9 @@ async function main() {
   if (!process.env.POSTGRES_URL) throw new Error('POSTGRES_URL is not defined');
   const db = drizzle(postgres(process.env.POSTGRES_URL, { max: 1 }));
 
-  const existing = await db.select().from(agent).limit(1);
+  const existing = await db.select({ id: agent.id }).from(agent).limit(1);
   if (existing.length > 0) {
-    console.log('Experts already present; skipping.');
+    console.log('Agents already present; skipping seeding.');
     process.exit(0);
   }
 
