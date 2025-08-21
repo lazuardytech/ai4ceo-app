@@ -42,12 +42,12 @@ const managedIds = [
 
 // Default Groq model IDs (OpenRouter defaults commented out for reference)
 const DEFAULT_GROQ_MODEL_MAP: Record<string, string> = {
-  'chat-model': 'llama3-8b-8192',
-  'chat-model-small': 'llama3-8b-8192',
-  'chat-model-large': 'llama3-70b-8192',
-  'chat-model-reasoning': 'llama3-70b-8192',
-  'title-model': 'llama3-8b-8192',
-  'artifact-model': 'llama3-8b-8192',
+  'chat-model': 'openai/gpt-oss-20b',
+  'chat-model-small': 'openai/gpt-oss-20b',
+  'chat-model-large': 'openai/gpt-oss-120b',
+  'chat-model-reasoning': 'moonshotai/kimi-k2-instruct',
+  'title-model': 'openai/gpt-oss-20b',
+  'artifact-model': 'moonshotai/kimi-k2-instruct',
 };
 
 // Commented out for reference (OpenRouter defaults):

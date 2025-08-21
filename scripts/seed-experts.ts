@@ -1,13 +1,11 @@
 import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { agent } from '../lib/db/schema';
+import { createScriptDbConnection } from '../lib/db/utils';
 
 config({ path: '.env.local' });
 
 async function main() {
-  if (!process.env.POSTGRES_URL) throw new Error('POSTGRES_URL is not defined');
-  const db = drizzle(postgres(process.env.POSTGRES_URL, { max: 1 }));
+  const db = createScriptDbConnection();
 
   const existing = await db.select({ id: agent.id }).from(agent).limit(1);
   if (existing.length > 0) {

@@ -21,13 +21,13 @@ import { getSettings } from '@/lib/db/queries';
 export const myProvider = customProvider({
   languageModels: {
     // Using Groq only - OpenRouter disabled for now
-    'title-model': groq('llama3-8b-8192'),
-    'artifact-model': groq('llama3-8b-8192'),
-    'chat-model': groq('llama3-8b-8192'),
-    'chat-model-small': groq('llama3-8b-8192'),
-    'chat-model-large': groq('llama3-70b-8192'),
+    'title-model': groq('openai/gpt-oss-20b'),
+    'artifact-model': groq('moonshotai/kimi-k2-instruct'),
+    'chat-model': groq('openai/gpt-oss-20b'),
+    'chat-model-small': groq('openai/gpt-oss-20b'),
+    'chat-model-large': groq('openai/gpt-oss-120b'),
     'chat-model-reasoning': wrapLanguageModel({
-      model: groq('llama3-70b-8192'),
+      model: groq('moonshotai/kimi-k2-instruct'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
   },
@@ -52,12 +52,12 @@ export function getLanguageModelForId(
 
   // Groq model mapping
   const groqMap: Record<string, string> = {
-    'chat-model': 'llama3-8b-8192',
-    'chat-model-small': 'llama3-8b-8192',
-    'chat-model-large': 'llama3-70b-8192',
-    'chat-model-reasoning': 'llama3-70b-8192',
-    'title-model': 'llama3-8b-8192',
-    'artifact-model': 'llama3-8b-8192',
+    'chat-model': 'openai/gpt-oss-20b',
+    'chat-model-small': 'openai/gpt-oss-20b',
+    'chat-model-large': 'openai/gpt-oss-120b',
+    'chat-model-reasoning': 'moonshotai/kimi-k2-instruct',
+    'title-model': 'openai/gpt-oss-20b',
+    'artifact-model': 'moonshotai/kimi-k2-instruct',
   };
 
   const overrideId = overrides?.[id];
@@ -112,12 +112,12 @@ export function resolveModelCandidatesForId(
 
   // Groq model mapping
   const groqMap: Record<string, string> = {
-    'chat-model': 'llama3-8b-8192',
-    'chat-model-small': 'llama3-8b-8192',
-    'chat-model-large': 'llama3-70b-8192',
-    'chat-model-reasoning': 'llama3-70b-8192',
-    'title-model': 'llama3-8b-8192',
-    'artifact-model': 'llama3-8b-8192',
+    'chat-model': 'openai/gpt-oss-20b',
+    'chat-model-small': 'openai/gpt-oss-20b',
+    'chat-model-large': 'openai/gpt-oss-120b',
+    'chat-model-reasoning': 'moonshotai/kimi-k2-instruct',
+    'title-model': 'openai/gpt-oss-20b',
+    'artifact-model': 'moonshotai/kimi-k2-instruct',
   };
 
   const groqEnabled = Boolean(process.env.GROQ_API_KEY);

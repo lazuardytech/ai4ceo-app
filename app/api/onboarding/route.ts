@@ -1,8 +1,7 @@
 import { ChatSDKError } from "@/lib/errors";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 import { eq } from "drizzle-orm";
 import { setting as settingTable, user as userTable } from "@/lib/db/schema";
+import { createDbConnection } from "@/lib/db/utils";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -12,11 +11,8 @@ type Body = {
 };
 
 function getDb() {
-  const url = process.env.POSTGRES_URL;
-  if (!url) throw new Error("POSTGRES_URL is not configured.");
-  const sql = postgres(url);
-  const db = drizzle(sql);
-  return { db, sql };
+  const db = createDbConnection();
+  return { db };
 }
 
 export async function POST(request: Request) {
@@ -36,7 +32,7 @@ export async function POST(request: Request) {
   const name = (body.name || "").trim();
   const traits = Array.isArray(body.traits) ? body.traits : [];
 
-  const { db, sql } = getDb();
+  const { db } = getDb();
   try {
     // Update display name if provided and mark as onboarded
     const updateUser: Record<string, any> = { onboarded: true };
@@ -69,7 +65,5 @@ export async function POST(request: Request) {
   } catch (e) {
     console.error("POST /api/onboarding error:", e);
     return new ChatSDKError("bad_request:api").toResponse();
-  } finally {
-    await sql.end({ timeout: 1 });
   }
 }

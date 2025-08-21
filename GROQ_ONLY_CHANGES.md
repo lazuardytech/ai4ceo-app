@@ -76,16 +76,33 @@ The AI4CEO chat application previously supported load balancing between OpenRout
 ## Model Mappings
 
 ### Groq Model Defaults
+
+The system now uses the following model mappings corresponding to their display names in the UI:
+
+| UI Display Name | Model ID | Groq Model |
+|----------------|----------|------------|
+| Default Chat Model | `chat-model` | `openai/gpt-oss-20b` |
+| Core | `chat-model-small` | `openai/gpt-oss-20b` |
+| Basic | `chat-model-large` | `openai/gpt-oss-120b` |
+| Thinker | `chat-model-reasoning` | `moonshotai/kimi-k2-instruct` |
+| Title Model | `title-model` | `openai/gpt-oss-20b` |
+| Artifact Model | `artifact-model` | `moonshotai/kimi-k2-instruct` |
+
 ```javascript
 {
-  'chat-model': 'llama3-8b-8192',
-  'chat-model-small': 'llama3-8b-8192', 
-  'chat-model-large': 'llama3-70b-8192',
-  'chat-model-reasoning': 'llama3-70b-8192',
-  'title-model': 'llama3-8b-8192',
-  'artifact-model': 'llama3-8b-8192'
+  'chat-model': 'openai/gpt-oss-20b',          // Default Chat Model
+  'chat-model-small': 'openai/gpt-oss-20b',   // Core
+  'chat-model-large': 'openai/gpt-oss-120b',  // Basic
+  'chat-model-reasoning': 'moonshotai/kimi-k2-instruct', // Thinker
+  'title-model': 'openai/gpt-oss-20b',        // Title Model
+  'artifact-model': 'moonshotai/kimi-k2-instruct'        // Artifact Model
 }
 ```
+
+**Model Usage:**
+- **OpenAI GPT OSS 20B**: Used for general chat, core functions, and title generation
+- **OpenAI GPT OSS 120B**: Used for more complex tasks requiring the "Basic" model
+- **Moonshot Kimi K2 Instruct**: Used for reasoning tasks ("Thinker") and artifact generation
 
 ### OpenRouter Models (Preserved for Reference)
 The original OpenRouter model mappings are preserved in comments:
@@ -151,6 +168,30 @@ To restore OpenRouter functionality in the future:
    - Restore OpenRouter override parameters in route handlers
    - Update schema defaults if desired
 
+## Navigation Enhancements
+
+### Back to Chat Buttons
+
+Both settings and admin sections now include prominent "Back to Chat" buttons for improved navigation:
+
+#### Settings Pages
+- **Main back button** at top of settings layout with modern card design
+- **Mobile sidebar button** for small screens integrated with logo
+- **Responsive text** showing "Back to Chat" on desktop, "Back" on mobile
+- **Smooth animations** with hover effects and focus states
+
+#### Admin Dashboard
+- **Consistent back button** matching settings design at top of admin layout
+- **Logo integration** in admin sidebar with AI4CEO branding
+- **Mobile back button** in sidebar for responsive navigation
+- **Professional styling** maintaining admin interface aesthetics
+
+### Logo Integration
+- **Settings sidebar** includes AI4CEO logo with brand text
+- **Admin sidebar** features logo with responsive design
+- **Clickable branding** that navigates back to main chat interface
+- **Consistent styling** across both admin and settings sections
+
 ## Testing Recommendations
 
 - Verify Groq API key is properly configured
@@ -158,6 +199,8 @@ To restore OpenRouter functionality in the future:
 - Ensure admin panel saves Groq model preferences correctly
 - Confirm no OpenRouter calls are being made
 - Validate error handling when Groq is unavailable
+- Test back button functionality from settings and admin sections
+- Verify responsive behavior of navigation on mobile devices
 
 ## Notes
 
