@@ -1,5 +1,5 @@
 import localFont from 'next/font/local';
-import { Instrument_Serif, Geist_Mono } from 'next/font/google';
+import { Forum, Geist_Mono } from 'next/font/google';
 
 export const haskoy = localFont({
   src: '../assets/fonts/haskoy-variable.woff2',
@@ -10,10 +10,10 @@ export const haskoy = localFont({
   preload: true,
 });
 
-export const instrumentSerif = Instrument_Serif({
+export const forum = Forum({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-instrument-serif',
+  variable: '--font-serif',
   weight: '400',
 });
 
