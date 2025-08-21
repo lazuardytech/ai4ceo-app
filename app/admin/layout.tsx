@@ -23,15 +23,28 @@ export default async function AdminLayout({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4 p-4">
-      <aside className="md:sticky md:top-4 h-fit">
-        <div className="mb-3">
-          <h1 className="text-lg font-semibold">Admin</h1>
-          <p className="text-xs text-muted-foreground">Admin dashboard</p>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+          <aside className="lg:sticky lg:top-6 h-fit">
+            <div className="rounded-lg border bg-card p-4 mb-4">
+              <div className="mb-4">
+                <h1 className="text-xl font-bold">Admin Dashboard</h1>
+                <p className="text-sm text-muted-foreground">Manage your AI4CEO platform</p>
+              </div>
+              <AdminNav items={items} />
+            </div>
+            <div className="rounded-lg border bg-card p-4">
+              <div className="text-sm">
+                <div className="font-medium">Logged in as</div>
+                <div className="text-muted-foreground">{user.email}</div>
+                <div className="text-xs text-muted-foreground mt-1">Role: {user.role}</div>
+              </div>
+            </div>
+          </aside>
+          <main className="min-w-0 space-y-6">{children}</main>
         </div>
-        <AdminNav items={items} />
-      </aside>
-      <main className="min-w-0">{children}</main>
+      </div>
     </div>
   );
 }

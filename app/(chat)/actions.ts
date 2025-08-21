@@ -34,10 +34,8 @@ export async function generateTitleFromUserMessage({
   const settings = await getSettings();
   const candidates = resolveModelCandidatesForId(
     'title-model',
-    (settings?.modelOverridesOpenRouter as any) ??
-      (settings?.modelOverrides as any) ??
-      null,
-    providerPreference,
+    null, // OpenRouter disabled
+    'groq', // Force Groq
     (settings?.modelOverridesGroq as any) ?? null,
   );
   for (let i = 0; i < candidates.length; i++) {

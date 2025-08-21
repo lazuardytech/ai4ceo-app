@@ -17,10 +17,14 @@ export default async function AdminModelsPage() {
   // Client panel is imported directly; Server Component will render a Client boundary
 
   return (
-    <div className="mx-auto max-w-3xl p-2 md:p-4 space-y-6">
-      <h2 className="text-xl font-semibold">Models</h2>
-
-      <AdminModelsPanel />
+    <div className="space-y-6">
+      <div className="rounded-lg border bg-card p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">AI Model Configuration</h2>
+          <p className="text-muted-foreground">Configure and manage AI models for your platform</p>
+        </div>
+        <AdminModelsPanel />
+      </div>
     </div>
   );
 }

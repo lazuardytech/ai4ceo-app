@@ -1,27 +1,50 @@
 import { NextResponse } from 'next/server';
-import { generateText } from 'ai';
-import { myProvider } from '@/lib/ai/providers';
-import { getDefaultChatModelId } from '@/lib/ai/models.server';
 
 export const runtime = 'nodejs';
 
+// Predefined array of greeting subtitles for CEOs and business operators
+const greetingSubtitles = [
+  "Ready to drive strategic outcomes today?",
+  "Let's turn insights into actionable plans.",
+  "Time to accelerate your business momentum.",
+  "What strategic challenge shall we tackle?",
+  "Ready to optimize operations and scale?",
+  "Let's transform ideas into execution.",
+  "How can we leverage your competitive edge?",
+  "Time to streamline and amplify results.",
+  "Ready to unlock new growth opportunities?",
+  "Let's navigate complex decisions together.",
+  "What business breakthrough are we pursuing?",
+  "Time to maximize operational efficiency.",
+  "Ready to execute with precision and speed?",
+  "Let's create measurable business impact.",
+  "How can we accelerate your vision?",
+  "Time to turn strategy into reality.",
+  "Ready to optimize performance metrics?",
+  "Let's drive sustainable growth initiatives.",
+  "What market opportunity shall we explore?",
+  "Time to enhance competitive positioning.",
+  "Ready to scale operations intelligently?",
+  "Let's transform challenges into advantages.",
+  "How can we maximize resource allocation?",
+  "Time to accelerate decision-making processes.",
+  "Ready to innovate and capture value?",
+  "Let's optimize your leadership effectiveness.",
+  "What strategic pivot needs attention?",
+  "Time to enhance organizational capabilities.",
+  "Ready to drive customer success metrics?",
+  "Let's unlock operational excellence together."
+];
+
 export async function GET() {
   try {
-    const defaultModelId = await getDefaultChatModelId();
-    const model = myProvider.languageModel(defaultModelId);
-    const { text } = await generateText({
-      model,
-      system: [
-        'You are a concise copywriter for an executive AI assistant.',
-        'Write a short, punchy greeting subtitle for CEOs and business operators.',
-        'Keep it under 100 characters, active voice, no emojis, no quotes.',
-        'Vary the wording each time; focus on strategy, execution, leverage, clarity, outcomes.',
-      ].join(' '),
-      prompt: 'Generate a single-line subtitle now.',
-    });
-    const oneLine = (text || '').split('\n').map((s) => s.trim()).filter(Boolean)[0] || 'What\'s up?';
-    return NextResponse.json({ subtitle: oneLine }, { status: 200 });
+    // Generate a random index to select a greeting
+    const randomIndex = Math.floor(Math.random() * greetingSubtitles.length);
+    const selectedSubtitle = greetingSubtitles[randomIndex];
+
+    return NextResponse.json({ subtitle: selectedSubtitle }, { status: 200 });
   } catch (e) {
-    return NextResponse.json({ subtitle: 'What\'s up?' }, { status: 200 });
+    // Fallback to a default greeting if something goes wrong
+    return NextResponse.json({ subtitle: "Ready to drive strategic outcomes?" }, { status: 200 });
   }
 }

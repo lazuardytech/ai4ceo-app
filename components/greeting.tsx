@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-export const Greeting = ({ name }: { name: string }) => {
-  const [subtitle, setSubtitle] = useState<string>('What\'s up?');
+export const Greeting = ({ name, chatId }: { name: string; chatId?: string }) => {
+  const [subtitle, setSubtitle] = useState<string>('Ready to drive strategic outcomes?');
 
   useEffect(() => {
     let cancelled = false;
+
     (async () => {
       try {
         const res = await fetch('/api/greeting', { cache: 'no-store' });
@@ -22,7 +23,7 @@ export const Greeting = ({ name }: { name: string }) => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [chatId]);
 
   return (
     <div

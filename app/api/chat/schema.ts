@@ -31,7 +31,7 @@ export const postRequestBodySchema = z.object({
   selectedProviderPreference: z
     .enum(['balance', 'groq', 'openrouter'])
     .optional()
-    .default('balance'),
+    .default('groq'),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;
