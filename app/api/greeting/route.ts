@@ -19,10 +19,9 @@ export async function GET() {
       ].join(' '),
       prompt: 'Generate a single-line subtitle now.',
     });
-    const oneLine = (text || '').split('\n').map((s) => s.trim()).filter(Boolean)[0] || 'How can I help you today?';
+    const oneLine = (text || '').split('\n').map((s) => s.trim()).filter(Boolean)[0] || 'What\'s up?';
     return NextResponse.json({ subtitle: oneLine }, { status: 200 });
   } catch (e) {
-    return NextResponse.json({ subtitle: 'How can I help you today?' }, { status: 200 });
+    return NextResponse.json({ subtitle: 'What\'s up?' }, { status: 200 });
   }
 }
-

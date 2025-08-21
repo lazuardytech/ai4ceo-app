@@ -10,17 +10,17 @@ export interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model-small',
-    name: 'LEAD Core',
-    description: 'Basic model for simple tasks',
+    name: 'Core',
+    description: 'Basic answer for simple tasks',
   },
   {
     id: 'chat-model-large',
-    name: 'LEAD Advanced',
-    description: 'A more advanced model for complex tasks',
+    name: 'Basic',
+    description: 'Instant solutions for most tasks',
   },
   {
     id: 'chat-model-reasoning',
-    name: 'LEAD Thinker',
-    description: 'Model that can reason and think better',
+    name: 'Thinker',
+    description: 'Think deeper, reason smarter',
   },
 ];
