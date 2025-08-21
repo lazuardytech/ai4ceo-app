@@ -46,7 +46,6 @@ import type { VisibilityType } from '@/components/visibility-selector';
 import { buildExpertSystemPrompt } from '@/lib/ai/experts';
 import { generateTitleFromUserMessage } from '@/app/(chat)/actions';
 
-
 export const maxDuration = 60;
 
 let globalStreamContext: ResumableStreamContext | null = null;
@@ -129,6 +128,7 @@ export async function POST(request: Request) {
     if (!chat) {
       const title = await generateTitleFromUserMessage({
         message,
+        providerPreference: requestBody.selectedProviderPreference ?? 'balance',
       });
 
       await saveChat({
@@ -138,10 +138,16 @@ export async function POST(request: Request) {
         visibility: selectedVisibilityType,
       });
       // Persist any selected experts provided by the client on first message
-      if (requestBody.selectedAgentIds && requestBody.selectedAgentIds.length > 0) {
+      if (
+        requestBody.selectedAgentIds &&
+        requestBody.selectedAgentIds.length > 0
+      ) {
         try {
-          await setChatAgents({ chatId: id, agentIds: requestBody.selectedAgentIds });
-        } catch { }
+          await setChatAgents({
+            chatId: id,
+            agentIds: requestBody.selectedAgentIds,
+          });
+        } catch {}
       }
     } else {
       if (chat.userId !== user.id) {
@@ -184,7 +190,7 @@ export async function POST(request: Request) {
     if (agentIdsLocal.length === 0) {
       try {
         agentIdsLocal = await getAgentIdsByChatId({ chatId: id });
-      } catch { }
+      } catch {}
     }
 
     // Preload selected agents and prior assistant snippets for continuity
@@ -252,7 +258,11 @@ export async function POST(request: Request) {
       });
       const list: typeof expertRuns = [];
       for (const a of selectedAgents) {
-        const kb = await retrieveAgentContext({ agentId: a.id, query: userText, limit: 5 });
+        const kb = await retrieveAgentContext({
+          agentId: a.id,
+          query: userText,
+          limit: 5,
+        });
         const agentFull = await getAgentById({ id: a.id });
         if (!agentFull) continue;
         const system = buildExpertSystemPrompt({
@@ -283,7 +293,7 @@ export async function POST(request: Request) {
               }),
               transient: true,
             });
-          } catch { }
+          } catch {}
         };
 
         // If experts are selected, run each expert sequentially, otherwise general response
@@ -294,7 +304,9 @@ export async function POST(request: Request) {
               const expertSystem = run.system;
               const candidates = resolveModelCandidatesForId(
                 selectedChatModel,
-                (settings?.modelOverridesOpenRouter as any) ?? (settings?.modelOverrides as any) ?? null,
+                (settings?.modelOverridesOpenRouter as any) ??
+                  (settings?.modelOverrides as any) ??
+                  null,
                 requestBody.selectedProviderPreference ?? 'balance',
                 (settings?.modelOverridesGroq as any) ?? null,
               );
@@ -310,13 +322,27 @@ export async function POST(request: Request) {
                     experimental_activeTools:
                       selectedChatModel === 'chat-model-reasoning'
                         ? []
-                        : ['getWeather', 'createDocument', 'updateDocument', 'requestSuggestions'],
+                        : [
+                            'getWeather',
+                            'createDocument',
+                            'updateDocument',
+                            'requestSuggestions',
+                          ],
                     experimental_transform: smoothStream({ chunking: 'word' }),
                     tools: {
                       getWeather,
-                      createDocument: createDocument({ session: { user } as any, dataStream }),
-                      updateDocument: updateDocument({ session: { user } as any, dataStream }),
-                      requestSuggestions: requestSuggestions({ session: { user } as any, dataStream }),
+                      createDocument: createDocument({
+                        session: { user } as any,
+                        dataStream,
+                      }),
+                      updateDocument: updateDocument({
+                        session: { user } as any,
+                        dataStream,
+                      }),
+                      requestSuggestions: requestSuggestions({
+                        session: { user } as any,
+                        dataStream,
+                      }),
                     },
                     experimental_telemetry: {
                       isEnabled: isProductionEnvironment,
@@ -334,7 +360,9 @@ export async function POST(request: Request) {
                   });
                   dataStream.merge(ui);
                   // Wait until this expert finishes before starting next
-                  await result.consumeStream({ onError: (e: any) => console.error(e) });
+                  await result.consumeStream({
+                    onError: (e: any) => console.error(e),
+                  });
                   streamed = true;
                   break;
                 } catch (err: any) {
@@ -353,7 +381,10 @@ export async function POST(request: Request) {
           return;
         }
         // If agents were selected but non-reasoning model is active, inform the user and fall back to general flow
-        if (agentIdsLocal.length > 0 && selectedChatModel !== 'chat-model-reasoning') {
+        if (
+          agentIdsLocal.length > 0 &&
+          selectedChatModel !== 'chat-model-reasoning'
+        ) {
           try {
             dataStream.write({
               type: 'data-appendMessage',
@@ -372,7 +403,7 @@ export async function POST(request: Request) {
               }),
               transient: true,
             });
-          } catch { }
+          } catch {}
         }
         const baseSystem = buildSystemPrompt({
           selectedChatModel,
@@ -382,8 +413,12 @@ export async function POST(request: Request) {
         });
         const candidates = resolveModelCandidatesForId(
           selectedChatModel,
-          (settings?.modelOverridesOpenRouter as any) ?? (settings?.modelOverrides as any) ?? (settings?.defaultProviderPreference ? null : null),
-          requestBody.selectedProviderPreference ?? (settings?.defaultProviderPreference as any) ?? 'balance',
+          (settings?.modelOverridesOpenRouter as any) ??
+            (settings?.modelOverrides as any) ??
+            (settings?.defaultProviderPreference ? null : null),
+          requestBody.selectedProviderPreference ??
+            (settings?.defaultProviderPreference as any) ??
+            'balance',
           (settings?.modelOverridesGroq as any) ?? null,
         );
         (async () => {
@@ -399,13 +434,27 @@ export async function POST(request: Request) {
                 experimental_activeTools:
                   selectedChatModel === 'chat-model-reasoning'
                     ? []
-                    : ['getWeather', 'createDocument', 'updateDocument', 'requestSuggestions'],
+                    : [
+                        'getWeather',
+                        'createDocument',
+                        'updateDocument',
+                        'requestSuggestions',
+                      ],
                 experimental_transform: smoothStream({ chunking: 'word' }),
                 tools: {
                   getWeather,
-                  createDocument: createDocument({ session: { user } as any, dataStream }),
-                  updateDocument: updateDocument({ session: { user } as any, dataStream }),
-                  requestSuggestions: requestSuggestions({ session: { user } as any, dataStream }),
+                  createDocument: createDocument({
+                    session: { user } as any,
+                    dataStream,
+                  }),
+                  updateDocument: updateDocument({
+                    session: { user } as any,
+                    dataStream,
+                  }),
+                  requestSuggestions: requestSuggestions({
+                    session: { user } as any,
+                    dataStream,
+                  }),
                 },
                 experimental_telemetry: {
                   isEnabled: isProductionEnvironment,
@@ -413,7 +462,9 @@ export async function POST(request: Request) {
                 },
               });
               result.consumeStream();
-              dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
+              dataStream.merge(
+                result.toUIMessageStream({ sendReasoning: true }),
+              );
               streamed = true;
               break;
             } catch (err: any) {
@@ -438,7 +489,9 @@ export async function POST(request: Request) {
             : [];
           if (m.role === 'assistant' && selectedAgents.length > 0) {
             const text = extractText((m as any).parts || []);
-            const match = selectedAgents.find((a) => text.startsWith(`[${a.name}]`));
+            const match = selectedAgents.find((a) =>
+              text.startsWith(`[${a.name}]`),
+            );
             if (match) {
               attachments = [
                 ...attachments,
