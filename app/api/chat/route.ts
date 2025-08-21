@@ -134,7 +134,7 @@ export async function POST(request: Request) {
       await saveChat({
         id,
         userId: user.id,
-        title,
+        title: title || 'New Chat',
         visibility: selectedVisibilityType,
       });
       // Persist any selected experts provided by the client on first message
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
             chatId: id,
             agentIds: requestBody.selectedAgentIds,
           });
-        } catch {}
+        } catch { }
       }
     } else {
       if (chat.userId !== user.id) {
@@ -190,7 +190,7 @@ export async function POST(request: Request) {
     if (agentIdsLocal.length === 0) {
       try {
         agentIdsLocal = await getAgentIdsByChatId({ chatId: id });
-      } catch {}
+      } catch { }
     }
 
     // Preload selected agents and prior assistant snippets for continuity
@@ -293,7 +293,7 @@ export async function POST(request: Request) {
               }),
               transient: true,
             });
-          } catch {}
+          } catch { }
         };
 
         // If experts are selected, run each expert sequentially, otherwise general response
@@ -305,8 +305,8 @@ export async function POST(request: Request) {
               const candidates = resolveModelCandidatesForId(
                 selectedChatModel,
                 (settings?.modelOverridesOpenRouter as any) ??
-                  (settings?.modelOverrides as any) ??
-                  null,
+                (settings?.modelOverrides as any) ??
+                null,
                 requestBody.selectedProviderPreference ?? 'balance',
                 (settings?.modelOverridesGroq as any) ?? null,
               );
@@ -323,11 +323,11 @@ export async function POST(request: Request) {
                       selectedChatModel === 'chat-model-reasoning'
                         ? []
                         : [
-                            'getWeather',
-                            'createDocument',
-                            'updateDocument',
-                            'requestSuggestions',
-                          ],
+                          'getWeather',
+                          'createDocument',
+                          'updateDocument',
+                          'requestSuggestions',
+                        ],
                     experimental_transform: smoothStream({ chunking: 'word' }),
                     tools: {
                       getWeather,
@@ -403,7 +403,7 @@ export async function POST(request: Request) {
               }),
               transient: true,
             });
-          } catch {}
+          } catch { }
         }
         const baseSystem = buildSystemPrompt({
           selectedChatModel,
@@ -414,11 +414,11 @@ export async function POST(request: Request) {
         const candidates = resolveModelCandidatesForId(
           selectedChatModel,
           (settings?.modelOverridesOpenRouter as any) ??
-            (settings?.modelOverrides as any) ??
-            (settings?.defaultProviderPreference ? null : null),
+          (settings?.modelOverrides as any) ??
+          (settings?.defaultProviderPreference ? null : null),
           requestBody.selectedProviderPreference ??
-            (settings?.defaultProviderPreference as any) ??
-            'balance',
+          (settings?.defaultProviderPreference as any) ??
+          'balance',
           (settings?.modelOverridesGroq as any) ?? null,
         );
         (async () => {
@@ -435,11 +435,11 @@ export async function POST(request: Request) {
                   selectedChatModel === 'chat-model-reasoning'
                     ? []
                     : [
-                        'getWeather',
-                        'createDocument',
-                        'updateDocument',
-                        'requestSuggestions',
-                      ],
+                      'getWeather',
+                      'createDocument',
+                      'updateDocument',
+                      'requestSuggestions',
+                    ],
                 experimental_transform: smoothStream({ chunking: 'word' }),
                 tools: {
                   getWeather,
