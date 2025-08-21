@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth-guard';
 import { ChatSDKError } from '@/lib/errors';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { eq } from 'drizzle-orm';
 import { user as userTable, setting as settingTable } from '@/lib/db/schema';
+import { createDbConnection } from '@/lib/db/utils';
 import { z } from 'zod';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { generateCUID } from '@/lib/utils';
@@ -13,13 +12,8 @@ export const runtime = 'nodejs';
 
 // Shared db helper
 function getDb() {
-  const url = process.env.POSTGRES_URL;
-  if (!url) {
-    throw new Error('POSTGRES_URL is not configured.');
-  }
-  const sql = postgres(url);
-  const db = drizzle(sql);
-  return { db, sql };
+  const db = createDbConnection();
+  return { db };
 }
 
 // R2 client helper

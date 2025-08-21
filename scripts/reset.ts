@@ -1,14 +1,10 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-
 import { reset } from "drizzle-seed";
 import * as schema from "@/lib/db/schema";
+import { createScriptDbConnection } from "@/lib/db/utils";
 import '@/lib/env-config'
 
 async function main() {
-  if (!process.env.POSTGRES_URL) throw new Error('POSTGRES_URL missing');
-
-  const db = drizzle(postgres(process.env.POSTGRES_URL, { max: 1 }));
+  const db = createScriptDbConnection();
   await reset(db, schema);
 
   console.log(`✅ Database reset successfully`);

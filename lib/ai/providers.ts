@@ -6,9 +6,10 @@ import {
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { createGroq } from '@ai-sdk/groq';
 
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
+// Load balancing disabled - keeping OpenRouter for future use
+// const openrouter = createOpenRouter({
+//   apiKey: process.env.OPENROUTER_API_KEY,
+// });
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -19,14 +20,14 @@ import { getSettings } from '@/lib/db/queries';
 
 export const myProvider = customProvider({
   languageModels: {
-    // These are safe defaults; runtime code should prefer getLanguageModelForId or getDynamicLanguageModelForId
-    'title-model': openrouter.chat('meta-llama/llama-3.2-3b-instruct:free'),
-    'artifact-model': openrouter.chat('moonshotai/kimi-k2:free'),
-    'chat-model': openrouter.chat('moonshotai/kimi-k2:free'),
-    'chat-model-small': openrouter.chat('moonshotai/kimi-k2:free'),
-    'chat-model-large': openrouter.chat('moonshotai/kimi-k2:free'),
+    // Using Groq only - OpenRouter disabled for now
+    'title-model': groq('openai/gpt-oss-20b'),
+    'artifact-model': groq('moonshotai/kimi-k2-instruct'),
+    'chat-model': groq('openai/gpt-oss-20b'),
+    'chat-model-small': groq('openai/gpt-oss-20b'),
+    'chat-model-large': groq('openai/gpt-oss-120b'),
     'chat-model-reasoning': wrapLanguageModel({
-      model: openrouter.chat('deepseek/deepseek-r1:free'),
+      model: groq('moonshotai/kimi-k2-instruct'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
   },
@@ -39,38 +40,46 @@ export function getLanguageModelForId(
   id: string,
   overrides?: Record<string, string> | null,
 ) {
+  // Using Groq only - OpenRouter mapping kept for reference
+  // const openrouterMap: Record<string, string> = {
+  //   'chat-model': 'moonshotai/kimi-k2:free',
+  //   'chat-model-small': 'moonshotai/kimi-k2:free',
+  //   'chat-model-large': 'moonshotai/kimi-k2:free',
+  //   'chat-model-reasoning': 'deepseek/deepseek-r1:free',
+  //   'title-model': 'meta-llama/llama-3.2-3b-instruct:free',
+  //   'artifact-model': 'moonshotai/kimi-k2:free',
+  // };
 
-
-  // Default OpenRouter model mapping, used as fallback when overrides are missing
-  const map: Record<string, string> = {
-    'chat-model': 'moonshotai/kimi-k2:free',
-    'chat-model-small': 'moonshotai/kimi-k2:free',
-    'chat-model-large': 'moonshotai/kimi-k2:free',
-    'chat-model-reasoning': 'deepseek/deepseek-r1:free',
-    'title-model': 'meta-llama/llama-3.2-3b-instruct:free',
-    'artifact-model': 'moonshotai/kimi-k2:free',
+  // Groq model mapping
+  const groqMap: Record<string, string> = {
+    'chat-model': 'openai/gpt-oss-20b',
+    'chat-model-small': 'openai/gpt-oss-20b',
+    'chat-model-large': 'openai/gpt-oss-120b',
+    'chat-model-reasoning': 'moonshotai/kimi-k2-instruct',
+    'title-model': 'openai/gpt-oss-20b',
+    'artifact-model': 'moonshotai/kimi-k2-instruct',
   };
 
   const overrideId = overrides?.[id];
-  const modelId = overrideId?.trim() || map[id] || map['chat-model'];
+  const modelId = overrideId?.trim() || groqMap[id] || groqMap['chat-model'];
 
   if (id === 'chat-model-reasoning') {
     return wrapLanguageModel({
-      model: openrouter.chat(modelId),
+      model: groq(modelId),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     });
   }
 
-  return openrouter.chat(modelId);
+  return groq(modelId);
 }
 
 // Convenience helper that reads settings to resolve overrides dynamically at runtime.
 // Prefer this in server code when you don't already have settings handy.
 export async function getDynamicLanguageModelForId(id: string) {
-
   try {
     const settings = await getSettings();
-    const overrides = (settings?.modelOverrides ?? null) as Record<
+    // Use Groq overrides only
+    const overrides = (settings?.modelOverridesGroq ?? null) as Record<
       string,
       string
     > | null;
@@ -81,38 +90,62 @@ export async function getDynamicLanguageModelForId(id: string) {
   }
 }
 
-// Balanced provider selection across OpenRouter and Groq with simple random order.
-// Returns candidates so callers can try in order and fallback on error.
+// Load balancing disabled - using Groq only
+// OpenRouter code kept for future restoration
 export type ProviderPreference = 'balance' | 'groq' | 'openrouter';
 
 export function resolveModelCandidatesForId(
   id: string,
   openrouterOverrides?: Record<string, string> | null,
-  preference: ProviderPreference = 'balance',
+  preference: ProviderPreference = 'groq', // Force Groq
   groqOverrides?: Record<string, string> | null,
 ) {
-  // Map of logical ids to provider-specific ids
-  const openrouterMap: Record<string, string> = {
-    'chat-model': 'moonshotai/kimi-k2:free',
-    'chat-model-small': 'moonshotai/kimi-k2:free',
-    'chat-model-large': 'moonshotai/kimi-k2:free',
-    'chat-model-reasoning': 'deepseek/deepseek-r1:free',
-    'title-model': 'meta-llama/llama-3.2-3b-instruct:free',
-    'artifact-model': 'moonshotai/kimi-k2:free',
-  };
+  // OpenRouter mapping kept for reference
+  // const openrouterMap: Record<string, string> = {
+  //   'chat-model': 'moonshotai/kimi-k2:free',
+  //   'chat-model-small': 'moonshotai/kimi-k2:free',
+  //   'chat-model-large': 'moonshotai/kimi-k2:free',
+  //   'chat-model-reasoning': 'deepseek/deepseek-r1:free',
+  //   'title-model': 'meta-llama/llama-3.2-3b-instruct:free',
+  //   'artifact-model': 'moonshotai/kimi-k2:free',
+  // };
 
-  // Groq model mapping; adjust to your account availability
+  // Groq model mapping
   const groqMap: Record<string, string> = {
-    'chat-model': 'llama3-8b-8192',
-    'chat-model-small': 'llama3-8b-8192',
-    'chat-model-large': 'llama3-70b-8192',
-    'chat-model-reasoning': 'llama3-70b-8192',
-    'title-model': 'llama3-8b-8192',
-    'artifact-model': 'llama3-8b-8192',
+    'chat-model': 'openai/gpt-oss-20b',
+    'chat-model-small': 'openai/gpt-oss-20b',
+    'chat-model-large': 'openai/gpt-oss-120b',
+    'chat-model-reasoning': 'moonshotai/kimi-k2-instruct',
+    'title-model': 'openai/gpt-oss-20b',
+    'artifact-model': 'moonshotai/kimi-k2-instruct',
   };
 
   const groqEnabled = Boolean(process.env.GROQ_API_KEY);
 
+  const makeGroqCandidate = () => {
+    const modelId = groqOverrides?.[id]?.trim() || groqMap[id] || groqMap['chat-model'];
+    if (id === 'chat-model-reasoning') {
+      return {
+        provider: 'groq' as const,
+        modelId,
+        model: wrapLanguageModel({
+          model: groq(modelId),
+          middleware: extractReasoningMiddleware({ tagName: 'think' }),
+        }),
+      };
+    }
+    return { provider: 'groq' as const, modelId, model: groq(modelId) };
+  };
+
+  // Force Groq only - ignore preference parameter
+  if (!groqEnabled) {
+    throw new Error('Groq API key not configured');
+  }
+
+  return [makeGroqCandidate()];
+
+  // Original load balancing code kept for future restoration:
+  /*
   const makeCandidate = (provider: 'openrouter' | 'groq') => {
     if (provider === 'openrouter') {
       const modelId = openrouterOverrides?.[id]?.trim() || openrouterMap[id] || openrouterMap['chat-model'];
@@ -143,16 +176,15 @@ export function resolveModelCandidatesForId(
     }
   };
 
-  // Choose providers based on preference
   let providers: Array<'openrouter' | 'groq'> = ['openrouter'];
   if (preference === 'openrouter') {
     providers = ['openrouter'];
   } else if (preference === 'groq') {
     providers = groqEnabled ? ['groq'] : ['openrouter'];
   } else {
-    // balance
     const order = Math.random() < 0.5 ? ['openrouter', 'groq'] : ['groq', 'openrouter'];
     providers = groqEnabled ? (order as Array<'openrouter' | 'groq'>) : ['openrouter'];
   }
   return providers.map((p) => makeCandidate(p as any));
+  */
 }

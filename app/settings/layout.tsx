@@ -24,11 +24,18 @@ export default async function SettingsLayout({ children }: { children: React.Rea
   return (
     <SidebarProvider>
       <div data-settings-root className="mx-auto p-4 sm:p-6 md:p-8 flex flex-col justify-start">
-        <div className="flex items-center justify-between mb-4">
-          <Link href="/" className="gap-1.5 h-8 inline-flex items-center rounded-md px-3 text-sm hover:bg-muted">
-            <IconArrowLeft size={12} /> Back to Chat
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          >
+            <IconArrowLeft size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+            <span className="hidden sm:inline">Back to Chat</span>
+            <span className="sm:hidden">Back</span>
           </Link>
-          {/*<h1 className="text-2xl font-semibold">Settings</h1>*/}
+          <div className="hidden sm:block">
+            <h1 className="text-xl font-semibold text-muted-foreground">Settings</h1>
+          </div>
         </div>
         <div className="grid gap-6 md:grid-cols-[16rem_minmax(0,800px)]">
           <aside className="space-y-4 md:sticky md:top-4 h-fit w-64">

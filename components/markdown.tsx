@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import React, { memo } from 'react';
-import ReactMarkdown, { type Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { Streamdown, type Components } from 'streamdown';
 import { CodeBlock } from './code-block';
 
 const components: Partial<Components> = {
@@ -93,13 +92,9 @@ const components: Partial<Components> = {
   },
 };
 
-const remarkPlugins = [remarkGfm];
-
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   return (
-    <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
-      {children}
-    </ReactMarkdown>
+    <Streamdown components={components}>{children}</Streamdown>
   );
 };
 

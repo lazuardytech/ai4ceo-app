@@ -128,7 +128,7 @@ export async function POST(request: Request) {
     if (!chat) {
       const title = await generateTitleFromUserMessage({
         message,
-        providerPreference: requestBody.selectedProviderPreference ?? 'balance',
+        providerPreference: 'groq', // Force Groq
       });
 
       await saveChat({
@@ -304,10 +304,8 @@ export async function POST(request: Request) {
               const expertSystem = run.system;
               const candidates = resolveModelCandidatesForId(
                 selectedChatModel,
-                (settings?.modelOverridesOpenRouter as any) ??
-                (settings?.modelOverrides as any) ??
-                null,
-                requestBody.selectedProviderPreference ?? 'balance',
+                null, // OpenRouter disabled
+                'groq', // Force Groq
                 (settings?.modelOverridesGroq as any) ?? null,
               );
               let streamed = false;
@@ -413,12 +411,8 @@ export async function POST(request: Request) {
         });
         const candidates = resolveModelCandidatesForId(
           selectedChatModel,
-          (settings?.modelOverridesOpenRouter as any) ??
-          (settings?.modelOverrides as any) ??
-          (settings?.defaultProviderPreference ? null : null),
-          requestBody.selectedProviderPreference ??
-          (settings?.defaultProviderPreference as any) ??
-          'balance',
+          null, // OpenRouter disabled
+          'groq', // Force Groq
           (settings?.modelOverridesGroq as any) ?? null,
         );
         (async () => {

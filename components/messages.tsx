@@ -1,4 +1,5 @@
 import { PreviewMessage, ThinkingMessage } from './message';
+import { Button } from './ui/button';
 import { Greeting } from './greeting';
 import { memo, useMemo, useState } from 'react';
 import useSWR from 'swr';
@@ -96,7 +97,7 @@ function PureMessages({
         ref={messagesContainerRef}
         className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 relative"
       >
-        {messages.length === 0 && <Greeting name={displayName} />}
+        {messages.length === 0 && <Greeting name={displayName} chatId={chatId} />}
 
         {messages.map((message, index) => (
           <PreviewMessage
@@ -121,6 +122,19 @@ function PureMessages({
         {status === 'submitted' &&
           messages.length > 0 &&
           messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+
+        {status === 'ready' &&
+          messages.length > 0 &&
+          messages[messages.length - 1].role === 'user' && (
+            <div className="mx-auto max-w-3xl px-4 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
+              <p>No response received.</p>
+              {!isReadonly && (
+                <Button size="sm" variant="outline" onClick={() => regenerate()}>
+                  Retry
+                </Button>
+              )}
+            </div>
+          )}
 
         <motion.div
           ref={messagesEndRef}

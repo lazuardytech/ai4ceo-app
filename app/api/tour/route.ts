@@ -1,20 +1,16 @@
 import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 
 import { user as userTable } from '@/lib/db/schema';
 import { ChatSDKError } from '@/lib/errors';
 import { getCurrentUser } from '@/lib/auth-guard';
+import { createDbConnection } from '@/lib/db/utils';
 
 export const runtime = 'nodejs';
 
 function getDb() {
-  const url = process.env.POSTGRES_URL;
-  if (!url) throw new Error('POSTGRES_URL is not configured.');
-  const sql = postgres(url);
-  const db = drizzle(sql);
-  return { db, sql };
+  const db = createDbConnection();
+  return { db };
 }
 
 export async function PATCH(request: Request) {
@@ -38,4 +34,3 @@ export async function PATCH(request: Request) {
     return new ChatSDKError('bad_request:api').toResponse();
   }
 }
-

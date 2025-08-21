@@ -1,21 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth-guard';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { userFile, chat, message } from '@/lib/db/schema';
+import { createDbConnection } from '@/lib/db/utils';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 export const runtime = 'nodejs';
 
 function getDb() {
-  const url = process.env.POSTGRES_URL;
-  if (!url) {
-    throw new Error('POSTGRES_URL is not configured.');
-  }
-  const sqlClient = postgres(url);
-  const db = drizzle(sqlClient);
-  return { db, sqlClient };
+  const db = createDbConnection();
+  return { db };
 }
 
 function getR2Client() {

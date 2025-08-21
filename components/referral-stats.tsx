@@ -70,7 +70,7 @@ export function ReferralStats({
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.title} className="rounded-lg border bg-white transition-shadow">
+            <div key={stat.title} className="rounded-lg border bg-white">
               <div className="p-4">
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-full ${stat.bgColor}`}>

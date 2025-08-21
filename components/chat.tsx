@@ -2,7 +2,7 @@
 
 import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -11,7 +11,7 @@ import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
+import { useArtifactSelector, useArtifact, initialArtifactData } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
@@ -63,6 +63,11 @@ export function Chat({
 
   const [input, setInput] = useState<string>('');
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>(initialSelectedAgentIds);
+  const selectedAgentIdsRef = useRef<string[]>(initialSelectedAgentIds);
+  const handleSelectedAgentIdsChange = (ids: string[]) => {
+    setSelectedAgentIds(ids);
+    selectedAgentIdsRef.current = ids;
+  };
   const [selectedChatModelId, setSelectedChatModelId] = useState<string>(initialChatModel);
 
   const {
@@ -88,7 +93,7 @@ export function Chat({
             message: messages.at(-1),
             selectedChatModel: selectedChatModelId,
             selectedVisibilityType: visibilityType,
-            selectedAgentIds,
+            selectedAgentIds: selectedAgentIdsRef.current,
             ...body,
           },
         };
@@ -134,6 +139,11 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const { setArtifact } = useArtifact();
+
+  useEffect(() => {
+    setArtifact(initialArtifactData);
+  }, [id, setArtifact]);
 
   useAutoResume({
     autoResume,
@@ -155,7 +165,7 @@ export function Chat({
           isReadonly={isReadonly}
           session={session}
           selectedAgentIds={selectedAgentIds}
-          onChangeSelectedAgentIds={setSelectedAgentIds}
+          onChangeSelectedAgentIds={handleSelectedAgentIdsChange}
           onChangeModel={setSelectedChatModelId}
         />
 
@@ -186,7 +196,7 @@ export function Chat({
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
               selectedAgentIds={selectedAgentIds}
-              onChangeSelectedAgentIds={setSelectedAgentIds}
+              onChangeSelectedAgentIds={handleSelectedAgentIdsChange}
               isReasoningActive={selectedChatModelId === 'chat-model-reasoning'}
               onExpertsActivated={() => setSelectedChatModelId('chat-model-reasoning')}
             />
@@ -210,7 +220,7 @@ export function Chat({
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
         selectedAgentIds={selectedAgentIds}
-        onChangeSelectedAgentIds={setSelectedAgentIds}
+        onChangeSelectedAgentIds={handleSelectedAgentIdsChange}
         isReasoningActive={selectedChatModelId === 'chat-model-reasoning'}
         onExpertsActivated={() => setSelectedChatModelId('chat-model-reasoning')}
       />

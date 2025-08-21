@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
 type Profile = {
@@ -46,10 +47,13 @@ export function SettingsSidebarHeader(props: {
   }, [image, email, id]);
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="relative size-40 rounded-full overflow-hidden bg-muted">
-        <Image src={avatarSrc} alt={name || 'User avatar'} width={160} height={160} />
+    <div className="flex flex-col items-center gap-4">
+      {/* User Avatar */}
+      <div className="relative size-32 rounded-full overflow-hidden bg-muted">
+        <Image src={avatarSrc} alt={name || 'User avatar'} width={128} height={128} />
       </div>
+
+      {/* User Info */}
       <div className="min-w-0 items-center text-center flex flex-col gap-1">
         <div className="text-lg font-medium truncate">{name}</div>
         <div className="text-xs text-muted-foreground truncate">{email}</div>

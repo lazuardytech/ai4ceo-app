@@ -25,16 +25,16 @@ function PureSuggestedActions({
     fetcher,
   );
   const suggestedActions = data?.items ?? [
-    { title: 'Draft a plan to', label: 'enter a new market', action: 'Draft a 90-day GTM plan to enter a new market. Include KPIs and risks.' },
-    { title: 'Analyze our', label: 'unit economics', action: 'Analyze our unit economics and identify levers to improve gross margin.' },
-    { title: 'Outline a board', label: 'update structure', action: 'Outline a concise board update for this month with key metrics and risks.' },
-    { title: 'Design an org', label: 'structure for scale', action: 'Propose an org structure to scale from 10 to 30 people with roles and responsibilities.' },
+    { title: 'Buat rencana untuk', label: 'masuk pasar baru dengan strategi GTM 90 hari', action: 'Buat rencana GTM 90 hari untuk masuk pasar baru di Indonesia. Sertakan KPI dan analisis risiko.' },
+    { title: 'Analisis', label: 'unit ekonomi dan strategi peningkatan margin', action: 'Analisis unit ekonomi perusahaan dan identifikasi cara meningkatkan gross margin di pasar Indonesia.' },
+    { title: 'Susun laporan', label: 'board meeting dengan metrik kunci dan risiko strategis', action: 'Susun laporan board meeting bulan ini dengan metrik kunci dan risiko strategis untuk pasar Indonesia.' },
+    { title: 'Rancang struktur', label: 'organisasi untuk scaling dari 10 ke 30 orang', action: 'Rancang struktur organisasi untuk scaling dari 10 ke 30 orang dengan peran dan tanggung jawab yang jelas.' },
   ];
 
   return (
     <div
       data-testid="suggested-actions"
-      className="grid sm:grid-cols-2 gap-2 w-full"
+      className="grid sm:grid-cols-2 gap-2 w-full truncate text-ellipsis"
     >
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
@@ -58,7 +58,7 @@ function PureSuggestedActions({
             className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
           >
             <span className="font-medium">{suggestedAction.title}</span>
-            <span className="text-muted-foreground">
+            <span className="text-muted-foreground text-ellipsis truncate w-full">
               {suggestedAction.label}
             </span>
           </Button>

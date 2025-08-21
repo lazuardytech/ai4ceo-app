@@ -1,5 +1,5 @@
 import localFont from 'next/font/local';
-import { Forum, Geist_Mono } from 'next/font/google';
+import { Bentham, Geist_Mono } from 'next/font/google';
 
 export const haskoy = localFont({
   src: '../assets/fonts/haskoy-variable.woff2',
@@ -10,7 +10,16 @@ export const haskoy = localFont({
   preload: true,
 });
 
-export const forum = Forum({
+export const gambarino = localFont({
+  src: '../assets/fonts/gambarino-regular.woff2',
+  variable: '--font-serif',
+  display: 'swap',
+  weight: '400',
+  style: 'normal',
+  preload: true,
+});
+
+export const bentham = Bentham({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-serif',

@@ -1,73 +1,35 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import { ChevronDownIcon } from './icons';
+import { Button } from './ui/button';
 
 type ProviderPreference = 'balance' | 'groq' | 'openrouter';
 
-function persistPreference(pref: ProviderPreference) {
-  try {
-    document.cookie = `provider-pref=${pref}; Path=/; Max-Age=31536000; SameSite=Lax`;
-  } catch {}
-}
-
+// Disabled provider selector - always returns Groq
 export function ProviderSelector({
   value,
   onChange,
   className,
+  ...props
 }: {
   value: ProviderPreference;
   onChange: (pref: ProviderPreference) => void;
 } & React.ComponentProps<typeof Button>) {
-  const [open, setOpen] = useState(false);
-  const [local, setLocal] = useState<ProviderPreference>(value);
-  useEffect(() => {
-    setLocal(value);
-  }, [value]);
-
-  const labelMap: Record<ProviderPreference, string> = {
-    balance: 'Load Balance',
-    groq: 'Groq Only',
-    openrouter: 'OpenRouter Only',
-  };
+  // Force Groq preference and notify parent if different
+  if (value !== 'groq') {
+    setTimeout(() => onChange('groq'), 0);
+  }
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger
-        asChild
-        className={cn(
-          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className,
-        )}
-      >
-        <Button variant="outline" className="md:px-2 md:h-[34px]">
-          {labelMap[local]}
-          <ChevronDownIcon />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[220px]">
-        {(['balance', 'groq', 'openrouter'] as ProviderPreference[]).map((pref) => (
-          <DropdownMenuItem
-            key={pref}
-            onSelect={() => {
-              setLocal(pref);
-              persistPreference(pref);
-              onChange(pref);
-            }}
-          >
-            {labelMap[pref]}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant="outline"
+      disabled
+      className={className}
+      {...props}
+    >
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+        <span>Groq Only</span>
+      </div>
+    </Button>
   );
 }
-
