@@ -1,10 +1,14 @@
 'use client';
 
-import { Button } from './ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import type { ProviderPreference } from '@/lib/ai/providers';
 
-type ProviderPreference = 'balance' | 'groq' | 'openrouter';
-
-// Disabled provider selector - always returns Groq
 export function ProviderSelector({
   value,
   onChange,
@@ -13,23 +17,16 @@ export function ProviderSelector({
 }: {
   value: ProviderPreference;
   onChange: (pref: ProviderPreference) => void;
-} & React.ComponentProps<typeof Button>) {
-  // Force Groq preference and notify parent if different
-  if (value !== 'groq') {
-    setTimeout(() => onChange('groq'), 0);
-  }
-
+} & React.ComponentProps<typeof Select>) {
   return (
-    <Button
-      variant="outline"
-      disabled
-      className={className}
-      {...props}
-    >
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-        <span>Groq Only</span>
-      </div>
-    </Button>
+    <Select value={value} onValueChange={onChange} {...props}>
+      <SelectTrigger className={className}>
+        <SelectValue placeholder="Select provider" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="groq">Groq</SelectItem>
+        <SelectItem value="vertex">Google Vertex</SelectItem>
+      </SelectContent>
+    </Select>
   );
 }
