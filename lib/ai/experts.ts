@@ -28,7 +28,7 @@ export function buildExpertSystemPrompt({
     ${previousAssistant?.map((t, i) => `- Prev ${i + 1}: ${t.substring(0, 400)}`).join('\n')}`
     : '';
 
-  const format = `\n\nResponse Requirements:\n- Start with: [${agent.name}]\n- Follow this structure strictly:\n${template}\n- Use concise bullets. Keep examples minimal.`;
+  const format = `\n\nResponse Requirements:\n- Start with: [${agent.name}]\n- Follow this structure strictly:\n${template}\n- Use concise bullets. Keep examples minimal. except the user wants the more complex explanation.\n- If you are unsure and the context does not help, state your assumptions explicitly.\n- If the question is out of scope, respond with: [${agent.name}]\nI'm sorry, but I can't assist with that request. answer using bahasa indonesia if they use bahasa indonesia, else use prompt languange`;
 
   return `${baseSystem}\n\n${header}${rag}${prior}${format}`;
 }

@@ -29,7 +29,7 @@ export const postRequestBodySchema = z.object({
   selectedVisibilityType: z.enum(['public', 'private']),
   selectedAgentIds: z.array(z.string().cuid2()).optional().default([]),
   selectedProviderPreference: z
-    .enum(['balance', 'groq', 'openrouter'])
+    .enum(['groq', 'vertex'])
     .optional()
     .default('groq'),
 });

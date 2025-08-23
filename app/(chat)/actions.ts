@@ -26,7 +26,7 @@ export async function saveSelectedExpertsAsCookie(agentIds: string[]) {
 
 export async function generateTitleFromUserMessage({
   message,
-  providerPreference = 'balance',
+  providerPreference = 'groq',
 }: {
   message: UIMessage;
   providerPreference?: ProviderPreference;
@@ -34,9 +34,9 @@ export async function generateTitleFromUserMessage({
   const settings = await getSettings();
   const candidates = resolveModelCandidatesForId(
     'title-model',
-    null, // OpenRouter disabled
-    'groq', // Force Groq
+    providerPreference,
     (settings?.modelOverridesGroq as any) ?? null,
+    (settings?.modelOverridesVertex as any) ?? null,
   );
   for (let i = 0; i < candidates.length; i++) {
     const c = candidates[i];

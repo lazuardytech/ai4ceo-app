@@ -64,7 +64,7 @@ export default async function AdminHomePage() {
           Use the navigation sidebar to access all administrative functions. The platform is currently configured to use Groq models only.
         </p>
         <div className="flex items-center gap-2 text-sm">
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-green-500 rounded-full" />
           <span className="text-muted-foreground">System operational - Groq provider active</span>
         </div>
       </div>
