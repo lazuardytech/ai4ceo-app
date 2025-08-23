@@ -25,63 +25,63 @@ export const user = pgTable('User', {
   role: varchar('role', { enum: ['user', 'admin'] })
     .notNull()
     .default('user'),
-  emailVerified: boolean("email_verified")
+  emailVerified: boolean('email_verified')
     .$defaultFn(() => false)
     .notNull(),
-  createdAt: timestamp("created_at")
+  createdAt: timestamp('created_at')
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
-  updatedAt: timestamp("updated_at")
+  updatedAt: timestamp('updated_at')
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
 
 export type User = InferSelectModel<typeof user>;
 
-export const session = pgTable("Session", {
-  id: cuid2("id").primaryKey().notNull().defaultRandom(),
-  expiresAt: timestamp("expires_at").notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  userId: cuid2("user_id")
+export const session = pgTable('Session', {
+  id: cuid2('id').primaryKey().notNull().defaultRandom(),
+  expiresAt: timestamp('expires_at').notNull(),
+  token: text('token').notNull().unique(),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  userId: cuid2('user_id')
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => user.id, { onDelete: 'cascade' }),
 });
 
 export type Session = InferSelectModel<typeof session>;
 
-export const account = pgTable("Account", {
-  id: cuid2("id").primaryKey().notNull().defaultRandom(),
-  accountId: text("account_id").notNull(),
-  providerId: text("provider_id").notNull(),
-  userId: cuid2("user_id")
+export const account = pgTable('Account', {
+  id: cuid2('id').primaryKey().notNull().defaultRandom(),
+  accountId: text('account_id').notNull(),
+  providerId: text('provider_id').notNull(),
+  userId: cuid2('user_id')
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  accessToken: text("access_token"),
-  refreshToken: text("refresh_token"),
-  idToken: text("id_token"),
-  accessTokenExpiresAt: timestamp("access_token_expires_at"),
-  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
-  scope: text("scope"),
-  password: text("password"),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
+    .references(() => user.id, { onDelete: 'cascade' }),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  idToken: text('id_token'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at'),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
 });
 
 export type Account = InferSelectModel<typeof account>;
 
-export const verification = pgTable("Verification", {
-  id: cuid2("id").primaryKey().notNull().defaultRandom(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").$defaultFn(
+export const verification = pgTable('Verification', {
+  id: cuid2('id').primaryKey().notNull().defaultRandom(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').$defaultFn(
     () => /* @__PURE__ */ new Date(),
   ),
-  updatedAt: timestamp("updated_at").$defaultFn(
+  updatedAt: timestamp('updated_at').$defaultFn(
     () => /* @__PURE__ */ new Date(),
   ),
 });
@@ -445,3 +445,17 @@ export const referralConfig = pgTable('ReferralConfig', {
 });
 
 export type ReferralConfig = InferSelectModel<typeof referralConfig>;
+
+export const newsArticle = pgTable('NewsArticle', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  title: text('title').notNull(),
+  url: text('url').notNull().unique(),
+  content: text('content').notNull(),
+  summary: text('summary'),
+  timeline: json('timeline'),
+  factCheck: text('factCheck'),
+  publishedAt: timestamp('publishedAt'),
+  scrapedAt: timestamp('scrapedAt').notNull().defaultNow(),
+});
+
+export type NewsArticle = InferSelectModel<typeof newsArticle>;
