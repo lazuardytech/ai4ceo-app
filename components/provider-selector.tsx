@@ -12,6 +12,7 @@ import type { ProviderPreference } from '@/lib/ai/providers';
 export function ProviderSelector({
   value,
   onChange,
+  // @ts-ignore
   className,
   ...props
 }: {

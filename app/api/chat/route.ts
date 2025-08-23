@@ -486,9 +486,11 @@ export async function POST(request: Request) {
             : [];
           if (m.role === 'assistant' && selectedAgents.length > 0) {
             const text = extractText((m as any).parts || []);
-            const match = selectedAgents.find((a) =>
-              text.startsWith(`[${a.name}]`),
-            );
+            const match = selectedAgents.find((a) => {
+              const name = a.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const re = new RegExp(`\\(\\[${name}\\]\\)|\\[${name}\\]`);
+              return re.test(text);
+            });
             if (match) {
               attachments = [
                 ...attachments,

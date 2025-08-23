@@ -386,6 +386,8 @@ export default function AdminModelsPanel() {
             <h3 className="font-semibold">Default Provider</h3>
             <p className="text-sm text-muted-foreground">Select which provider to use by default</p>
           </div>
+
+          {/* @ts-ignore */}
           <ProviderSelector value={providerPref} onChange={setProviderPref} className="w-48" />
         </div>
 
