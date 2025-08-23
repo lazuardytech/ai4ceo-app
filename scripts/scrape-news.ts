@@ -1,4 +1,4 @@
-import Parser from 'rss-parser';
+
 import * as cheerio from 'cheerio';
 import { schedule } from 'node-cron';
 import { upsertNewsArticle } from '@/lib/db/news';
@@ -35,13 +35,85 @@ function factCheckPlaceholder() {
 }
 
 export async function scrapeNews() {
-  const parser = new Parser();
-  const feed = await parser.parseURL(
-    'https://rss.detik.com/index.php/detikNews',
-  );
+  const rssUrl = 'https://rss.detik.com/index.php/detikNews';
+  const res = await fetch(rssUrl);
+  let xml = await res.text();
 
-  for (const item of feed.items) {
-    if (!item.link || !item.title) continue;
+  // Tolerate malformed XML (unescaped ampersands, stray whitespace)
+  const sanitizeXml = (s: string) =>
+    s
+      // remove nulls and odd leading garbage lines
+      .replace(/\u0000/g, '')
+      .replace(/^[^\u0009\u000A\u000D\u0020<][^\n]*$/gm, '')
+      // collapse trailing spaces before newlines
+      .replace(/[ \t]+\n/g, '\n')
+      // escape bare ampersands not part of entities
+      .replace(/&(?!#?\w+;)/g, '&amp;');
+
+  xml = sanitizeXml(xml);
+
+  // Parse as XML using Cheerio (supports RSS and Atom)
+  const $ = cheerio.load(xml, { xmlMode: true });
+  const isAtom = $('feed').length > 0;
+  const isRss = $('rss').length > 0 || $('channel').length > 0;
+
+  const items: Array<{ title: string; link: string; isoDate?: string }> = [];
+
+  if (isRss) {
+    $('item').each((_, el) => {
+      const $el = $(el);
+      const title = $el.find('title').first().text().trim();
+      // RSS: <link> is usually text; sometimes may have href attribute
+      let link =
+        $el.find('link').first().text().trim() ||
+        ($el.find('link').first().attr('href') || '').trim();
+      const isoDateRaw =
+        $el.find('pubDate').first().text().trim() ||
+        $el.find('dc\\:date').first().text().trim() ||
+        '';
+      if (title && link) {
+        items.push({ title, link, isoDate: isoDateRaw || undefined });
+      }
+    });
+  } else if (isAtom) {
+    $('entry').each((_, el) => {
+      const $el = $(el);
+      const title = $el.find('title').first().text().trim();
+      // Atom: <link href="..."> (prefer rel="alternate")
+      const linkEl = $el.find('link[rel=alternate]').first().length
+        ? $el.find('link[rel=alternate]').first()
+        : $el.find('link').first();
+      const link =
+        (linkEl.attr('href') || linkEl.text() || '').trim();
+      const isoDateRaw =
+        $el.find('published').first().text().trim() ||
+        $el.find('updated').first().text().trim() ||
+        '';
+      if (title && link) {
+        items.push({ title, link, isoDate: isoDateRaw || undefined });
+      }
+    });
+  } else {
+    // Fallback: try to handle unknown but RSS/Atom-like structures
+    $('item, entry').each((_, el) => {
+      const $el = $(el);
+      const title = $el.find('title').first().text().trim();
+      const linkEl = $el.find('link').first();
+      const link =
+        (linkEl.attr('href') || linkEl.text() || '').trim();
+      const isoDateRaw =
+        $el
+          .find('pubDate, published, updated, dc\\:date')
+          .first()
+          .text()
+          .trim() || '';
+      if (title && link) {
+        items.push({ title, link, isoDate: isoDateRaw || undefined });
+      }
+    });
+  }
+
+  for (const item of items) {
     const publishedAt = item.isoDate ? new Date(item.isoDate) : new Date();
     const content = await fetchArticleContent(item.link);
     const summary = summarize(content);
