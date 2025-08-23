@@ -27,9 +27,11 @@ import { Switch } from '@/components/ui/switch';
 import { chatModels as defaultChatModels } from '@/lib/ai/models';
 import type { ChatModel } from '@/lib/ai/models';
 import { BotIcon, BoxIcon, FileIcon, InfoIcon } from '@/components/icons';
+import { ProviderSelector } from '@/components/provider-selector';
+import type { ProviderPreference } from '@/lib/ai/providers';
 
-// type OpenRouterModel = { id: string; name: string; description?: string }; // Disabled for Groq-only
 type GroqModel = { id: string; name: string };
+type VertexModel = { id: string; name: string };
 
 const managedIds = [
   'chat-model',
@@ -48,6 +50,15 @@ const DEFAULT_GROQ_MODEL_MAP: Record<string, string> = {
   'chat-model-reasoning': 'moonshotai/kimi-k2-instruct',
   'title-model': 'openai/gpt-oss-20b',
   'artifact-model': 'moonshotai/kimi-k2-instruct',
+};
+
+const DEFAULT_VERTEX_MODEL_MAP: Record<string, string> = {
+  'chat-model': 'gemini-1.5-flash',
+  'chat-model-small': 'gemini-1.5-flash',
+  'chat-model-large': 'gemini-1.5-pro',
+  'chat-model-reasoning': 'gemini-1.5-pro',
+  'title-model': 'gemini-1.5-flash',
+  'artifact-model': 'gemini-1.5-pro',
 };
 
 // Commented out for reference (OpenRouter defaults):
@@ -82,55 +93,54 @@ export default function AdminModelsPanel() {
       '/admin/api/models/groq',
       fetcher,
     );
+  const { data: vertexList, isLoading: loadingVertex, mutate: refreshVertex } =
+    useSWR<{ models: VertexModel[] }>(
+      '/admin/api/models/vertex',
+      fetcher,
+    );
   const { data: settings } = useSWR<Record<string, any>>(
     '/admin/api/settings',
     fetcher,
   );
 
-  // const [overridesOR, setOverridesOR] = useState<Record<string, string>>({}); // Disabled
   const [overridesGroq, setOverridesGroq] = useState<Record<string, string>>({});
-  const [providerPref, setProviderPref] = useState<'balance' | 'groq' | 'openrouter'>(
-    'groq', // Default to Groq
-  );
-
-  // const models = useMemo(
-  //   () => openRouterList?.models ?? ([] as OpenRouterModel[]),
-  //   [openRouterList?.models],
-  // ); // Disabled
+  const [overridesVertex, setOverridesVertex] = useState<Record<string, string>>({});
+  const [providerPref, setProviderPref] = useState<ProviderPreference>('groq');
 
   const groqModels = useMemo(
     () => groqList?.models ?? ([] as GroqModel[]),
     [groqList?.models],
   );
-
-  // const orFromSettings = useMemo(
-  //   () =>
-  //     (settings?.modelOverridesOpenRouter as Record<string, string> | undefined) ??
-  //     (settings?.modelOverrides as Record<string, string> | undefined) ??
-  //     undefined,
-  //   [settings?.modelOverridesOpenRouter, settings?.modelOverrides],
-  // ); // Disabled
+  const vertexModels = useMemo(
+    () => vertexList?.models ?? ([] as VertexModel[]),
+    [vertexList?.models],
+  );
 
   const groqFromSettings = useMemo(
     () => (settings?.modelOverridesGroq as Record<string, string> | undefined) ?? undefined,
     [settings?.modelOverridesGroq],
   );
+  const vertexFromSettings = useMemo(
+    () => (settings?.modelOverridesVertex as Record<string, string> | undefined) ?? undefined,
+    [settings?.modelOverridesVertex],
+  );
   const prefFromSettings = useMemo(
-    () => (settings?.defaultProviderPreference as any) ?? 'groq',
+    () => (settings?.defaultProviderPreference as ProviderPreference) ?? 'groq',
     [settings?.defaultProviderPreference],
   );
 
   useEffect(() => {
-    // if (orFromSettings) setOverridesOR(orFromSettings);
-    // else if (Object.keys(overridesOR).length === 0) setOverridesOR(DEFAULT_OPENROUTER_MODEL_MAP); // Disabled
-
     if (groqFromSettings) setOverridesGroq(groqFromSettings);
     else if (Object.keys(overridesGroq).length === 0)
       setOverridesGroq(DEFAULT_GROQ_MODEL_MAP);
 
+    if (vertexFromSettings) setOverridesVertex(vertexFromSettings);
+    else if (Object.keys(overridesVertex).length === 0)
+      setOverridesVertex(DEFAULT_VERTEX_MODEL_MAP);
+
     setProviderPref(prefFromSettings);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groqFromSettings, prefFromSettings]);
+  }, [groqFromSettings, vertexFromSettings, prefFromSettings]);
 
   // Initialize enabled chat models & default from settings
   useEffect(() => {
@@ -155,6 +165,11 @@ export default function AdminModelsPanel() {
   const groqOptions = useMemo(
     () => groqModels.map((m) => ({ value: m.id, label: m.name || m.id })),
     [groqModels],
+  );
+
+  const vertexOptions = useMemo(
+    () => vertexModels.map((m) => ({ value: m.id, label: m.name || m.id })),
+    [vertexModels],
   );
 
   const [banner, setBanner] = useState<string | null>(null);
@@ -220,10 +235,21 @@ export default function AdminModelsPanel() {
       return;
     }
 
-    // Save default provider preference (though it's forced to Groq)
+    // Save Vertex overrides
+    const formV = new FormData();
+    formV.set('key', 'modelOverridesVertex');
+    formV.set('value', JSON.stringify(overridesVertex, null, 2));
+    const resV = await fetch('/admin/api/settings', { method: 'POST', body: formV });
+    if (!resV.ok) {
+      setBanner('Failed to save Vertex mappings');
+      setTimeout(() => setBanner(null), 2500);
+      return;
+    }
+
+    // Save default provider preference
     const form3 = new FormData();
     form3.set('key', 'defaultProviderPreference');
-    form3.set('value', 'groq'); // Force Groq
+    form3.set('value', providerPref);
     const res3 = await fetch('/admin/api/settings', { method: 'POST', body: form3 });
     if (!res3.ok) {
       setBanner('Failed to save provider preference');
@@ -241,10 +267,10 @@ export default function AdminModelsPanel() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold">Model Configuration</h2>
-            <p className="text-sm text-muted-foreground mt-1">Configure Groq models for AI chat functionality</p>
+            <p className="text-sm text-muted-foreground mt-1">Configure models and provider preferences</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => { refreshGroq(); }}>
+            <Button variant="outline" onClick={() => { refreshGroq(); refreshVertex(); }}>
               Refresh Models
             </Button>
             <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -354,22 +380,15 @@ export default function AdminModelsPanel() {
           </div>
         </div>
 
-        {/* Provider Status - Informational only since we're Groq-only */}
+        {/* Provider Preference */}
         <div className="rounded-lg border bg-card p-4 space-y-4">
           <div>
-            <h3 className="font-semibold">Provider Status</h3>
-            <p className="text-sm text-muted-foreground">Currently configured to use Groq only</p>
+            <h3 className="font-semibold">Default Provider</h3>
+            <p className="text-sm text-muted-foreground">Select which provider to use by default</p>
           </div>
-          <div className="bg-muted/50 rounded-md p-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm font-medium">Groq Active</span>
-              <span className="text-xs text-muted-foreground ml-auto">Load balancing disabled</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              OpenRouter provider is temporarily disabled. All requests will use Groq models.
-            </p>
-          </div>
+
+          {/* @ts-ignore */}
+          <ProviderSelector value={providerPref} onChange={setProviderPref} className="w-48" />
         </div>
 
         {/* Groq Model Mappings */}
@@ -440,6 +459,87 @@ export default function AdminModelsPanel() {
                       </SelectTrigger>
                       <SelectContent className="max-h-80">
                         {groqOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Google Vertex Model Mappings */}
+        <div className="rounded-lg border bg-card p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">Google Vertex Model Mappings</h3>
+              <p className="text-sm text-muted-foreground">Configure which Vertex models to use for each function</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setOverridesVertex(DEFAULT_VERTEX_MODEL_MAP)}
+              >
+                Reset to Defaults
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setOverridesVertex({})}
+              >
+                Clear All
+              </Button>
+            </div>
+          </div>
+
+          {loadingVertex && (
+            <div className="text-sm text-muted-foreground py-4 text-center">Loading models…</div>
+          )}
+          {!loadingVertex && vertexModels.length === 0 && (
+            <div className="text-sm text-muted-foreground py-4 text-center bg-muted/30 rounded-md">
+              No models found. Please check your Google Vertex configuration.
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {managedIds.map((id) => {
+              const currentValue = overridesVertex[id] || DEFAULT_VERTEX_MODEL_MAP[id] || '';
+              const Icon =
+                id === 'chat-model-small'
+                  ? BotIcon
+                  : id === 'chat-model-large'
+                    ? BoxIcon
+                    : id === 'chat-model-reasoning'
+                      ? InfoIcon
+                      : id === 'title-model'
+                        ? FileIcon
+                        : id === 'artifact-model'
+                          ? BoxIcon
+                          : BotIcon;
+              return (
+                <div key={id} className="rounded-md border p-3 flex gap-3 items-start bg-background">
+                  <div className="mt-1 text-foreground">
+                    <Icon size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium mb-2">{friendlyName(id, defaultChatModels)}</div>
+                    <Label className="sr-only" htmlFor={`vertex-${id}`}>
+                      {friendlyName(id)} (Vertex)
+                    </Label>
+                    <Select
+                      value={currentValue}
+                      onValueChange={(v) => setOverridesVertex((prev) => ({ ...prev, [id]: v }))}
+                    >
+                      <SelectTrigger id={`vertex-${id}`} className="w-full">
+                        <SelectValue placeholder="Select Vertex model" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-80">
+                        {vertexOptions.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
                             {opt.label}
                           </SelectItem>

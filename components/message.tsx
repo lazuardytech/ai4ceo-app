@@ -13,6 +13,7 @@ import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Badge } from './ui/badge';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
@@ -50,12 +51,14 @@ const PurePreviewMessage = ({
 
   function getAgentLabel(): string | null {
     if (message.metadata?.agentName) return message.metadata.agentName;
-    // Fallback: parse first text chunk like "[Tech Expert] ..."
+    // Fallback: parse first text chunk like "([Law Expert]) ..." or "[Law Expert] ..."
     const firstText = message.parts.find((p: any) => p.type === 'text');
     const txt = (firstText as any)?.text as string | undefined;
-    if (txt?.startsWith('[')) {
-      const end = txt.indexOf(']');
-      if (end > 1 && end < 80) return txt.slice(1, end);
+    if (typeof txt === 'string') {
+      const m1 = txt.match(/^\(\[([^\]]+)\]\)\s*/);
+      if (m1) return m1[1];
+      const m2 = txt.match(/^\[([^\]]+)\]\s*/);
+      if (m2) return m2[1];
     }
     return null;
   }
@@ -93,27 +96,21 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-            {(() => {
+            {/*{(() => {
               const expert = getAgentLabel();
               const wrapperStart = expert && message.role === 'assistant';
               return (
                 <>
                   {wrapperStart ? (
                     <div className="rounded-xl border bg-muted/30 p-3 md:p-4">
-                      <div className="mb-2">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border">
-                          {expert}
-                        </span>
-                      </div>
                       <div className="flex flex-col gap-4">
-                        {/* Content below will render within expert block */}
                         {null}
                       </div>
                     </div>
                   ) : null}
                 </>
               );
-            })()}
+            })()}*/}
             {attachmentsFromMessage.length > 0 && (
               <div
                 data-testid={`message-attachments`}
@@ -148,8 +145,12 @@ const PurePreviewMessage = ({
 
               if (type === 'text') {
                 if (mode === 'view') {
-                  const expert = getAgentLabel();
                   const isAssistant = message.role === 'assistant';
+                  const txt = part.text ?? '';
+                  const m1 = txt.match(/^\(\[([^\]]+)\]\)\s*/);
+                  const m2 = txt.match(/^\[([^\]]+)\]\s*/);
+                  const expertName = m1 ? m1[1] : m2 ? m2[1] : undefined;
+                  const displayText = txt.replace(/^\(\[[^\]]+\]\)\s*/, '').replace(/^\[[^\]]+\]\s*/, '');
                   const contentBlock = (
                     <div key={key} className="flex flex-row gap-2 items-start">
                       {message.role === 'user' && !isReadonly && (
@@ -177,18 +178,16 @@ const PurePreviewMessage = ({
                             message.role === 'user',
                         })}
                       >
-                        <Markdown>{sanitizeText(part.text)}</Markdown>
+                        <Markdown>{sanitizeText(displayText)}</Markdown>
                       </div>
                     </div>
                   );
-                  if (isAssistant && expert) {
+                  if (isAssistant && expertName) {
                     // Render inside the expert block container by duplicating within a bordered wrapper
                     return (
                       <div key={key} className="rounded-xl border bg-muted/30 p-3 md:p-4">
                         <div className="mb-2">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border">
-                            {expert}
-                          </span>
+                          <Badge variant="secondary">{expertName}</Badge>
                         </div>
                         {contentBlock}
                       </div>

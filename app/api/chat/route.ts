@@ -30,7 +30,7 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
-import { resolveModelCandidatesForId } from '@/lib/ai/providers';
+import { resolveModelCandidatesForId, type ProviderPreference } from '@/lib/ai/providers';
 
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
@@ -124,11 +124,16 @@ export async function POST(request: Request) {
     }
 
     const chat = await getChatById({ id });
+    const settings = await getSettings();
+    const providerPreference: ProviderPreference =
+      requestBody.selectedProviderPreference ??
+      (settings?.defaultProviderPreference as ProviderPreference) ??
+      'groq';
 
     if (!chat) {
       const title = await generateTitleFromUserMessage({
         message,
-        providerPreference: 'groq', // Force Groq
+        providerPreference,
       });
 
       await saveChat({
@@ -154,8 +159,6 @@ export async function POST(request: Request) {
         return new ChatSDKError('forbidden:chat').toResponse();
       }
     }
-
-    const settings = await getSettings();
 
     const messagesFromDb = await getMessagesByChatId({ id });
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];
@@ -304,9 +307,9 @@ export async function POST(request: Request) {
               const expertSystem = run.system;
               const candidates = resolveModelCandidatesForId(
                 selectedChatModel,
-                null, // OpenRouter disabled
-                'groq', // Force Groq
+                providerPreference,
                 (settings?.modelOverridesGroq as any) ?? null,
+                (settings?.modelOverridesVertex as any) ?? null,
               );
               let streamed = false;
               for (let i = 0; i < candidates.length; i++) {
@@ -411,9 +414,9 @@ export async function POST(request: Request) {
         });
         const candidates = resolveModelCandidatesForId(
           selectedChatModel,
-          null, // OpenRouter disabled
-          'groq', // Force Groq
+          providerPreference,
           (settings?.modelOverridesGroq as any) ?? null,
+          (settings?.modelOverridesVertex as any) ?? null,
         );
         (async () => {
           let streamed = false;
@@ -483,9 +486,11 @@ export async function POST(request: Request) {
             : [];
           if (m.role === 'assistant' && selectedAgents.length > 0) {
             const text = extractText((m as any).parts || []);
-            const match = selectedAgents.find((a) =>
-              text.startsWith(`[${a.name}]`),
-            );
+            const match = selectedAgents.find((a) => {
+              const name = a.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const re = new RegExp(`\\(\\[${name}\\]\\)|\\[${name}\\]`);
+              return re.test(text);
+            });
             if (match) {
               attachments = [
                 ...attachments,
