@@ -19,6 +19,7 @@ export default async function AdminLayout({
     { label: 'Subscriptions', href: '/admin/subscriptions' },
     { label: 'Vouchers', href: '/admin/vouchers' },
     { label: 'Referral', href: '/admin/referral' },
+    { label: 'News Feeds', href: '/admin/news/feeds' },
     { label: 'Models', href: '/admin/models' },
     { label: 'Experts', href: '/admin/experts' },
     { label: 'Prompts', href: '/admin/prompts' },

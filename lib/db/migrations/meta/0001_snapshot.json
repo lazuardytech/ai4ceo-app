@@ -1,6 +1,6 @@
 {
-  "id": "80f3eb36-3053-4da0-afe3-b1e058f759c5",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "c3c473a5-1d2f-4063-bb6c-d21c93c1b879",
+  "prevId": "80f3eb36-3053-4da0-afe3-b1e058f759c5",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -598,6 +598,12 @@
         "publishedAt": {
           "name": "publishedAt",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

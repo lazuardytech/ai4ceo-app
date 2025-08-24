@@ -80,6 +80,34 @@ CREATE TABLE IF NOT EXISTS "Message" (
 	"createdAt" timestamp NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "NewsArticle" (
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"sourceId" varchar(24) NOT NULL,
+	"guid" text,
+	"link" text NOT NULL,
+	"title" text NOT NULL,
+	"author" text,
+	"publishedAt" timestamp,
+	"content" text,
+	"raw" json,
+	"summary" text,
+	"timeline" json,
+	"factCheck" json,
+	"relatedLinks" json,
+	"category" varchar(64),
+	"createdAt" timestamp DEFAULT now() NOT NULL,
+	"updatedAt" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "NewsSource" (
+	"id" varchar(24) PRIMARY KEY NOT NULL,
+	"name" varchar(128) NOT NULL,
+	"url" text NOT NULL,
+	"isActive" boolean DEFAULT true NOT NULL,
+	"createdAt" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "NewsSource_url_unique" UNIQUE("url")
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Referral" (
 	"id" varchar(24) PRIMARY KEY NOT NULL,
 	"userId" varchar(24) NOT NULL,
@@ -301,6 +329,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "Message" ADD CONSTRAINT "Message_chatId_Chat_id_fk" FOREIGN KEY ("chatId") REFERENCES "public"."Chat"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "NewsArticle" ADD CONSTRAINT "NewsArticle_sourceId_NewsSource_id_fk" FOREIGN KEY ("sourceId") REFERENCES "public"."NewsSource"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

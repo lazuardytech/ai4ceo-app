@@ -18,7 +18,7 @@ const vertex = createVertex({
     : undefined,
 });
 
-import { getSettings } from '@/lib/db/queries';
+// NOTE: getSettings is only needed dynamically to avoid importing server-only in scripts
 
 export const myProvider = customProvider({
   languageModels: {
@@ -78,6 +78,7 @@ export function getLanguageModelForId(
 
 export async function getDynamicLanguageModelForId(id: string) {
   try {
+    const { getSettings } = await import('@/lib/db/queries');
     const settings = await getSettings();
     const pref = (settings?.defaultProviderPreference as ProviderPreference) ?? 'groq';
     const groqOverrides = (settings?.modelOverridesGroq ?? null) as Record<string, string> | null;

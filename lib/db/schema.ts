@@ -445,3 +445,41 @@ export const referralConfig = pgTable('ReferralConfig', {
 });
 
 export type ReferralConfig = InferSelectModel<typeof referralConfig>;
+
+// Curated News
+export const newsSource = pgTable('NewsSource', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 128 }).notNull(),
+  url: text('url').notNull().unique(),
+  isActive: boolean('isActive').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type NewsSource = InferSelectModel<typeof newsSource>;
+
+export const newsArticle = pgTable('NewsArticle', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  sourceId: cuid2('sourceId')
+    .notNull()
+    .references(() => newsSource.id, { onDelete: 'cascade' }),
+  guid: text('guid'),
+  link: text('link').notNull(),
+  title: text('title').notNull(),
+  author: text('author'),
+  publishedAt: timestamp('publishedAt'),
+  imageUrl: text('imageUrl'),
+  // Extracted main content of the article
+  content: text('content'),
+  // Original raw item from RSS/article extractor
+  raw: json('raw'),
+  // Curated fields
+  summary: text('summary'), // news resume
+  timeline: json('timeline'), // array of { date?: string, event: string }
+  factCheck: json('factCheck'), // { claims: [...], assessment: string, confidence?: string }
+  relatedLinks: json('relatedLinks'), // array of { title, link }
+  category: varchar('category', { length: 64 }),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type NewsArticle = InferSelectModel<typeof newsArticle>;
