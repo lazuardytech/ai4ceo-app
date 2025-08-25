@@ -3,7 +3,7 @@ import { newsCurationRun, setting } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
-import { clearNewsCurationPause, clearNewsProviderPause, stopCuration, resumeCuration } from './actions';
+import { clearNewsCurationPause, clearNewsProviderPause, stopCuration, resumeCuration, restartCurationNow } from './actions';
 import { Button } from '@/components/ui/button';
 
 export const dynamic = 'force-dynamic';
@@ -56,12 +56,12 @@ export default async function NewsCurationAdminPage() {
             </div>
             <div className='flex gap-2'>
               <form action={clearNewsCurationPause}>
-                <Button>Clear Pause</Button>
+                <Button variant="outline">Clear Pause</Button>
               </form>
               <form
                 action={async () => {
                   'use server';
-                  const h = headers();
+                  const h = await headers();
                   const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000';
                   const proto = h.get('x-forwarded-proto') ?? (host.includes('localhost') ? 'http' : 'https');
                   const base = (process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') || `${proto}://${host}`);
@@ -84,11 +84,16 @@ export default async function NewsCurationAdminPage() {
               <div className="flex gap-2">
                 {isStopped ? (
                   <form action={resumeCuration}>
-                    <Button className='bg-green-500 hover:bg-green-600'>Resume Curation</Button>
+                    <Button className='bg-green-600 hover:bg-green-700'>Start Curation</Button>
                   </form>
                 ) : (
                   <form action={stopCuration}>
                     <Button>Stop Curation</Button>
+                  </form>
+                )}
+                {!isStopped && (
+                  <form action={restartCurationNow}>
+                    <Button variant="secondary">Restart Now</Button>
                   </form>
                 )}
               </div>

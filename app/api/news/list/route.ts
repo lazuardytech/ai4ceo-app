@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { newsArticle, newsSource } from '@/lib/db/schema';
 import { and, desc, eq, gte, ilike, lt, or } from 'drizzle-orm';

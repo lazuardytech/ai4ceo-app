@@ -1,8 +1,8 @@
 import RSSParser from 'rss-parser';
 import { extract } from '@extractus/article-extractor';
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { desc, eq, } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { newsArticle, newsSource, setting, type NewsArticle } from '@/lib/db/schema';
+import { newsArticle, newsSource, setting, } from '@/lib/db/schema';
 import { generateText } from 'ai';
 import { getLanguageModelForId, type ProviderPreference } from '@/lib/ai/providers';
 
@@ -181,6 +181,14 @@ export async function fetchAndCurateOnce() {
   if (globallyStopped) {
     results.stoppedByAdmin = true;
     await recordRun({ startedAt, finishedAt: new Date(), inserted: 0, skipped: 0, stoppedEarly: true, providerStats, stoppedAtSource: 'stopped-by-admin' });
+    return results;
+  }
+
+  // Respect global pause window if set in settings (align with admin UI)
+  const globalPauseUntil = await getPauseUntil();
+  if (globalPauseUntil && globalPauseUntil > new Date()) {
+    results.pausedUntil = globalPauseUntil.toISOString();
+    await recordRun({ startedAt, finishedAt: new Date(), inserted: 0, skipped: 0, stoppedEarly: true, pausedUntil: globalPauseUntil, providerStats });
     return results;
   }
 

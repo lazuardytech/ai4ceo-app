@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { fetchAndCurateOnce } from '@/lib/news/curator';
 
 export const dynamic = 'force-dynamic';

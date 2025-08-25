@@ -78,7 +78,7 @@ export default async function NewsPage({ searchParams }: { searchParams?: Promis
     .orderBy(desc(count(newsArticle.id)))
     .limit(20);
 
-  const initialItems: NewsItem[] = rows.map((r) => ({
+  const initialItems: NewsItem[] = (rows as any[]).map((r) => ({
     ...r,
     publishedAt: r.publishedAt ? r.publishedAt.toISOString() : null,
     createdAt: r.createdAt ? r.createdAt.toISOString() : null,

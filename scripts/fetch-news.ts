@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import { fetchAndCurateOnce } from '@/lib/news/curator';
 import { createScriptDbConnection } from '@/lib/db/utils';
-import { drizzle } from 'drizzle-orm/postgres-js';
 
 // Ensure DB can initialize in script context
 (async () => {
