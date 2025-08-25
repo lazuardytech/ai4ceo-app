@@ -1,5 +1,5 @@
 import { ChatSDKError } from '@/lib/errors';
-import { getSubscriptionByExternalId, updateSubscriptionStatus } from '@/lib/db/queries';
+import { getSubscriptionByExternalId, updateSubscriptionStatus, completeReferralOnSubscription } from '@/lib/db/queries';
 
 export const runtime = 'nodejs';
 
@@ -59,6 +59,13 @@ export async function GET(request: Request) {
       currentPeriodEnd: next,
       providerInvoiceId: invoice.id,
     });
+    // Complete referral if this user had a pending referral usage
+    try {
+      await completeReferralOnSubscription({ referredUserId: sub.userId, subscriptionId: sub.id });
+    } catch (e) {
+      // Non-blocking: log only
+      console.warn('Referral completion failed on subscription activation:', e);
+    }
     return Response.json({ ok: true, status: 'active' });
   }
 
@@ -70,4 +77,3 @@ export async function GET(request: Request) {
   // For PENDING or other statuses, do not change, just report
   return Response.json({ ok: true, status: String(invoice.status || 'PENDING') });
 }
-

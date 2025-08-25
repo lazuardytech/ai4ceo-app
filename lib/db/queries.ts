@@ -645,6 +645,39 @@ export async function updateUserRole({
   }
 }
 
+export async function adminUpdateUser({
+  userId,
+  email,
+  name,
+  role,
+  onboarded,
+  tour,
+}: {
+  userId: string;
+  email?: string;
+  name?: string;
+  role?: 'user' | 'admin';
+  onboarded?: boolean;
+  tour?: boolean;
+}) {
+  try {
+    const update: any = { updatedAt: new Date() };
+    if (email !== undefined) update.email = email;
+    if (name !== undefined) update.name = name;
+    if (role !== undefined) update.role = role;
+    if (onboarded !== undefined) update.onboarded = onboarded;
+    if (tour !== undefined) update.tour = tour;
+    const [u] = await db
+      .update(user)
+      .set(update)
+      .where(eq(user.id, userId))
+      .returning();
+    return u;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to update user');
+  }
+}
+
 // Admin: Subscriptions
 export async function listSubscriptions({ limit = 100 }: { limit?: number }) {
   try {
@@ -1852,17 +1885,15 @@ export async function validateReferralCode({
   }
 }
 
-export async function applyReferralCode({
+// Step 1: Reserve referral usage during signup (no benefits yet)
+export async function reserveReferralUsage({
   referralCode,
   newUserId,
-  bonusAmount,
 }: {
   referralCode: string;
   newUserId: string;
-  bonusAmount: string;
 }) {
   try {
-    // Validate referral code and get referrer info
     const validation = await validateReferralCode({ referralCode });
     if (!validation.valid || !validation.referral) {
       throw new ChatSDKError('bad_request:referral', 'Invalid referral code');
@@ -1870,7 +1901,6 @@ export async function applyReferralCode({
 
     const referrerReferral = validation.referral;
 
-    // Check if user is trying to use their own referral code
     if (referrerReferral.userId === newUserId) {
       throw new ChatSDKError(
         'forbidden:referral',
@@ -1878,7 +1908,6 @@ export async function applyReferralCode({
       );
     }
 
-    // Check if this user has already used a referral code
     const [existingUsage] = await db
       .select()
       .from(referralUsage)
@@ -1893,22 +1922,89 @@ export async function applyReferralCode({
     }
 
     const now = new Date();
-
-    // Create referral usage record
     const [usage] = await db
       .insert(referralUsage)
       .values({
         referralCode,
         referrerId: referrerReferral.userId,
         referredUserId: newUserId,
-        bonusAmount,
-        status: 'completed',
+        bonusAmount: '0',
+        status: 'pending',
         createdAt: now,
-        completedAt: now,
       })
       .returning();
 
-    // Update referrer's statistics
+    return usage;
+  } catch (error) {
+    if (error instanceof ChatSDKError) throw error;
+    throw new ChatSDKError('bad_request:database', 'Failed to reserve referral');
+  }
+}
+
+export async function findPendingReferralUsageByReferredUser({
+  referredUserId,
+}: {
+  referredUserId: string;
+}) {
+  try {
+    const [usage] = await db
+      .select()
+      .from(referralUsage)
+      .where(
+        and(eq(referralUsage.referredUserId, referredUserId), eq(referralUsage.status, 'pending')),
+      )
+      .limit(1);
+    return usage;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to load referral usage');
+  }
+}
+
+// Step 2: When subscription becomes active, complete the referral and grant benefits
+export async function completeReferralOnSubscription({
+  referredUserId,
+  subscriptionId,
+}: {
+  referredUserId: string;
+  subscriptionId?: string | null;
+}) {
+  try {
+    const pending = await findPendingReferralUsageByReferredUser({
+      referredUserId,
+    });
+    if (!pending) return null; // nothing to do
+
+    // Get referrer's referral record
+    const referrerReferral = await getUserReferral({ userId: pending.referrerId });
+    if (!referrerReferral) {
+      // If somehow missing, abort safely
+      return null;
+    }
+
+    // Determine bonus amount and referred-user benefit from current config
+    const config = await getReferralConfig();
+    let bonusAmount = '0';
+    switch (config.benefitType) {
+      case 'bonus_credits':
+        bonusAmount = config.benefitValue;
+        break;
+      case 'discount_percentage':
+        bonusAmount = '5000';
+        break;
+      case 'free_subscription':
+        bonusAmount = '10000';
+        break;
+    }
+
+    const now = new Date();
+
+    // Mark usage as completed and set bonus
+    await db
+      .update(referralUsage)
+      .set({ status: 'completed', bonusAmount, completedAt: now })
+      .where(eq(referralUsage.id, pending.id));
+
+    // Update referrer's stats
     const newBonusBalance = (
       Number.parseFloat(referrerReferral.bonusBalance) + Number.parseFloat(bonusAmount)
     ).toString();
@@ -1926,35 +2022,53 @@ export async function applyReferralCode({
       totalReferrals: newTotalReferrals,
     });
 
-    // Create transaction record for the bonus earned
+    // Transactions
     await db.insert(referralTransaction).values({
       referralId: referrerReferral.id,
       type: 'bonus_earned',
       amount: bonusAmount,
-      description: 'Referral bonus earned',
-      relatedUserId: newUserId,
+      description: 'Referral bonus earned (subscription)',
+      relatedUserId: referredUserId,
+      subscriptionId: subscriptionId ?? null,
       createdAt: now,
     });
-
-    // Create transaction record for the referral signup
     await db.insert(referralTransaction).values({
       referralId: referrerReferral.id,
       type: 'referral_signup',
       amount: '0',
-      description: 'New user signed up with referral code',
-      relatedUserId: newUserId,
+      description: 'New user subscribed via referral',
+      relatedUserId: referredUserId,
+      subscriptionId: subscriptionId ?? null,
       createdAt: now,
     });
 
-    return usage;
-  } catch (error) {
-    if (error instanceof ChatSDKError) {
-      throw error;
+    // Optionally grant benefit to the referred user based on config
+    if (config.benefitType === 'free_subscription') {
+      // Create and activate a free subscription for the referred user
+      const planId = (config as any).planId || 'premium_monthly';
+      const validityDays = Number.parseInt((config as any).validityDays || '30', 10);
+      const end = new Date();
+      if (!Number.isNaN(validityDays) && validityDays > 0) {
+        end.setDate(end.getDate() + validityDays);
+      } else {
+        end.setMonth(end.getMonth() + 1);
+      }
+      try {
+        const sub = await createSubscription({
+          userId: referredUserId,
+          planId,
+          externalId: `referral_free_${referredUserId}_${Date.now()}`,
+        });
+        await updateSubscriptionStatus({ id: sub.id, status: 'active', currentPeriodEnd: end });
+      } catch (e) {
+        console.warn('Failed to grant free subscription to referred user:', e);
+      }
     }
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to apply referral code',
-    );
+
+    return { completed: true, bonusAmount };
+  } catch (error) {
+    if (error instanceof ChatSDKError) throw error;
+    throw new ChatSDKError('bad_request:database', 'Failed to complete referral');
   }
 }
 

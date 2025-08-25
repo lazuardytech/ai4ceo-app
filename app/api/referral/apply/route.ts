@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth';
-import { applyReferralCode, getReferralConfig } from '@/lib/db/queries';
+import { reserveReferralUsage } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import { validateReferralCodeFormat } from '@/lib/utils';
 import { headers } from 'next/headers';
@@ -38,35 +38,15 @@ export async function POST(request: Request) {
       ).toResponse();
     }
 
-    // Get current referral configuration to determine bonus amount
-    const config = await getReferralConfig();
-    let bonusAmount = '0';
-
-    // Calculate bonus amount based on configuration
-    switch (config.benefitType) {
-      case 'bonus_credits':
-        bonusAmount = config.benefitValue;
-        break;
-      case 'discount_percentage':
-        // For discount, we might still give some bonus credits
-        bonusAmount = '5000'; // Default bonus for discount type
-        break;
-      case 'free_subscription':
-        // For free subscription, we might give bonus credits too
-        bonusAmount = '10000'; // Default bonus for free subscription
-        break;
-    }
-
-    // Apply the referral code
-    const usage = await applyReferralCode({
+    // Reserve the referral usage; benefits will be awarded on subscription
+    const usage = await reserveReferralUsage({
       referralCode,
       newUserId,
-      bonusAmount,
     });
 
     return Response.json({
       success: true,
-      message: 'Referral code applied successfully',
+      message: 'Referral code saved. Benefits apply on subscription.',
       usage: {
         id: usage.id,
         bonusAmount: usage.bonusAmount,

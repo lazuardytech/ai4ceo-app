@@ -1,33 +1,31 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { toast } from '@/components/toast';
+import { useActionState, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-import { signIn } from '@/lib/auth-client';
+import { login as loginAction } from '@/app/(auth)/actions';
 
 export default function Page() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [state, formAction] = useActionState(loginAction, { status: 'idle' } as any);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.status === 'success') {
+      setIsSuccessful(true);
+      router.push('/');
+    }
+  }, [state, router]);
 
   const handleSubmit = async (formData: FormData) => {
     const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
     setEmail(email);
-
-    await signIn.email({
-      email,
-      password,
-      callbackURL: '/',
-    })
-      .then(() => {
-        setIsSuccessful(true);
-      })
-      .catch(() => {
-        toast({ type: 'error', description: 'Invalid credentials!' });
-      });
+    await formAction(formData);
   };
 
   return (
@@ -41,6 +39,20 @@ export default function Page() {
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
+          <div className="text-center">
+            <Link href="/forgot-password" className="text-sm underline text-muted-foreground hover:text-foreground">Forgot password?</Link>
+          </div>
+          {state?.status === 'invalid_credentials' && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              <span className='font-semibold capitalize'>
+                {state.errorCode || 'Unauthorized'}
+              </span>
+              {state.errorMessage ? `: ${state.errorMessage}` : ''}
+            </p>
+          )}
+          {state?.status === 'failed' && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">Login failed. Please try again.</p>
+          )}
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {"Don't have an account? "}
             <Link

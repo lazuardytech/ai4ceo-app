@@ -31,7 +31,7 @@ export default async function BillingPage() {
       </div>*/}
 
       {/* Current Subscription Status */}
-      <div className="mx-auto w-full max-w-3xl space-y-3">
+      <div className="mx-auto w-full space-y-3">
         <div className="rounded-xl border p-4">
           <h2 className="font-medium mb-3">Current Plan</h2>
           {active ? (
