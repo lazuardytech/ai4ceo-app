@@ -22,18 +22,18 @@ export default async function AdminExpertKnowledgePage(props: { params: Promise<
   })
   if (!session?.user || session.user.role !== 'admin') {
     return (
-      <div className="p-6 text-sm text-red-500">Unauthorized: Admin only.</div>
+      <div className="p-4 text-sm text-red-500">Unauthorized: Admin only.</div>
     );
   }
 
   const agent = await getAgentById({ id: params.id });
   if (!agent) {
-    return <div className="p-6 text-sm">Agent not found.</div>;
+    return <div className="p-4 text-sm">Agent not found.</div>;
   }
   const { items } = await listAgentKnowledge({ agentId: agent.id, q: null, limit: 200, offset: 0 });
 
   return (
-    <div className="mx-auto max-w-4xl p-6 space-y-6">
+    <div className="mx-auto max-w-4xl p-4 space-y-4">
       <ToastOnQuery />
       <UnsavedGuard selector="form" />
       <h1 className="text-xl font-semibold">Knowledge: {agent.name}</h1>

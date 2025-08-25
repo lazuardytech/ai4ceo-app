@@ -101,7 +101,7 @@ export default function UsagePage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-4">
       {/*<div className="space-y-2">
         <h1 className="text-2xl font-semibold">Usage</h1>
         <p className="text-sm text-muted-foreground">

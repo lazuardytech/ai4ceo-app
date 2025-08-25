@@ -19,11 +19,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isLoginOrRegister = pathname === '/login' || pathname === '/register';
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password';
 
   // If unauthenticated, only allow login/register
   if (!session) {
-    if (isLoginOrRegister) return NextResponse.next();
+    if (isAuthPage) return NextResponse.next();
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
     if (user && user.onboarded === false && !isOnboarding) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
-  } catch {}
+  } catch { }
 
   // Defer other checks to route-level logic
   return NextResponse.next();

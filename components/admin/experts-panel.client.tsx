@@ -168,7 +168,7 @@ export function ExpertsPanel({ initialAgents }: { initialAgents: Agent[] }) {
               <Label>Icon</Label>
               <IconSelector value={icon} onChange={setIcon} />
             </div>
-            <div className="flex flex-wrap items-center gap-6 pt-1">
+            <div className="flex flex-wrap items-center gap-4 pt-1">
               <label htmlFor='activeSwitch' className="flex items-center gap-2 text-sm">
                 <Switch checked={isActive} onCheckedChange={setIsActive} /> Active
               </label>
@@ -271,7 +271,7 @@ export function ExpertsPanel({ initialAgents }: { initialAgents: Agent[] }) {
               <Label>Icon</Label>
               <IconSelector value={icon} onChange={setIcon} />
             </div>
-            <div className="flex flex-wrap items-center gap-6 pt-1">
+            <div className="flex flex-wrap items-center gap-4 pt-1">
               <label htmlFor='activeSwitch' className="flex items-center gap-2 text-sm">
                 <Switch checked={isActive} onCheckedChange={setIsActive} /> Active
               </label>

@@ -5,6 +5,7 @@ import {
   applyVoucher,
   createSubscription,
   updateSubscriptionStatus,
+  completeReferralOnSubscription,
 } from '@/lib/db/queries';
 import { headers } from 'next/headers';
 
@@ -88,6 +89,12 @@ export async function POST(request: Request) {
         status: 'active',
         currentPeriodEnd,
       });
+      // If user had a pending referral, complete it now as subscription is active
+      try {
+        await completeReferralOnSubscription({ referredUserId: session.user.id, subscriptionId: subscription.id });
+      } catch (e) {
+        console.warn('Referral completion failed during voucher activation:', e);
+      }
 
       subscriptionId = subscription.id;
     }

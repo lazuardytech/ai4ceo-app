@@ -8,7 +8,7 @@ export default async function AdminModelsPage() {
   })
   if (!session?.user || session.user.role !== 'admin') {
     return (
-      <div className="p-6 text-sm text-red-500">
+      <div className="p-4 text-sm text-red-500">
         Unauthorized: Admin only.
       </div>
     );
@@ -17,14 +17,8 @@ export default async function AdminModelsPage() {
   // Client panel is imported directly; Server Component will render a Client boundary
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg border bg-card p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold">AI Model Configuration</h2>
-          <p className="text-muted-foreground">Configure and manage AI models for your platform</p>
-        </div>
-        <AdminModelsPanel />
-      </div>
+    <div className="space-y-4">
+      <AdminModelsPanel />
     </div>
   );
 }

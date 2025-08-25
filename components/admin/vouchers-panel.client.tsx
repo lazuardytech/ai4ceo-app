@@ -167,10 +167,10 @@ export function AdminVouchersPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2 justify-between">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap gap-2 justify-between">
+        <div className="flex items-center gap-2">
           <Input
-            className="max-w-sm"
+            className="w-full"
             placeholder="Search vouchers..."
             value={q}
             onChange={(e) => {
@@ -246,28 +246,27 @@ export function AdminVouchersPanel() {
               </DialogDescription>
             </DialogHeader>
             <Form action={createAction}>
-              <div className="grid gap-4 py-4">
+              <div className="grid gap-4">
                 {/* Preview */}
                 <div className="rounded border p-3 bg-muted/30 text-xs">
                   <span className="font-medium">Preview:</span>{' '}
                   <span className="text-muted-foreground">
                     {createType === 'discount' &&
-                    createDiscountType &&
-                    createDiscountValue
+                      createDiscountType &&
+                      createDiscountValue
                       ? `${createDiscountValue}${createDiscountType === 'percentage' ? '%' : ' IDR'} discount on your next subscription`
                       : createType === 'free_subscription' &&
-                          (createDuration || createPlanId)
-                        ? `Free ${createPlanId || 'premium'} subscription for ${
-                            createDuration === '1_month'
-                              ? '1 month'
-                              : createDuration === '3_months'
-                                ? '3 months'
-                                : createDuration === '6_months'
-                                  ? '6 months'
-                                  : createDuration === '1_year'
-                                    ? '1 year'
-                                    : '1 month'
-                          }`
+                        (createDuration || createPlanId)
+                        ? `Free ${createPlanId || 'premium'} subscription for ${createDuration === '1_month'
+                          ? '1 month'
+                          : createDuration === '3_months'
+                            ? '3 months'
+                            : createDuration === '6_months'
+                              ? '6 months'
+                              : createDuration === '1_year'
+                                ? '1 year'
+                                : '1 month'
+                        }`
                         : 'Fill fields to see description'}
                   </span>
                 </div>
@@ -352,7 +351,7 @@ export function AdminVouchersPanel() {
                       <Input
                         id="discountValue"
                         name="discountValue"
-                        className="col-span-3"
+                        className="col-span-4"
                         placeholder="10 or 50000"
                         value={createDiscountValue}
                         onChange={(e) => {
@@ -442,7 +441,7 @@ export function AdminVouchersPanel() {
                   <Input
                     id="maxUsages"
                     name="maxUsages"
-                    className="col-span-3"
+                    className="col-span-4"
                     placeholder="100"
                   />
                   <p className="col-span-4 col-start-2 text-xs text-muted-foreground">
@@ -462,7 +461,7 @@ export function AdminVouchersPanel() {
                     id="validFrom"
                     name="validFrom"
                     type="datetime-local"
-                    className="col-span-3"
+                    className="col-span-4"
                     defaultValue={new Date().toISOString().slice(0, 16)}
                     required
                   />
@@ -483,7 +482,7 @@ export function AdminVouchersPanel() {
                     id="validUntil"
                     name="validUntil"
                     type="datetime-local"
-                    className="col-span-3"
+                    className="col-span-4"
                   />
                   <p className="col-span-4 col-start-2 text-xs text-muted-foreground">
                     Optional. Must be after &quot;Valid From&quot; if provided.
@@ -503,21 +502,23 @@ export function AdminVouchersPanel() {
         </Dialog>
       </div>
 
-      <div className="text-xs text-muted-foreground">
-        {isLoading
-          ? 'Loading…'
-          : `${Math.min(offset + 1, total)}–${Math.min(offset + (data?.items.length || 0), total)} of ${total}`}
-      </div>
-      <div className="flex items-center justify-end">
-        <Button
-          variant="outline"
-          onClick={() => {
-            const url = `/admin/api/vouchers/export?q=${encodeURIComponent(q)}${filterType !== 'all' ? `&type=${filterType}` : ''}${filterStatus !== 'all' ? `&status=${filterStatus}` : ''}`;
-            window.open(url, '_blank');
-          }}
-        >
-          Export CSV
-        </Button>
+      <div className="flex justify-between items-center">
+        <div className="text-xs text-muted-foreground">
+          {isLoading
+            ? 'Loading…'
+            : `${Math.min(offset + 1, total)}–${Math.min(offset + (data?.items.length || 0), total)} of ${total}`}
+        </div>
+        <div className="flex items-center justify-end">
+          <Button
+            variant="outline"
+            onClick={() => {
+              const url = `/admin/api/vouchers/export?q=${encodeURIComponent(q)}${filterType !== 'all' ? `&type=${filterType}` : ''}${filterStatus !== 'all' ? `&status=${filterStatus}` : ''}`;
+              window.open(url, '_blank');
+            }}
+          >
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -665,7 +666,7 @@ export function AdminVouchersPanel() {
                       })
                     }
                   >
-                    <SelectTrigger className="col-span-3">
+                    <SelectTrigger className="col-span-4">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -691,8 +692,8 @@ export function AdminVouchersPanel() {
                     defaultValue={
                       editingVoucher.validUntil
                         ? new Date(editingVoucher.validUntil)
-                            .toISOString()
-                            .slice(0, 16)
+                          .toISOString()
+                          .slice(0, 16)
                         : ''
                     }
                   />

@@ -8,7 +8,7 @@ import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 
 import { toast } from '@/components/toast';
-import { signUp } from '@/lib/auth-client';
+import { signUp, getSession } from '@/lib/auth-client';
 // import { auth } from '@/lib/auth';
 
 function RegisterPageContent() {
@@ -27,17 +27,54 @@ function RegisterPageContent() {
     setEmail(email);
     setReferralCode(referral);
     const name = email?.split('@')[0] || 'User';
-    const res = await signUp.email({ email, password, name, role: 'user', callbackURL: '/onboarding', tour: false, onboarded: false })
-      .then(() => {
-        toast({ type: 'success', description: 'Account created successfully!' });
-        setIsSuccessful(true);
-        window.location.replace('/onboarding');
-      })
-      .catch(() => {
-        toast({ type: 'error', description: 'Failed to create account!' });
+    try {
+      await signUp.email({
+        email,
+        password,
+        name,
+        role: 'user',
+        callbackURL: '/onboarding',
+        tour: false,
+        onboarded: false,
       });
 
-    console.log(res)
+      // After successful signup, apply referral code if provided
+      if (referral && referral.trim().length > 0) {
+        try {
+          const session = await getSession();
+          const newUserId = session?.data?.user?.id || (session as any)?.user?.id;
+
+          if (newUserId) {
+            const resp = await fetch('/api/referral/apply', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                referralCode: referral.trim().toUpperCase(),
+                newUserId,
+              }),
+            });
+            if (!resp.ok) {
+              // Non-blocking: log and show a toast but continue
+              try {
+                const err = await resp.json();
+                console.error('Referral apply failed:', err);
+              } catch {}
+              toast({ type: 'error', description: 'Failed to apply referral code.' });
+            }
+          }
+        } catch (e) {
+          console.error('Error applying referral code:', e);
+          // Non-blocking failure
+        }
+      }
+
+      toast({ type: 'success', description: 'Account created successfully!' });
+      setIsSuccessful(true);
+      // Redirect after we attempted referral application
+      window.location.replace('/onboarding');
+    } catch (e) {
+      toast({ type: 'error', description: 'Failed to create account!' });
+    }
   };
 
   return (
@@ -74,7 +111,7 @@ function RegisterPageContent() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+    <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading…</div>}>
       <RegisterPageContent />
     </Suspense>
   );

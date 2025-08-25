@@ -5,8 +5,7 @@ import { z } from 'zod';
 import {
   createUser,
   getUser,
-  applyReferralCode,
-  getReferralConfig,
+  reserveReferralUsage,
 } from '@/lib/db/queries';
 import { auth } from '@/lib/auth';
 
@@ -22,7 +21,15 @@ const registerFormSchema = z.object({
 });
 
 export interface LoginActionState {
-  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data';
+  status:
+    | 'idle'
+    | 'in_progress'
+    | 'success'
+    | 'failed'
+    | 'invalid_data'
+    | 'invalid_credentials';
+  errorCode?: string;
+  errorMessage?: string;
 }
 
 export const login = async (
@@ -35,12 +42,27 @@ export const login = async (
       password: formData.get('password'),
     });
 
-    await auth.api.signInEmail({
-      body: {
-        email: validatedData.email,
-        password: validatedData.password,
-      },
-    });
+    try {
+      await auth.api.signInEmail({
+        body: {
+          email: validatedData.email,
+          password: validatedData.password,
+        },
+      });
+    } catch (e: any) {
+      const status = e?.status || e?.response?.status;
+      const code = e?.code || e?.data?.code || e?.response?.data?.code;
+      const message = e?.message || e?.data?.message || e?.response?.statusText || 'Login failed';
+      if (status === 401) {
+        return { status: 'invalid_credentials', errorCode: String(code || 'unauthorized'), errorMessage: String(message) } as LoginActionState;
+      }
+      const msg = (e && (e.message || e?.toString?.())) || '';
+      if (typeof msg === 'string' && /invalid|credential|unauthor/i.test(msg)) {
+        return { status: 'invalid_credentials', errorCode: String(code || 'unauthorized'), errorMessage: String(message) } as LoginActionState;
+      }
+      // Unknown failure
+      return { status: 'failed', errorMessage: String(message) } as LoginActionState;
+    }
 
     return { status: 'success' };
   } catch (error) {
@@ -85,29 +107,12 @@ export const register = async (
     // Get the newly created user to get their ID
     const [newUser] = await getUser(validatedData.email);
 
-    // Apply referral code if provided
+    // Reserve referral code if provided (benefits applied on subscription)
     if (validatedData.referralCode?.trim()) {
       try {
-        const config = await getReferralConfig();
-        let bonusAmount = '0';
-
-        // Calculate bonus amount based on configuration
-        switch (config.benefitType) {
-          case 'bonus_credits':
-            bonusAmount = config.benefitValue;
-            break;
-          case 'discount_percentage':
-            bonusAmount = '5000'; // Default bonus for discount type
-            break;
-          case 'free_subscription':
-            bonusAmount = '10000'; // Default bonus for free subscription
-            break;
-        }
-
-        await applyReferralCode({
+        await reserveReferralUsage({
           referralCode: validatedData.referralCode.trim().toUpperCase(),
           newUserId: newUser.id,
-          bonusAmount,
         });
       } catch (referralError) {
         // Log the error but don't fail the registration

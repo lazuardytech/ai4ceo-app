@@ -9,6 +9,7 @@ import {
   getActiveSubscriptionByUserId,
   getLatestSubscriptionByUserId,
   updateSubscriptionAdmin,
+  completeReferralOnSubscription,
 } from '@/lib/db/queries';
 import { headers } from 'next/headers';
 
@@ -97,6 +98,15 @@ export async function setUserSubscriptionAction(
       currentPeriodEnd: when,
       externalId: parsed.externalId,
     });
+
+    // If admin manually activates the subscription, complete referral benefits
+    if (parsed.status === 'active') {
+      try {
+        await completeReferralOnSubscription({ referredUserId: parsed.userId, subscriptionId: subId });
+      } catch (e) {
+        console.warn('Referral completion failed on admin activation:', e);
+      }
+    }
 
     revalidatePath('/admin/subscriptions');
     return { ok: true, message: 'Subscription updated', tag: 'set' };

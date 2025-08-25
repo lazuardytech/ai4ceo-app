@@ -376,7 +376,7 @@ export default function ProfilePage() {
         </div>
 
         {loading && (
-          <div className="p-4 pt-0 sm:p-6 sm:pt-0">
+          <div className="p-4 pt-0 sm:p-4 sm:pt-0">
             <div className="grid gap-3">
               <div className="h-4 w-48 bg-muted rounded animate-pulse" />
               <div className="h-4 w-72 bg-muted rounded animate-pulse" />

@@ -32,7 +32,7 @@ export default function BillingSuccessPage() {
   }, [externalId]);
 
   return (
-    <div className="mx-auto max-w-2xl p-6 space-y-4">
+    <div className="mx-auto max-w-2xl p-4 space-y-4">
       <h1 className="text-xl font-semibold">Payment Successful</h1>
       {externalId && (
         <p className="text-sm text-muted-foreground">Reference: {externalId}</p>

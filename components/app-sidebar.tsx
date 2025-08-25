@@ -108,6 +108,15 @@ export function AppSidebar({ user }: { user: MinimalUser | undefined }) {
           )}
           <SidebarMenu>
             <Link
+              href="/news"
+              onClick={() => setOpenMobile(false)}
+              className="flex items-center rounded-md p-2 text-sm hover:bg-sidebar-accent"
+            >
+              News
+            </Link>
+          </SidebarMenu>
+          <SidebarMenu>
+            <Link
               href="/settings/profile"
               onClick={() => setOpenMobile(false)}
               className="flex items-center rounded-md p-2 text-sm hover:bg-sidebar-accent"

@@ -10,14 +10,14 @@ export default async function AdminHomePage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg border bg-card p-6">
+    <div className="space-y-4">
+      <div className="rounded-lg border bg-card p-4">
         <div className="mb-6">
           <h2 className="text-2xl font-bold">Platform Overview</h2>
           <p className="text-muted-foreground">Monitor key metrics and system status</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="rounded-lg border bg-background p-4 text-center">
             <div className="text-3xl font-bold text-primary mb-2">{users.length}</div>
             <div className="text-sm font-medium">Total Users</div>
@@ -36,7 +36,7 @@ export default async function AdminHomePage() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card p-6">
+      <div className="rounded-lg border bg-card p-4">
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <a href="/admin/users" className="rounded-lg border bg-background p-4 hover:bg-accent/50 transition-colors">
@@ -58,7 +58,7 @@ export default async function AdminHomePage() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card p-6">
+      <div className="rounded-lg border bg-card p-4">
         <h3 className="text-lg font-semibold mb-2">Getting Started</h3>
         <p className="text-sm text-muted-foreground mb-4">
           Use the navigation sidebar to access all administrative functions. The platform is currently configured to use Groq models only.
