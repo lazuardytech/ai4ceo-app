@@ -31,7 +31,7 @@ export default async function PricingPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl p-6 space-y-8">
+    <div className="mx-auto max-w-5xl p-4 space-y-8">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-semibold">Choose your plan</h1>
         <p className="text-muted-foreground">Flexible monthly or annual billing.</p>

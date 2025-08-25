@@ -2,6 +2,8 @@ import { db } from '@/lib/db';
 import { newsSource } from '@/lib/db/schema';
 import { desc } from 'drizzle-orm';
 import { toggleFeed, addFeed, removeFeed } from './actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,9 +11,7 @@ export default async function AdminFeedsPage() {
   const feeds = await db.select().from(newsSource).orderBy(desc(newsSource.createdAt));
 
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
-      <h1 className="text-xl font-semibold">Kelola RSS Feeds</h1>
-
+    <div className="space-y-4">
       <form
         action={async (formData) => {
           'use server';
@@ -20,23 +20,23 @@ export default async function AdminFeedsPage() {
         className="flex gap-2 items-end"
       >
         <div className="flex-1">
-          <label className="block text-sm font-medium">Nama</label>
-          <input name="name" className="w-full border rounded px-3 py-2" placeholder="Antara - Terkini" />
+          {/*<label className="block text-sm font-medium">Nama</label>*/}
+          <Input name="name" className="w-full px-3 py-2" placeholder="Name" />
         </div>
         <div className="flex-[2]">
-          <label className="block text-sm font-medium">URL</label>
-          <input name="url" className="w-full border rounded px-3 py-2" placeholder="https://.../rss.xml" />
+          {/*<label className="block text-sm font-medium">URL</label>*/}
+          <Input name="url" className="w-full px-3 py-2" placeholder="RSS URL" />
         </div>
-        <button className="px-3 py-2 border rounded">Tambah</button>
+        <Button>Tambah</Button>
       </form>
 
       <div className="space-y-3">
         {feeds.map((f) => (
-          <div key={f.id} className="border rounded p-3">
-            <div className="flex items-center justify-between gap-3">
-              <div>
+          <div key={f.id} className="border rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <div className='flex flex-col -gap-1'>
                 <div className="font-medium">{f.name}</div>
-                <a className="text-sm text-blue-600 hover:underline" href={f.url} target="_blank">
+                <a className="text-xs truncate text-ellipsis max-w-md w-max text-blue-600 hover:underline" href={f.url} target="_blank">
                   {f.url}
                 </a>
               </div>
@@ -47,9 +47,9 @@ export default async function AdminFeedsPage() {
                     await toggleFeed(f.id, !f.isActive);
                   }}
                 >
-                  <button className="px-3 py-2 border rounded" type="submit">
+                  <Button type="submit" variant="outline">
                     {f.isActive ? 'Nonaktifkan' : 'Aktifkan'}
-                  </button>
+                  </Button>
                 </form>
                 <form
                   action={async () => {
@@ -57,9 +57,9 @@ export default async function AdminFeedsPage() {
                     await removeFeed(f.id);
                   }}
                 >
-                  <button className="px-3 py-2 border rounded text-red-600" type="submit">
+                  <Button variant="destructive" type="submit">
                     Hapus
-                  </button>
+                  </Button>
                 </form>
               </div>
             </div>
@@ -69,4 +69,3 @@ export default async function AdminFeedsPage() {
     </div>
   );
 }
-

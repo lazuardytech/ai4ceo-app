@@ -39,3 +39,8 @@ Admin:
 
 Vercel Cron:
 - `vercel.json` contains a cron that calls `/api/cron/curate-news` every 8 hours (≈3x/day).
+
+Rate limit and curation controls (env):
+- `NEWS_STOP_ON_RATE_LIMIT` (default: true) — stop current run when rate limit is detected.
+- `NEWS_RATE_LIMIT_COOLDOWN_MINUTES` (default: 60) — pause further runs; stored in Setting key `newsCurationPauseUntil`.
+- `NEWS_MAX_CURATE_PER_RUN` (default: 30) — cap curated items per run to reduce token usage.

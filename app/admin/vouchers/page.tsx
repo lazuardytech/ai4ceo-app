@@ -8,18 +8,14 @@ export default async function AdminVouchersPage() {
   })
   if (!session?.user || session.user.role !== 'admin') {
     return (
-      <div className="p-6 text-sm text-red-500">
+      <div className="p-4 text-sm text-red-500">
         Unauthorized: Admin only.
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl p-2 md:p-4 space-y-4">
-      <h2 className="text-xl font-semibold">Voucher Management</h2>
-      <p className="text-sm text-muted-foreground">
-        Create and manage discount codes and free subscription vouchers.
-      </p>
+    <div className="mx-auto space-y-4">
       <AdminVouchersPanel />
     </div>
   );

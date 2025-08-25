@@ -1,11 +1,17 @@
 import { db } from '@/lib/db';
 import { newsArticle, newsSource } from '@/lib/db/schema';
-import { desc, eq } from 'drizzle-orm';
-import Link from 'next/link';
+import { and, count, desc, eq, gte, isNotNull } from 'drizzle-orm';
+import { NewsFeedClient, type NewsItem } from '@/components/news/news-feed.client';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewsPage() {
+export default async function NewsPage({ searchParams }: { searchParams?: Promise<{ category?: string; compact?: string; q?: string; sourceId?: string; range?: 'all' | '24h' | '7d' | '30d' }> }) {
+  const sp = (await searchParams) || {};
+  const category = (sp.category || '').trim();
+  const compact = sp.compact === '1';
+  const q = (sp.q || '').trim();
+  const sourceId = (sp.sourceId || '').trim();
+  const range = (sp.range as any) || 'all';
   const rows = await db
     .select({
       id: newsArticle.id,
@@ -23,98 +29,138 @@ export default async function NewsPage() {
     })
     .from(newsArticle)
     .innerJoin(newsSource, eq(newsSource.id, newsArticle.sourceId))
+    .where(category && category !== 'semua' ? eq(newsArticle.category, category) : undefined as any)
     .orderBy(desc(newsArticle.createdAt))
-    .limit(50);
+    .limit(20);
+
+  // Top News: prefer items with images and latest publishedAt
+  const topNews = await db
+    .select({
+      id: newsArticle.id,
+      title: newsArticle.title,
+      link: newsArticle.link,
+      imageUrl: newsArticle.imageUrl,
+      sourceName: newsSource.name,
+      publishedAt: newsArticle.publishedAt,
+      category: newsArticle.category,
+    })
+    .from(newsArticle)
+    .innerJoin(newsSource, eq(newsSource.id, newsArticle.sourceId))
+    .where(isNotNull(newsArticle.imageUrl))
+    .orderBy(desc(newsArticle.publishedAt), desc(newsArticle.createdAt))
+    .limit(6);
+
+  // Top This Week: last 7 days with images
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+  const topThisWeek = await db
+    .select({
+      id: newsArticle.id,
+      title: newsArticle.title,
+      link: newsArticle.link,
+      imageUrl: newsArticle.imageUrl,
+      sourceName: newsSource.name,
+      publishedAt: newsArticle.publishedAt,
+      category: newsArticle.category,
+    })
+    .from(newsArticle)
+    .innerJoin(newsSource, eq(newsSource.id, newsArticle.sourceId))
+    .where(and(isNotNull(newsArticle.imageUrl), gte(newsArticle.publishedAt, sevenDaysAgo as any)))
+    .orderBy(desc(newsArticle.publishedAt), desc(newsArticle.createdAt))
+    .limit(6);
+
+  // Category list with counts
+  const categoryCounts = await db
+    .select({ category: newsArticle.category, total: count(newsArticle.id) })
+    .from(newsArticle)
+    .where(isNotNull(newsArticle.category))
+    .groupBy(newsArticle.category)
+    .orderBy(desc(count(newsArticle.id)))
+    .limit(20);
+
+  const initialItems: NewsItem[] = rows.map((r) => ({
+    ...r,
+    publishedAt: r.publishedAt ? r.publishedAt.toISOString() : null,
+    createdAt: r.createdAt ? r.createdAt.toISOString() : null,
+  }));
 
   return (
-    <div className="mx-auto max-w-4xl p-6 space-y-6">
+    <div className="mx-auto max-w-4xl p-4 space-y-4">
       <h1 className="text-2xl font-semibold">Kurasi Berita</h1>
       <p className="text-sm text-gray-500">Ringkasan, timeline, fact check, dan kategori dari beberapa sumber Indonesia.</p>
-      <div className="grid grid-cols-1 gap-4">
-        {rows.map((a) => (
-          <article key={a.id} className="border rounded-lg overflow-hidden bg-white dark:bg-zinc-900">
-            {a.imageUrl ? (
-              <div className="w-full aspect-[16/9] bg-gray-100">
-                {/* use plain img to avoid remotePatterns hassle */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={a.imageUrl} alt="thumbnail" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-            ) : null}
-            <div className="p-4">
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300">{a.category ?? 'lain-lain'}</span>
-                <span>•</span>
-                <span>{a.sourceName}</span>
-                {a.publishedAt ? (
-                  <>
+
+      {/* Top News */}
+      {topNews.length ? (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">Top News</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {topNews.map((t) => (
+              <a key={t.id} href={t.link} target="_blank" className="group border rounded-lg overflow-hidden bg-white dark:bg-zinc-900">
+                <div className="w-full aspect-[16/9] bg-gray-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={t.imageUrl || '/images/demo-thumbnail.png'} alt="top" className="w-full h-full object-cover group-hover:opacity-90 transition" />
+                </div>
+                <div className="p-3">
+                  <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300">{t.category ?? 'lain-lain'}</span>
                     <span>•</span>
-                    <time dateTime={a.publishedAt.toISOString()}>{new Date(a.publishedAt).toLocaleString()}</time>
-                  </>
-                ) : null}
-              </div>
-              <h2 className="mt-2 text-lg font-semibold">
-                <a href={a.link} target="_blank" className="hover:underline">{a.title}</a>
-              </h2>
-              {a.summary ? <p className="mt-2 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{a.summary}</p> : null}
-
-              {Array.isArray(a.timeline) && a.timeline.length ? (
-                <div className="mt-3">
-                  <div className="text-sm font-medium">Timeline</div>
-                  <ul className="mt-1 text-sm space-y-1">
-                    {a.timeline.map((t: any, idx: number) => (
-                      <li key={idx} className="flex gap-2 items-start">
-                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-gray-400" />
-                        <div>
-                          {t?.date ? <span className="text-gray-500">[{t.date}] </span> : null}
-                          <span>{t?.event}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                    <span className="truncate">{t.sourceName}</span>
+                  </div>
+                  <div className="mt-1 text-sm font-semibold line-clamp-2">{t.title}</div>
                 </div>
-              ) : null}
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-              {a.factCheck ? (
-                <div className="mt-3">
-                  <div className="text-sm font-medium">Fact Check</div>
-                  {Array.isArray((a as any).factCheck?.claims) && (a as any).factCheck.claims.length ? (
-                    <ul className="mt-1 text-sm space-y-1">
-                      {(a as any).factCheck.claims.map((c: any, idx: number) => (
-                        <li key={idx} className="flex gap-2 items-start">
-                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-400" />
-                          <span>{c}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {(a as any).factCheck?.assessment ? (
-                    <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{(a as any).factCheck.assessment}</p>
-                  ) : null}
+      {topThisWeek.length ? (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">Top This Week</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {topThisWeek.map((t) => (
+              <a key={t.id} href={t.link} target="_blank" className="group border rounded-lg overflow-hidden bg-white dark:bg-zinc-900">
+                <div className="w-full aspect-[4/3] bg-gray-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={t.imageUrl || '/images/demo-thumbnail.png'} alt="top-week" className="w-full h-full object-cover group-hover:opacity-90 transition" />
                 </div>
-              ) : null}
-
-              {Array.isArray(a.relatedLinks) && a.relatedLinks.length ? (
-                <div className="mt-3">
-                  <div className="text-sm font-medium">Berita Terkait</div>
-                  <ul className="mt-1 text-sm space-y-1">
-                    {(a.relatedLinks as any[]).map((r: any, idx: number) => (
-                      <li key={idx}>
-                        <a href={r.link} target="_blank" className="hover:underline">
-                          {r.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="p-3">
+                  <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300">{t.category ?? 'lain-lain'}</span>
+                    <span>•</span>
+                    <span className="truncate">{t.sourceName}</span>
+                  </div>
+                  <div className="mt-1 text-sm font-semibold line-clamp-2">{t.title}</div>
                 </div>
-              ) : null}
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-              <div className="mt-4">
-                <Link href={a.link} target="_blank" className="text-sm text-blue-600 hover:underline">Baca selengkapnya →</Link>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
+      {/* Category List */}
+      {categoryCounts.length ? (
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold">Kategori</h3>
+          <div className="flex flex-wrap gap-2">
+            {categoryCounts.map((c) => (
+              <a key={String(c.category)} href={`/news?category=${encodeURIComponent(String(c.category))}`} className="px-3 py-1 rounded-full text-xs border hover:bg-gray-100 dark:hover:bg-zinc-800">
+                {String(c.category)} <span className="text-gray-500">({c.total})</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <NewsFeedClient
+        initialItems={initialItems}
+        initialNextCursor={initialItems.length ? initialItems[initialItems.length - 1].createdAt || null : null}
+        initialCategory={category || 'semua'}
+        initialCompact={compact}
+        initialQ={q}
+        initialSourceId={sourceId || 'all'}
+        initialRange={range}
+      />
     </div>
   );
 }

@@ -10,7 +10,7 @@ export default async function BillingPage() {
 
   if (!user) {
     return (
-      <div className="p-6">
+      <div className="p-4">
         <p className="text-sm">Please sign in to manage your subscription.</p>
       </div>
     );

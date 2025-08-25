@@ -478,8 +478,26 @@ export const newsArticle = pgTable('NewsArticle', {
   factCheck: json('factCheck'), // { claims: [...], assessment: string, confidence?: string }
   relatedLinks: json('relatedLinks'), // array of { title, link }
   category: varchar('category', { length: 64 }),
+  curatedProvider: varchar('curatedProvider', { length: 16 }),
+  curatedModelId: varchar('curatedModelId', { length: 64 }),
+  curatedAt: timestamp('curatedAt').defaultNow(),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });
 
 export type NewsArticle = InferSelectModel<typeof newsArticle>;
+
+// News curation run logs
+export const newsCurationRun = pgTable('NewsCurationRun', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  startedAt: timestamp('startedAt').notNull().defaultNow(),
+  finishedAt: timestamp('finishedAt'),
+  inserted: varchar('inserted', { length: 16 }).notNull().default('0'),
+  skipped: varchar('skipped', { length: 16 }).notNull().default('0'),
+  stoppedEarly: boolean('stoppedEarly').notNull().default(false),
+  pausedUntil: timestamp('pausedUntil'),
+  stoppedAtSource: text('stoppedAtSource'),
+  providerStats: json('providerStats'),
+});
+
+export type NewsCurationRun = InferSelectModel<typeof newsCurationRun>;

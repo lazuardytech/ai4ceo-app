@@ -8,7 +8,7 @@ export default async function AdminSettingsPage() {
   })
   if (!session?.user || session.user.role !== 'admin') {
     return (
-      <div className="p-6 text-sm text-red-500">
+      <div className="p-4 text-sm text-red-500">
         Unauthorized: Admin only.
       </div>
     );

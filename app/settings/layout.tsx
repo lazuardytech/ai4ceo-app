@@ -23,7 +23,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
 
   return (
     <SidebarProvider>
-      <div data-settings-root className="mx-auto p-4 sm:p-6 md:p-8 flex flex-col justify-start">
+      <div data-settings-root className="mx-auto p-4 sm:p-4 md:p-8 flex flex-col justify-start">
         <div className="flex items-center justify-between mb-8">
           <Link
             href="/"
@@ -37,7 +37,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
             <h1 className="text-xl font-semibold text-muted-foreground">Settings</h1>
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-[16rem_minmax(0,800px)]">
+        <div className="grid gap-4 md:grid-cols-[16rem_minmax(0,800px)]">
           <aside className="space-y-4 md:sticky md:top-4 h-fit w-64">
             <div>
               <SettingsSidebarHeader

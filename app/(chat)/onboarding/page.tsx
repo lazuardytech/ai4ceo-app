@@ -19,7 +19,7 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-dvh w-full flex items-start md:items-center justify-center p-6">
+    <div className="min-h-dvh w-full flex items-start md:items-center justify-center p-4">
       <OnboardingForm defaultName={session.user.name ?? null} />
     </div>
   );

@@ -2,7 +2,7 @@ import RSSParser from 'rss-parser';
 import { extract } from '@extractus/article-extractor';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { newsArticle, newsSource, type NewsArticle } from '@/lib/db/schema';
+import { newsArticle, newsSource, setting, type NewsArticle } from '@/lib/db/schema';
 import { generateText } from 'ai';
 import { getLanguageModelForId, type ProviderPreference } from '@/lib/ai/providers';
 
@@ -12,6 +12,8 @@ type Curated = {
   factCheck: { claims: string[]; assessment: string; confidence?: string };
   relatedTitles?: string[];
   category?: string;
+  providerUsed?: ProviderPreference;
+  modelIdUsed?: string;
 };
 
 // Indonesian and Indonesia-related feeds
@@ -82,6 +84,10 @@ async function curateWithLLM(input: {
   const pref = (process.env.NEWS_PROVIDER as ProviderPreference) || 'groq';
   const requestedModelId = process.env.NEWS_MODEL_ID || 'chat-model';
   const tryModelIds = [requestedModelId, 'chat-model-small'];
+  const providers: ProviderPreference[] = ((process.env.NEWS_PROVIDERS || pref)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean) as ProviderPreference[]).filter((v, i, a) => a.indexOf(v) === i);
   const prompt = `You are a news curator for Indonesian news.
 Return a strict JSON object with keys: summary, timeline, factCheck, relatedTitles, category.
 Rules:
@@ -105,37 +111,56 @@ ${input.content.slice(0, 18000)}
 """`;
 
   let lastErr: any;
-  for (const mid of tryModelIds) {
-    try {
-      const model = getLanguageModelForId(mid, pref, null);
-      const { text } = await generateText({ model, system: 'Respond ONLY with valid JSON.', prompt });
-      // Attempt to parse JSON robustly
-      let json: any;
+  for (const provider of providers) {
+    // skip provider if in cooldown
+    const pUntil = await getPauseUntilProvider(provider);
+    if (pUntil && pUntil > new Date()) continue;
+    for (const mid of tryModelIds) {
       try {
-        const trimmed = text.trim().replace(/^[^{\[]+/, '');
-        json = JSON.parse(trimmed);
-      } catch (e) {
-        // Fallback minimal from text
-        json = { summary: normalizeText(text) ?? '', timeline: [], factCheck: { claims: [], assessment: '', confidence: 'low' }, relatedTitles: [], category: 'lain-lain' };
+        const model = getLanguageModelForId(mid, provider, null);
+        const { text } = await generateText({ model, system: 'Respond ONLY with valid JSON.', prompt });
+        // Attempt to parse JSON robustly
+        let json: any;
+        try {
+          const trimmed = text.trim().replace(/^[^{\[]+/, '');
+          json = JSON.parse(trimmed);
+        } catch (e) {
+          // Fallback minimal from text
+          json = { summary: normalizeText(text) ?? '', timeline: [], factCheck: { claims: [], assessment: '', confidence: 'low' }, relatedTitles: [], category: 'lain-lain' };
+        }
+        const curated: Curated = {
+          summary: typeof json.summary === 'string' ? json.summary : Array.isArray(json.summary) ? json.summary.join(' ') : '',
+          timeline: Array.isArray(json.timeline) ? json.timeline.map((t: any) => ({ date: t?.date, event: normalizeText(t?.event) ?? '' })).filter((t: any) => t.event) : [],
+          factCheck: {
+            claims: Array.isArray(json?.factCheck?.claims) ? json.factCheck.claims.map((c: any) => String(c)) : [],
+            assessment: normalizeText(json?.factCheck?.assessment) ?? '',
+            confidence: json?.factCheck?.confidence ?? 'low',
+          },
+          relatedTitles: Array.isArray(json.relatedTitles) ? json.relatedTitles.map((x: any) => String(x)) : [],
+          category: typeof json.category === 'string' ? json.category : 'lain-lain',
+          providerUsed: provider,
+          modelIdUsed: mid,
+        };
+        return curated;
+      } catch (err) {
+        lastErr = err;
+        // If rate limit for this provider, set provider-specific cooldown and try next provider/model combo
+        if (isRateLimitError(err)) {
+          const mins = Number(process.env.NEWS_RATE_LIMIT_COOLDOWN_MINUTES || 60);
+          const until = new Date(Date.now() + mins * 60_000);
+          await setPauseUntilProvider(provider, until);
+          continue;
+        }
+        // Non-rate-limit errors: still try other combos
+        continue;
       }
-      const curated: Curated = {
-        summary: typeof json.summary === 'string' ? json.summary : Array.isArray(json.summary) ? json.summary.join(' ') : '',
-        timeline: Array.isArray(json.timeline) ? json.timeline.map((t: any) => ({ date: t?.date, event: normalizeText(t?.event) ?? '' })).filter((t: any) => t.event) : [],
-        factCheck: {
-          claims: Array.isArray(json?.factCheck?.claims) ? json.factCheck.claims.map((c: any) => String(c)) : [],
-          assessment: normalizeText(json?.factCheck?.assessment) ?? '',
-          confidence: json?.factCheck?.confidence ?? 'low',
-        },
-        relatedTitles: Array.isArray(json.relatedTitles) ? json.relatedTitles.map((x: any) => String(x)) : [],
-        category: typeof json.category === 'string' ? json.category : 'lain-lain',
-      };
-      return curated;
-    } catch (err) {
-      lastErr = err;
-      continue;
     }
   }
   // Final fallback when all model attempts fail
+  // If configured to stop on rate limit, bubble up so caller can stop the run
+  if (shouldStopOnRateLimit() && isRateLimitError(lastErr)) {
+    throw lastErr;
+  }
   return {
     summary: normalizeText(input.content.slice(0, 400)) || input.title,
     timeline: [],
@@ -146,14 +171,46 @@ ${input.content.slice(0, 18000)}
 }
 
 export async function fetchAndCurateOnce() {
-  const results: { inserted: number; skipped: number } = { inserted: 0, skipped: 0 };
+  const results: { inserted: number; skipped: number; pausedUntil?: string; stoppedEarly?: boolean; stoppedAtSource?: string; remainingInCurrentFeed?: number; stoppedByAdmin?: boolean } = { inserted: 0, skipped: 0 };
+  const providerStats: Record<string, Record<string, number>> = {};
+  const startedAt = new Date();
+
+  // Skip run if we are in cooldown window
+  // Stop immediately if admin stopped curation
+  const globallyStopped = await getGlobalStopFlag();
+  if (globallyStopped) {
+    results.stoppedByAdmin = true;
+    await recordRun({ startedAt, finishedAt: new Date(), inserted: 0, skipped: 0, stoppedEarly: true, providerStats, stoppedAtSource: 'stopped-by-admin' });
+    return results;
+  }
+
+  // If all providers are in cooldown, stop immediately
+  const providers = ((process.env.NEWS_PROVIDERS || process.env.NEWS_PROVIDER || 'groq')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)) as ProviderPreference[];
+  const available = [] as ProviderPreference[];
+  for (const p of providers) {
+    const u = await getPauseUntilProvider(p);
+    if (!u || u <= new Date()) available.push(p);
+  }
+  if (available.length === 0) {
+    const minUntil = await getMinPauseUntil(providers);
+    if (minUntil) results.pausedUntil = minUntil.toISOString();
+    await recordRun({ startedAt, finishedAt: new Date(), inserted: results.inserted, skipped: results.skipped, stoppedEarly: true, pausedUntil: minUntil ?? undefined, providerStats });
+    return results;
+  }
 
   const sources = await getSourcesToUse();
-  for (const src of sources) {
+  const maxPerRun = Number(process.env.NEWS_MAX_CURATE_PER_RUN || 30);
+  let curatedCount = 0;
+  outer: for (const src of sources) {
     const parsed = await parser.parseURL(src.url);
     const items = parsed.items ?? [];
 
-    for (const item of items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]!;
+      if (curatedCount >= maxPerRun) break outer;
       const link = item.link || item.guid;
       if (!link) continue;
       const exists = await findExistingArticle(link, item.guid);
@@ -196,14 +253,37 @@ export async function fetchAndCurateOnce() {
         .map(({ r }) => ({ title: r.title, link: r.link }));
 
       // Curate via LLM
-      const curated = await curateWithLLM({
-        title,
-        content: articleText,
-        link,
-        publishedAt: item.isoDate || item.pubDate,
-        sourceName: src.name,
-        candidateRelated: scored,
-      });
+      let curated: Curated;
+      try {
+        curated = await curateWithLLM({
+          title,
+          content: articleText,
+          link,
+          publishedAt: item.isoDate || item.pubDate,
+          sourceName: src.name,
+          candidateRelated: scored,
+        });
+      } catch (e: any) {
+        if (isRateLimitError(e)) {
+          const mins = Number(process.env.NEWS_RATE_LIMIT_COOLDOWN_MINUTES || 60);
+          const until = new Date(Date.now() + mins * 60_000);
+          // Only set global pause if all providers are now cooling down
+          const providers = ((process.env.NEWS_PROVIDERS || process.env.NEWS_PROVIDER || 'groq')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)) as ProviderPreference[];
+          const allPaused = await areAllProvidersPaused(providers, until);
+          if (allPaused) {
+            results.pausedUntil = until.toISOString();
+          }
+          results.stoppedEarly = true;
+          results.stoppedAtSource = src.name;
+          results.remainingInCurrentFeed = Math.max(0, items.length - i - 1);
+          break outer; // stop the run on rate limit
+        }
+        // Other errors: continue with next item
+        continue;
+      }
 
       // Map relatedTitles back to links where possible
       const relMap = new Map(scored.map((s) => [s.title, s.link]));
@@ -226,11 +306,121 @@ export async function fetchAndCurateOnce() {
         factCheck: curated.factCheck as any,
         relatedLinks: relatedLinks as any,
         category: curated.category,
+        curatedProvider: curated.providerUsed,
+        curatedModelId: curated.modelIdUsed,
+        curatedAt: new Date(),
       });
 
       results.inserted += 1;
+      curatedCount += 1;
+      // provider stats
+      if (curated.providerUsed && curated.modelIdUsed) {
+        providerStats[curated.providerUsed] ||= {} as any;
+        providerStats[curated.providerUsed]![curated.modelIdUsed] = (providerStats[curated.providerUsed]![curated.modelIdUsed] || 0) + 1;
+      }
     }
   }
-
+  await recordRun({ startedAt, finishedAt: new Date(), inserted: results.inserted, skipped: results.skipped, stoppedEarly: Boolean(results.stoppedEarly), pausedUntil: results.pausedUntil ? new Date(results.pausedUntil) : undefined, stoppedAtSource: results.stoppedAtSource, providerStats });
   return results;
+}
+
+function isRateLimitError(err: any): boolean {
+  if (!err) return false;
+  const msg = String(err?.message || '').toLowerCase();
+  if (err?.statusCode === 429) return true;
+  if (msg.includes('rate limit')) return true;
+  if (err?.code === 'rate_limit_exceeded') return true;
+  // ai-sdk RetryError reason
+  if (String(err?.reason || '').includes('maxRetriesExceeded') && msg.includes('rate')) return true;
+  return false;
+}
+
+function shouldStopOnRateLimit(): boolean {
+  const v = process.env.NEWS_STOP_ON_RATE_LIMIT;
+  return v === undefined ? true : v === '1' || v?.toLowerCase() === 'true';
+}
+
+async function getPauseUntil(): Promise<Date | null> {
+  const [row] = await db.select().from(setting).where(eq(setting.key, 'newsCurationPauseUntil')).limit(1);
+  const iso = (row as any)?.value as string | undefined;
+  if (!iso) return null;
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+async function setPauseUntil(until: Date): Promise<void> {
+  const now = new Date();
+  // upsert into Setting
+  // @ts-ignore drizzle upsert helper
+  await db
+    .insert(setting)
+    .values({ key: 'newsCurationPauseUntil', value: until.toISOString(), updatedAt: now })
+    .onConflictDoUpdate({ target: setting.key, set: { value: until.toISOString(), updatedAt: now } });
+}
+
+async function getGlobalStopFlag(): Promise<boolean> {
+  const [row] = await db.select().from(setting).where(eq(setting.key, 'newsCurationStopped')).limit(1);
+  const val = (row as any)?.value;
+  if (val === true || val === 'true' || val === '1') return true;
+  return false;
+}
+
+export async function setGlobalStopFlag(stopped: boolean): Promise<void> {
+  const now = new Date();
+  // @ts-ignore drizzle upsert helper
+  await db
+    .insert(setting)
+    .values({ key: 'newsCurationStopped', value: stopped, updatedAt: now })
+    .onConflictDoUpdate({ target: setting.key, set: { value: stopped, updatedAt: now } });
+}
+
+async function getPauseUntilProvider(p: ProviderPreference): Promise<Date | null> {
+  const key = `newsCurationPauseUntil_${p}`;
+  const [row] = await db.select().from(setting).where(eq(setting.key, key)).limit(1);
+  const iso = (row as any)?.value as string | undefined;
+  if (!iso) return null;
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+async function setPauseUntilProvider(p: ProviderPreference, until: Date): Promise<void> {
+  const key = `newsCurationPauseUntil_${p}`;
+  const now = new Date();
+  // @ts-ignore drizzle upsert helper
+  await db
+    .insert(setting)
+    .values({ key, value: until.toISOString(), updatedAt: now })
+    .onConflictDoUpdate({ target: setting.key, set: { value: until.toISOString(), updatedAt: now } });
+}
+
+async function getMinPauseUntil(providers: ProviderPreference[]): Promise<Date | null> {
+  let min: Date | null = null;
+  for (const p of providers) {
+    const d = await getPauseUntilProvider(p);
+    if (d && (!min || d < min)) min = d;
+  }
+  return min;
+}
+
+async function areAllProvidersPaused(providers: ProviderPreference[], _until: Date): Promise<boolean> {
+  const now = new Date();
+  for (const p of providers) {
+    const d = await getPauseUntilProvider(p);
+    if (!d || d <= now) return false;
+  }
+  return true;
+}
+
+async function recordRun(args: { startedAt: Date; finishedAt: Date; inserted: number; skipped: number; stoppedEarly?: boolean; pausedUntil?: Date; stoppedAtSource?: string; providerStats?: any }) {
+  const { newsCurationRun } = await import('@/lib/db/schema');
+  await db.insert(newsCurationRun).values({
+    startedAt: args.startedAt,
+    finishedAt: args.finishedAt,
+    inserted: String(args.inserted),
+    skipped: String(args.skipped),
+    stoppedEarly: Boolean(args.stoppedEarly),
+    pausedUntil: args.pausedUntil ?? null,
+    stoppedAtSource: args.stoppedAtSource ?? null,
+    providerStats: args.providerStats ?? null,
+  });
 }

@@ -264,41 +264,6 @@ export default function AdminModelsPanel() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">Model Configuration</h2>
-            <p className="text-sm text-muted-foreground mt-1">Configure models and provider preferences</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => { refreshGroq(); refreshVertex(); }}>
-              Refresh Models
-            </Button>
-            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-              <AlertDialogTrigger asChild>
-                <Button onClick={() => setConfirmOpen(true)}>Save Changes</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Save model settings?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will update model mappings and preferences for your deployment.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={async () => {
-                      setConfirmOpen(false);
-                      await handleSave();
-                    }}
-                  >
-                    Save
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
         {banner && (
           <div className="mt-3 text-sm px-3 py-2 rounded-md border bg-muted/30 inline-block">
             {banner}
@@ -306,7 +271,7 @@ export default function AdminModelsPanel() {
         )}
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Chat Models Availability */}
         <div className="rounded-lg border bg-card p-4 space-y-4">
           <div className="flex items-center justify-between">
@@ -567,6 +532,38 @@ export default function AdminModelsPanel() {
           </div>
         </div>
         */}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => { refreshGroq(); refreshVertex(); }}>
+              Refresh Models
+            </Button>
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <AlertDialogTrigger asChild>
+                <Button onClick={() => setConfirmOpen(true)}>Save Configuration</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Save model settings?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will update model mappings and preferences for your deployment.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      setConfirmOpen(false);
+                      await handleSave();
+                    }}
+                  >
+                    Save
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
       </div>
     </div>
   );

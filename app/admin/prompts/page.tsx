@@ -8,7 +8,7 @@ export default async function AdminPromptsPage() {
   })
   if (!session?.user || session.user.role !== 'admin') {
     return (
-      <div className="p-6 text-sm text-red-500">
+      <div className="p-4 text-sm text-red-500">
         Unauthorized: Admin only.
       </div>
     );
@@ -19,7 +19,7 @@ export default async function AdminPromptsPage() {
   const artifacts = settings?.artifactsPromptOverride ?? '';
 
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
+    <div className="space-y-4">
       <h1 className="text-xl font-semibold">Prompts</h1>
 
       <div className="rounded-xl border p-4 space-y-3">

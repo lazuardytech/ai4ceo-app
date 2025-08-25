@@ -64,7 +64,7 @@ export function OnboardingForm({ defaultName }: { defaultName?: string | null })
             return;
           }
         }
-      } catch {}
+      } catch { }
       router.replace("/");
     } catch (e: any) {
       toast({ type: "error", description: e?.message || "Failed to save" });
@@ -78,7 +78,7 @@ export function OnboardingForm({ defaultName }: { defaultName?: string | null })
   }, [name]);
 
   return (
-    <div className="mx-auto max-w-xl w-full space-y-6">
+    <div className="mx-auto max-w-xl w-full space-y-4">
       <div className="space-y-1">
         <h1 className="text-xl font-semibold">Welcome! Let’s personalize your assistant</h1>
         <p className="text-sm text-muted-foreground">A quick setup to fit your style.</p>
@@ -119,9 +119,8 @@ export function OnboardingForm({ defaultName }: { defaultName?: string | null })
                 <button
                   key={t.id}
                   type="button"
-                  className={`text-left rounded border p-3 hover:bg-accent ${
-                    selected.includes(t.id) ? "border-primary" : "border-muted"
-                  }`}
+                  className={`text-left rounded border p-3 hover:bg-accent ${selected.includes(t.id) ? "border-primary" : "border-muted"
+                    }`}
                   onClick={() => toggleTrait(t.id)}
                 >
                   <div className="font-medium">{t.label}</div>

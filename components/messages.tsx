@@ -84,7 +84,7 @@ function PureMessages({
   const displayName = (profile?.name?.trim()) || baseName;
 
   return (
-    <div className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll relative">
+    <div className="flex flex-col min-w-0 gap-4 flex-1 overflow-y-scroll relative">
       <div
         id="gradient-chat"
         className={
@@ -95,7 +95,7 @@ function PureMessages({
 
       <div
         ref={messagesContainerRef}
-        className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 relative"
+        className="flex flex-col min-w-0 gap-4 flex-1 overflow-y-scroll pt-4 relative"
       >
         {messages.length === 0 && <Greeting name={displayName} chatId={chatId} />}
 
